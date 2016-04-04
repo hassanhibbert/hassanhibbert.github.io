@@ -11,13 +11,16 @@
 
 
     <div id="online-biz-container">
-        <div id="online-biz-toggle" class="clearfix">
+        <div id="online-biz-toggle" data-status="accordion" class="clearfix">
+           <i class="chevicon-chev-down"></i>
             <h2>Online Businesses</h2>
-            <i class="chevicon-chev-down"></i>
+            
         </div>
 
         <div id="online-list-containter" class="ob-collapse">
-            <ul class="ob-hide"></ul>
+           <hr class="top-divider">
+            <ul class="ob-fadeOut"></ul>
+            <div id="ob-full-details" class="ob-hide ob-fadeOut"></div>
         </div>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
