@@ -91,6 +91,8 @@ hr {
     box-shadow: 0 0 4px #A9A9A9;
     overflow: hidden;
     position: fixed;
+    right: 0;
+    top: 0;
 }
 
 .drop-shadow {
@@ -217,4 +219,10 @@ hr {
 
 #online-list-containter ul li:last-child { 
     border-bottom: none;
+}
+
+#loadbutton {
+    position: fixed;
+    top: 30px;
+    left: 700px;
 }

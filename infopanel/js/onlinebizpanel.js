@@ -239,6 +239,12 @@ var onlineBizPanel = (function ($, document) {
         
         // listener for dropshadow
         $listContainter.on('scroll', handleDropShadow);
+        
+        // DEBUG: temporary listener to test load more method
+        $('#loadbutton').bind('click', function(evt) {
+            evt.preventDefault();
+            ajaxManager.loadMore(5, buildList);
+        });
     };
 
     return publicAPI;
