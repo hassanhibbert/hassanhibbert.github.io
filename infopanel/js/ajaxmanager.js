@@ -1,6 +1,6 @@
 /* global $, jQuery, document */
 
-var ajaxManager = (function ($, global, document) {
+var ajaxManager = (function ($, document) {
 
     var serviceUrl = 'js/fakeData.json',
         arrLen,
@@ -21,11 +21,11 @@ var ajaxManager = (function ($, global, document) {
             }
         });
         return (result) ? result : 'No results found.';
-    }
+    };
 
     publicAPI.loadMore = function(limit, cb) {
         // TODO: build only the new data then merge to parsed Data
-    }
+    };
 
     publicAPI.loadData = function(cb) {
         $.ajax({
@@ -42,10 +42,10 @@ var ajaxManager = (function ($, global, document) {
             }
         });
 
-    }
+    };
 
     return publicAPI;
 
-})(jQuery, window, document);
+})(jQuery, document);
 
 // ajaxManager.loadMore(50, buildList);
