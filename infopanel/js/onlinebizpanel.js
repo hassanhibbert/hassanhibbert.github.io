@@ -3,22 +3,39 @@
 
 var onlineBizPanel = (function ($, document) {
     var
-    // DOM references
+        // DOM references
         $listContainter,
         $listInnerContainter,
         $toggleElement,
         $fullDetails,
+        $backButton,
 
         // module API
-        publicAPI = {},
+        publicAPI,
         
-        shadowViewport = true;
+        shadowViewport = true,
+        
+        // scroll position
+        scrollPosition = {
+            top: [],
+            temp: null,
+            update: function(currentScrollTop) {
+                this.temp = currentScrollTop;
+            },
+            save: function() {
+                this.top.push(this.temp);
+            },
+            set: function (element) {
+                element.scrollTop = this.top[0];
+                this.top.pop(); // clear the array
+            }
+        };
 
     //###############//
     //### Private ###//
     //###############//
     
-     /**
+    /**
      * Toggles classes to animate the panel height
      * and up/down arrow
      */
@@ -36,19 +53,20 @@ var onlineBizPanel = (function ($, document) {
      */
     function changeContent(update, $showEl) { 
         // change elements and content if "update = true"
-        var $hideEl = (update) ? $listInnerContainter : $fullDetails,
-            status = (update) ? 'back' : 'accordion',
-            toggleText = (update) ? 'Back' : 'Online Businesses';
-    
-        $toggleElement.find('i').toggleClass('ob-hide');
-        $toggleElement.attr('data-status', status).find('h2').text(toggleText);
+        var $hideEl = (update) ? $listInnerContainter : $fullDetails;
         
         $hideEl.addClass('ob-hide');
         $hideEl.toggleClass('ob-fadeOut ob-fadeIn');
         
+        
         $showEl.removeClass('ob-hide');
         $showEl.outerHeight(); // trigger css reflow/repaint
         $showEl.toggleClass('ob-fadeOut ob-fadeIn');
+        
+        // set scroll top postion to the last known Y-Coords
+        if (!update) {
+            scrollPosition.set($listContainter[0]);
+        } 
     }
     
     /**
@@ -74,9 +92,19 @@ var onlineBizPanel = (function ($, document) {
      * @param {event} Click event information
      */
     function handlePanelClick(evt) {
-        var $status = $toggleElement.attr('data-status');
-        ($status === 'accordion') ? expandCollapsePanel() : changeContent(false, $listInnerContainter);
-        $('.bottom-wrap, .top-wrap').remove();
+        expandCollapsePanel(); 
+    }
+    
+     /**
+     * Handler for back button clicks
+     * 
+     * @param {event} Click event information
+     */
+    function handleBackClick(evt) {
+        changeContent(false, $listInnerContainter);
+        
+        $backButton.addClass('ob-hide');
+        $('.bottom-wrap, .top-wrap').remove();   
     }
     
     /**
@@ -89,7 +117,42 @@ var onlineBizPanel = (function ($, document) {
         var $currentName = $(this).attr('data-businessname'),
             detailsData = ajaxManager.search('businessName', $currentName),
             bindContent = changeContent.bind(null, true, $fullDetails);
+        $backButton.removeClass('ob-hide');
         buildFullDetails(detailsData, bindContent);
+    }
+    
+     /**
+     * Handler for hide/show shadow on scroll
+     * 
+     * @param {event} scroll event
+     */
+    function handleDropShadow(evt) {
+        var currentScrollTop = evt.target.scrollTop; 
+    
+        // add drop-shadow when scrolling
+        if (currentScrollTop >= 6 && shadowViewport) {
+            $toggleElement.addClass('drop-shadow');
+            shadowViewport = false;
+        }
+        
+        // remove drop-shadow when scrolled to the top
+        if (currentScrollTop <= 5) {
+            $toggleElement.removeClass('drop-shadow');
+            shadowViewport = true;
+        }
+        
+        // update with the current scroll position.
+        scrollPosition.update(currentScrollTop);
+    }
+    
+    /**
+     * Handler for mousedown. Main purpose of this handler is to store the
+     * current scroll positon
+     * 
+     * @param {event} click event
+     */
+    function handleMouseDown(evt) {
+        scrollPosition.save();
     }
     
     /**
@@ -177,22 +240,6 @@ var onlineBizPanel = (function ($, document) {
         // append to DOM
         $listInnerContainter.append(docFrag);
     }
-    
-    function handleDropShadow(evt) {
-        var currentScrollTop = evt.target.scrollTop;
-        
-        // add drop-shadow when scrolling
-        if (currentScrollTop >= 6 && shadowViewport) {
-            $toggleElement.addClass('drop-shadow');
-            shadowViewport = false;
-        }
-        
-        // remove drop-shadow when scrolled to the top
-        if (currentScrollTop <= 5) {
-            $toggleElement.removeClass('drop-shadow');
-            shadowViewport = true;
-        }
-    }
 
     //##############//
     //### Public ###//
@@ -201,32 +248,33 @@ var onlineBizPanel = (function ($, document) {
     /**
      * Collapse panel 
      */
-    publicAPI.collapse = function () {
+    function collapse() {
         if ($listContainter.hasClass('ob-expanded')) {
             expandCollapsePanel();
         }
-    };
+    }
 
     /**
      * Expand panel 
      */
-    publicAPI.expand = function () {
+    function expand() {
         if ($listContainter.hasClass('ob-collapse')) {
             expandCollapsePanel();
         }
-    };
+    }
 
     /**
      * Initialize listeners, cache DOM references
      *
      * @param {object} DOM elements
      */
-    publicAPI.init = function init(opt) {
+    function init(opt) {
         // cache references
         $listContainter = $(opt.listContainer);
         $listInnerContainter = $(opt.listInnerContainer);
         $toggleElement = $(opt.toggleElement);
         $fullDetails = $(opt.fullDetails);
+        $backButton = $(opt.backButton);
 
         // get data and build list to DOM
         ajaxManager.loadData(buildList);
@@ -240,14 +288,26 @@ var onlineBizPanel = (function ($, document) {
         // listener for dropshadow
         $listContainter.on('scroll', handleDropShadow);
         
+        // listener for back button
+        $backButton.bind('click', handleBackClick);
+        
+        $listInnerContainter.on('mousedown', handleMouseDown.bind(scrollPosition));
+        
         // DEBUG: temporary listener to test load more method
         $('#loadbutton').bind('click', function(evt) {
             evt.preventDefault();
             ajaxManager.loadMore(5, buildList);
         });
+    }
+    
+    publicAPI = {
+        init: init,
+        expand: expand,
+        collapse: collapse
     };
 
     return publicAPI;
+    
 })(jQuery, document);
 
 
@@ -256,6 +316,7 @@ $(document).ready(function () {
         listContainer: '#online-list-containter',
         listInnerContainer: '#online-list-containter ul',
         toggleElement: '#online-biz-toggle',
-        fullDetails: '#ob-full-details'
+        fullDetails: '#ob-full-details',
+        backButton: '#back-button'
     });
 });
