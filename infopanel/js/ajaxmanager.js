@@ -93,7 +93,7 @@ var ajaxManager = (function ($, document) {
      */
     function loadMore(limit, cb) {
         // TODO: configue limit
-        getData(cb, 'js/fakeData_10.json', true);
+        getData(cb, 'js/fakeData_300.json', true);
     }
     
     /**
