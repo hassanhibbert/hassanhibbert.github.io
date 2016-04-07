@@ -2,7 +2,7 @@
 
 var ajaxManager = (function ($, document) {
 
-    var serviceUrl = 'js/smb_data.json',
+    var serviceUrl = 'js/fakeData_300.json',
         
         // cache vars
         cachedLength,
@@ -118,8 +118,7 @@ var ajaxManager = (function ($, document) {
      * @param {interger} [optional] default number is 20 but can be changed with the [limit] argument available 
      */
     function loadData(cb, limit) {
-        var _default = 20;
-        limit = (limit && typeof limit === 'number') ? limit : _default;
+        limit = (limit && typeof limit === 'number') ? limit : 20;
         ajaxRequest(limit, cb);
     }
 

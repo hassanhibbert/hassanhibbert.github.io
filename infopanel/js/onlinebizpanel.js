@@ -58,6 +58,7 @@ var onlineBizPanel = (function ($, document) {
      * @param {element} Element to show
      */
     function changeContent(update, $showEl) { 
+        // change elements and content if "update = true"
         var $hideEl = (update) ? $listInnerContainter : $fullDetails;
         
         $hideEl.addClass('ob-hide');
@@ -102,7 +103,7 @@ var onlineBizPanel = (function ($, document) {
     function handleDetailsClick(evt) {
         evt.preventDefault();
         var $currentName = $(this).attr('data-businessname'),
-            detailsData = ajaxManager.search('CompanyName', $currentName),
+            detailsData = ajaxManager.search('businessName', $currentName),
             bindContent = changeContent.bind(null, true, $fullDetails);
         $backButton.removeClass('ob-hide');
         buildFullDetails(detailsData, bindContent);
@@ -134,8 +135,8 @@ var onlineBizPanel = (function ($, document) {
         scrollPosition.update(currentScrollTop);
         
         // TODO: concept
-        // load more data when scrolled to the bottom, when list view is visible
-        if (currentScrollTop === panelScrollEnd && $listInnerContainter.hasClass('ob-fadeIn')) {
+        // load more data when scrolled to the bottom
+        if (currentScrollTop === panelScrollEnd) {
             ajaxManager.loadMore(10, buildList);
         }
     }
@@ -183,29 +184,29 @@ var onlineBizPanel = (function ($, document) {
             topDiv = myCreateElement('div', {class: 'top-wrap clearfix'}),
             bottomDiv = myCreateElement('div', {class: 'bottom-wrap'}), 
             hTag = myCreateElement('h2'),
-            aTagPhone = myCreateElement('a', {class: 'ob-phone', href: 'tel:' + data.Phone}),
-            aTagWeb = myCreateElement('a', {href: data.WebSite, target: '_blank'}),
+            aTagPhone = myCreateElement('a', {class: 'ob-phone', href: 'tel:' + data.phone}),
+            aTagWeb = myCreateElement('a', {href: data.website, target: '_blank'}),
             pTagDetails = myCreateElement('p'),
             hr = myCreateElement('hr'),
             
             // check if images exist
-            logoImg = (data.HasLogo) ? myCreateElement('img', {src: imgSrc + '?logo=true&companyID=' + data.CompanyID, alt: data.CompanyName, class: 'ob-details-logo'}) : undefined,
-            mainImg = (data.HasPhoto) ? myCreateElement('img', {src: imgSrc + '?logo=false&companyID=' + data.CompanyID, alt: data.CompanyName, class: 'ob-details-main-image'}) : undefined;
+            logoImg = (data.logo) ? myCreateElement('img', {src: data.logo, alt: data.businessName}) : undefined,
+            mainImg = (data.mainimage) ? myCreateElement('img', {src: data.mainimage, alt: data.businessName}) : undefined;
         
         // append elements (Logo, Business name, phone number)
         (logoImg) ? $(topDiv).append(logoImg) : logoImg; // append logo if it  exist 
         $(topDiv).append(hTag);
         $(topDiv).append(aTagPhone); 
-        $(hTag).append(data.CompanyName);
-        $(aTagPhone).append(formatPhone(data.Phone));
+        $(hTag).append(data.businessName);
+        $(aTagPhone).append(data.phone);
         $(docFrag).append(topDiv);
         
         // append elements (Description, Main image)
         $(bottomDiv).append(pTagDetails);
         $(bottomDiv).append(aTagWeb);
         (mainImg) ? $(bottomDiv).append(hr, mainImg) : mainImg; // append main image if it exist
-        $(pTagDetails).append(data.BusinessDescription);
-        $(aTagWeb).append(data.WebSite);
+        $(pTagDetails).append(data.details);
+        $(aTagWeb).append(data.website);
         $(docFrag).append(bottomDiv);
         
         // append full details to DOM
@@ -216,9 +217,7 @@ var onlineBizPanel = (function ($, document) {
         
         // if image exist then wait for it to load before executing callback
         // else execute callback without waiting
-        console.log('wait for image to load');
-        //(imgElement) ? $(imgElement).load(cb) : cb();
-        cb();
+        (imgElement) ? $(imgElement).load(cb) : cb();
     }
     
      /**
@@ -233,20 +232,6 @@ var onlineBizPanel = (function ($, document) {
             return str.slice(0, num - 3) + '...';
         }
         return str;
-    }
-    
-    /**
-     * Formats phone number
-     * 
-     * @param {string} phone number to be formated
-     * @return {string} returns formated number
-     */
-    function formatPhone(str) {
-        var regNonDigit = /[\D]/ig,
-            regPhone = /(\d{3})+(\d{3})+(\d{4})/gi,
-            noformat = str.replace(regNonDigit, ''),
-            formatedPhone = noformat.replace(regPhone, '$1-$2-$3');
-        return formatedPhone;
     }
     
     //##############//
@@ -265,20 +250,20 @@ var onlineBizPanel = (function ($, document) {
         data.forEach(function (dataObj) {
             // create elements
             var liTag = myCreateElement('li', {class: 'ob-fadeOut'}),
-                linkDetails = myCreateElement('a', {class: 'ob-details', href: '#', 'data-businessname': dataObj.CompanyName}),
+                linkDetails = myCreateElement('a', {class: 'ob-details', href: '#', 'data-businessname': dataObj.businessName}),
                 details = myCreateElement('p'),
                 phone = myCreateElement('div', {class: 'ob-phone'}),
-                webLink = (dataObj.WebSite) ? myCreateElement('a', {href: dataObj.WebSite,target: '_blank'}) : undefined,
+                webLink = myCreateElement('a', {href: dataObj.website,target: '_blank'}),
                 hTag = myCreateElement('h2'),
-                shortDetails = truncate(dataObj.BusinessDescription, 73);
+                shortDetails = truncate(dataObj.details, 73);
 
             // append data to elements
             $(liTag).append(linkDetails, phone, webLink);
-            $(hTag).append(dataObj.CompanyName);          
+            $(hTag).append(dataObj.businessName);          
             $(details).append(shortDetails);
             $(linkDetails).append(hTag, details);
-            $(phone).append(formatPhone(dataObj.Phone));
-            (webLink) ? $(webLink).append(dataObj.WebSite) : webLink;
+            $(phone).append(dataObj.phone);
+            $(webLink).append(dataObj.website);
 
             // append everything to document fragment
             $(docFrag).append(liTag);
@@ -366,5 +351,11 @@ $(document).ready(function () {
         toggleElement: '#online-biz-toggle',
         fullDetails: '#ob-full-details',
         backButton: '#back-button'
+    });
+    
+    // TODO: temporary listener to test load more method
+    $('#loadbutton').bind('click', function(evt) {
+        evt.preventDefault();
+        ajaxManager.loadMore(10, onlineBizPanel.buildList);
     });
 });
