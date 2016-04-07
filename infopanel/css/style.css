@@ -100,6 +100,7 @@ input, select, textarea {
     -webkit-transition: -webkit-transform 0.4s;
     transition: -webkit-transform 0.4s;
     transition: transform 0.4s;
+    -webkit-transition: -webkit-transform 0.4s, -webkit-transform 0.4s;
     transition: transform 0.4s, -webkit-transform 0.4s; 
 }
 
@@ -210,8 +211,8 @@ hr {
 #online-list-containter ul li {
     -webkit-transition: opacity 0.7s;
     transition: opacity 0.7s;
-    -webkit-transition-delay: 0.4s;
-    transition-delay: 0.4s;
+    -webkit-transition-delay: 0.3s;
+    transition-delay: 0.3s;
     opacity: 1;
 }
 
@@ -290,9 +291,10 @@ hr {
 
 #online-list-containter a {
     color: #084898;
-    font-size: 13px;
+    font-size: 12px;
     display: inline-block;
     font-weight: bold;
+    margin-top: 7px;
 }
 
 #online-list-containter ul, #ob-full-details {
@@ -312,6 +314,15 @@ hr {
 
 #online-list-containter .top-wrap h2 {
     color: #464646;
+}
+
+img.ob-details-logo {
+    width: 75px;
+    height: auto;
+}
+img.ob-details-main-image {
+    width: 240px;
+    height: auto;
 }
 
 #loadbutton {
