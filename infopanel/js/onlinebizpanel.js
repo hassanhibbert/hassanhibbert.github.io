@@ -220,6 +220,17 @@ var onlineBizPanel = (function ($, document) {
         (imgElement) ? $(imgElement).load(cb) : cb();
     }
     
+    /**
+     * Preload images
+     *
+     * @param {array} accepts an array of image sources
+     */
+    function preload(arr) {
+        arr.forEach(function(imgSrc) {
+            myCreateElement('img', {src: imgSrc});
+        });
+    }
+    
      /**
      * Truncate string
      * 
