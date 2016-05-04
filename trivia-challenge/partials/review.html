@@ -1,0 +1,16 @@
+<div class="header">
+    <p class="name">Trivia Challenge!</p>
+    <p class="category">Review</p>
+</div>
+
+<div class="question-container">
+    <div class="results">
+        <div ng-repeat="item in review">
+            <p class="ans">{{item.id}}. {{item.question}}</p>
+            <p class="ans {{item.class}}">{{item.answer}}: {{item.selected}}</p>
+        </div>
+        <a href="#/" ng-click="resetQuiz()" class="home-btn green-button">Restart Quiz</a>
+    </div>
+</div>
+
+<div class="footer clear"></div>
