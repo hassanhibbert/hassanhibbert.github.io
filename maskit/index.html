@@ -11,7 +11,7 @@
 <div class="wrapper">
     <h2>MaskIt - Demo</h2>
     <input type="text" class="date" placeholder="Enter Today's Date"/>
-    <input type="text" class="date2" placeholder="Enter Date of Birth"/>
+    <input type="text" class="date" placeholder="Enter Date of Birth"/>
     <input type="text" id="time" placeholder="Enter Time"/>
     <input type="text" id="phone" placeholder="Enter Phone Number"/>
 </div>
@@ -29,7 +29,6 @@
     // basic usage
     MaskIt('00:00:00', '#time');
     MaskIt('(000) 000-0000', '#phone');
-    MaskIt('00/00/0000', '.date2');
 
     // using mask method
     console.log(MaskIt('00/00/0000').mask('05231995'));
