@@ -114,3 +114,8 @@
     height: 0;
     clear: both;
 }
+
+.multiSelect ul > li i.checkbox.hide-checkbox {
+    opacity: 0;
+    width: 0;
+}

@@ -7,6 +7,7 @@
 </head>
 <body>
 <button id="mybtn">Get Value</button>
+<button id="removeButton">Remove Events</button>
 <br/>
 <br/>
 
@@ -33,10 +34,20 @@
     <option value="internet_explorer">Internet Explorer</option>
 </select>
 <br/>
+<br/>
+
+<select name="computers" id="computers">
+    <option value="dell">Dell</option>
+    <option value="hp">HP</option>
+    <option value="lenovo">Lenovo</option>
+    <option value="mirosoft">Microsoft</option>
+</select>
+<br/>
 
 <script src="multidrop.js"></script>
 <script>
     var button = document.querySelector('#mybtn');
+    var buttonRemoveEvent = document.querySelector('#removeButton');
 
     // Targeting a single element
     var browserMenu = new MultiDrop('#browsers');
@@ -48,17 +59,21 @@
         }
     });
 
+    var computerSelection = new MultiDrop('#computers');
+
     button.addEventListener('click', function (event) {
         console.log('browsers: ', browserMenu.getSelected());
         console.log('cars: ', multipleSelectMenues.getSelected());
         console.log('bicycles: ', multipleSelectMenues.getSelected('bicycles'));
-
-        setTimeout(function () {
-            console.log('event cleared');
-            browserMenu.destroyEvents();
-            multipleSelectMenues.destroyEvents();
-        }, 3000);
+        console.log('computers: ', computerSelection.getSelected());
     });
+
+    buttonRemoveEvent.addEventListener('click', function (event) {
+        console.log('event cleared');
+        browserMenu.destroyEvents();
+        multipleSelectMenues.destroyEvents();
+        computerSelection.destroyEvents();
+    }, false);
 
 </script>
 </body>

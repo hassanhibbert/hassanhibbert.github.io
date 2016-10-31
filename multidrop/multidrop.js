@@ -1,15 +1,27 @@
+/*
+ * MultiDrop: Enhances the select input field into a multiple option drop down list
+ * By Hassan Hibbert <http://hassanhibbert.com/>
+ * Copyright 2016 Hassan Hibbert, under the MIT License
+ * <https://opensource.org/licenses/mit-license.php/>
+ */
+
 (function (global) {
 
+  // Private variables
   var currentPosition = 0, instanceQueue = {};
 
   function MultiDrop(elementList, options) {
 
+    // Array of dom elements
     elementList = getElementList(elementList);
 
+    // Get element from array based on the `currentPosition` index
     this.selectElement = elementList[currentPosition];
+
     this.multiSelectElement = null;
-    this.menuFlag = null;
     this.listeners = {};
+
+    // default options
     var defaults = {
       placeholder: 'select options',
       csvDisplayCount: 2,
@@ -19,17 +31,23 @@
 
     this.options = extend(defaults, options);
 
+    // Build and initialize widget
     buildDropDownMenu.call(this);
     setPreselectedOptions.call(this, this.selectElement);
     initializeEvents.call(this);
     this.selectElement.style.display = 'none';
 
+    // Increment the `currentPosition` to check the next dom element in `elementList` array
     currentPosition++;
 
     if (elementList[currentPosition]) {
+
+      // Recursively create instances
       var elementName = elementList[currentPosition].name;
       instanceQueue[elementName] = new MultiDrop(elementList, this.options);
     } else {
+
+      // Reset `currentPosition` if there are no more dom elements in `elementList`
       currentPosition = 0;
     }
 
@@ -46,33 +64,34 @@
         return item.selectValue;
       });
     },
+
     destroyEvents: function destroyEvents() {
 
       var selectBox = this.multiSelectElement.querySelector('.selectMenu'),
           queueKeys = Object.keys(instanceQueue),
           currentSelectBox,
-          selectElementClassName,
-          instanceObj;
+          _this;
 
       selectBox.removeEventListener('click', this.listeners.selectBoxClickHandler, false);
+      this.multiSelectElement.removeEventListener('blur', this.listeners.multiBlurHandler, false);
 
-      for (var i = 0, length = queueKeys.length; i < length; i++) {
+      // Remove events for private instances
+      if (queueKeys.length > 0) {
+        for (var i = 0, length = queueKeys.length; i < length; i++) {
 
-        instanceObj = instanceQueue[queueKeys[i]];
-        selectElementClassName = instanceObj.selectElement.className;
-        currentSelectBox = instanceObj.multiSelectElement.querySelector('.selectMenu');
+          _this = instanceQueue[queueKeys[i]];
+          currentSelectBox = _this.multiSelectElement.querySelector('.selectMenu');
 
-        if (this.selectElement.className === selectElementClassName) {
-          currentSelectBox.removeEventListener('click', instanceObj.listeners.selectBoxClickHandler, false);
+          if (this.selectElement.className === _this.selectElement.className) {
+            currentSelectBox.removeEventListener('click', _this.listeners.selectBoxClickHandler, false);
+            _this.multiSelectElement.removeEventListener('blur', _this.listeners.multiBlurHandler, false);
+          }
         }
-
       }
-
-
     }
   };
 
-
+  // Expose globally
   global.MultiDrop = MultiDrop;
 
   function initializeEvents() {
@@ -80,44 +99,49 @@
         multiSelectElement = this.multiSelectElement,
         selectBox = this.multiSelectElement.querySelector('.selectMenu');
 
+    // Set references to event listener functions
     this.listeners.selectBoxClickHandler = selectBoxClickHandler.bind(this);
     this.listeners.dropdownClickHandler = dropdownClickHandler.bind(this);
-    this.listeners.documentClickHandler = documentClickHandler.bind(this);
+    this.listeners.multiBlurHandler = multiBlurHandler.bind(this);
 
+    // Set listeners
     selectBox.addEventListener('click', this.listeners.selectBoxClickHandler, false);
+    multiSelectElement.addEventListener('blur', this.listeners.multiBlurHandler, false);
+
     updatePlaceholderText.call(this);
+
+    function multiBlurHandler() {
+      removeClass(multiSelectElement, 'open');
+      dropdownMenu.removeEventListener('click', this.listeners.dropdownClickHandler, false);
+    }
 
     function selectBoxClickHandler() {
       if (hasClass(multiSelectElement, 'open')) {
         removeClass(multiSelectElement, 'open');
         dropdownMenu.removeEventListener('click', this.listeners.dropdownClickHandler, false);
-        document.removeEventListener('click', this.listeners.documentClickHandler, false);
-        this.menuFlag = false;
       } else {
         addClass(multiSelectElement, 'open');
         dropdownMenu.addEventListener('click', this.listeners.dropdownClickHandler, false);
-        document.addEventListener('click', this.listeners.documentClickHandler, false);
-        this.menuFlag = false;
       }
-    }
-
-    function documentClickHandler(event) {
-      if (this.menuFlag) {
-        if (parentWithClass(event.target, 'menulist-' + this.selectElement.name) === null) {
-          removeClass(multiSelectElement, 'open');
-          dropdownMenu.removeEventListener('click', this.listeners.dropdownClickHandler, false);
-          document.removeEventListener('click', this.listeners.documentClickHandler, false);
-        }
-      }
-      this.menuFlag = true;
     }
 
     function dropdownClickHandler(event) {
       var listItem = closestWithTag(event.target, 'li'),
           checkbox = listItem.querySelector('i');
-      hasClass(checkbox, 'selected') ? removeClass(checkbox, 'selected') : addClass(checkbox, 'selected');
+
+      toggleClass(checkbox, 'selected');
       toggleSelectedOptions.call(this, this.selectElement);
       updatePlaceholderText.call(this);
+
+      if (!this.selectElement.hasAttribute('multiple')) {
+        removeClass(multiSelectElement, 'open');
+        toggleClass(checkbox, 'selected');
+        dropdownMenu.removeEventListener('click', this.listeners.dropdownClickHandler, false);
+      }
+    }
+
+    function toggleClass(element, className) {
+      hasClass(element, className) ? removeClass(element, className) : addClass(element, className);
     }
 
     function updatePlaceholderText() {
@@ -139,10 +163,7 @@
         textArea.innerHTML = selectedOptions.length + ' selected';
       }
     }
-
   }
-
-
 
   function setPreselectedOptions(element) {
     var optionValue,
@@ -160,10 +181,19 @@
   }
 
   function toggleSelectedOptions(element) {
-    var selectedValuesHtml = getSelectedFromHtml.call(this);
+    var selectedValuesHtml = getSelectedFromHtml.call(this), selected;
+
     for (var i = 0, length = element.length; i < length; i++) {
-      element[i].selected = selectedValuesHtml.indexOf(element[i].innerHTML) >= 0;
+      selected = selectedValuesHtml.indexOf(element[i].innerHTML) >= 0;
+      element[i].selected = selected;
+
+      if (selected) {
+        element[i].setAttribute('selected', 'selected');
+      } else {
+        element[i].removeAttribute('selected');
+      }
     }
+
     if (isFunction(this.options.onChangeHandler)) {
       this.options.onChangeHandler(this.getSelected());
     }
@@ -171,7 +201,7 @@
 
   function getSelectedFromHtml() {
     var elementList = this.multiSelectElement.querySelectorAll('ul li'),
-      selectedValues = [];
+        selectedValues = [];
 
     for (var i = 0, length = elementList.length; i < length; i++) {
       if (hasClass(elementList[i].querySelector('.checkbox'), 'selected')) {
@@ -230,7 +260,7 @@
       // insert content into LI tags
       optionsLI = document.createElement('li');
       checkbox = document.createElement('i');
-      checkbox.className = 'checkbox';
+      checkbox.className = this.selectElement.hasAttribute('multiple') ? 'checkbox' : 'checkbox hide-checkbox';
       textWrapper = document.createElement('span');
       textWrapper.innerHTML = this.selectElement[i].innerHTML;
 
@@ -271,7 +301,6 @@
         if (hasClass(element, className)) return element;
       }
     }
-
     return null;
   }
 
@@ -314,7 +343,5 @@
     }
     return source;
   }
-
-
 
 })(window);
