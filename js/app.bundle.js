@@ -48187,7 +48187,14 @@
 	
 	  $stateProvider.state('products', {
 	    url: '/products',
-	    component: 'products'
+	    component: 'products',
+	    resolve: {
+	      productList: ["ProductService", function productList(ProductService) {
+	        'ngInject';
+	
+	        return ProductService.getProducts();
+	      }]
+	    }
 	  });
 	}]).name;
 
@@ -48213,18 +48220,25 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var productsComponent = exports.productsComponent = {
-	  bindings: {},
+	  bindings: {
+	    productList: '<'
+	  },
 	  templateUrl: _products2.default,
 	  controller: function () {
-	    function ProductController() {
+	    ProductController.$inject = ["ProductService"];
+	    function ProductController(ProductService) {
 	      'ngInject';
 	
 	      _classCallCheck(this, ProductController);
+	
+	      this.productService = ProductService;
 	    }
 	
 	    _createClass(ProductController, [{
 	      key: '$onInit',
-	      value: function $onInit() {}
+	      value: function $onInit() {
+	        console.log(this.productList);
+	      }
 	    }]);
 	
 	    return ProductController;
@@ -48236,7 +48250,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/products/products.html';
-	var html = "<nav-bar></nav-bar>\n\n\n<h1>Product Page: List of products</h1>\n\n<button\n\t\tclass=\"snipcart-add-item\"\n\t\tdata-item-id=\"2\"\n\t\tdata-item-name=\"Web Learning Course\"\n\t\tdata-item-price=\"29.99\"\n\t\tdata-item-url=\"https://hassanhibbert.github.io/products\"\n\t\tdata-item-description=\"A web app to learn new things.\">\n\tBuy My Special Software\n</button>\n<br><br>\n<a href=\"#\" class=\"snipcart-checkout\">Click here to checkout</a>\n<br><br>\n\n<div class=\"snipcart-summary\">\n\tNumber of items: <span class=\"snipcart-total-items\"></span>\n\tTotal price: <span class=\"snipcart-total-price\"></span>\n</div>";
+	var html = "<nav-bar></nav-bar>\n\n\n<h1>Product Page: List of products</h1>\n\n<button\n\t\tclass=\"snipcart-add-item\"\n\t\tdata-item-id=\"2\"\n\t\tdata-item-name=\"Web Learning Course\"\n\t\tdata-item-price=\"29.99\"\n\t\tdata-item-url=\"/\"\n\t\tdata-item-description=\"A web app to learn new things.\">\n\tBuy My Special Software\n</button>\n<br><br>\n<a href=\"#\" class=\"snipcart-checkout\">Click here to checkout</a>\n<br><br>\n\n<div class=\"snipcart-summary\">\n\tNumber of items: <span class=\"snipcart-total-items\"></span>\n\tTotal price: <span class=\"snipcart-total-price\"></span>\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
@@ -48269,15 +48283,38 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var ProductService = exports.ProductService = function () {
-	  function ProductService() {
+	  ProductService.$inject = ["$http", "$q"];
+	  function ProductService($http, $q) {
 	    'ngInject';
 	
 	    _classCallCheck(this, ProductService);
+	
+	    this.$http = $http;
+	    this.$q = $q;
 	  }
 	
 	  _createClass(ProductService, [{
 	    key: '$onInit',
 	    value: function $onInit() {}
+	  }, {
+	    key: 'getProducts',
+	    value: function getProducts() {
+	      return this.$http.get('/data/products.json').then(function (_ref) {
+	        var data = _ref.data;
+	        return data;
+	      });
+	    }
+	  }, {
+	    key: 'get',
+	    value: function get(id) {
+	      var _this = this;
+	
+	      return this.getProducts().then(function (productList) {
+	        return _this.$q.when(productList.filter(function (data) {
+	          return data.id === id;
+	        })[0]);
+	      });
+	    }
 	  }]);
 	
 	  return ProductService;

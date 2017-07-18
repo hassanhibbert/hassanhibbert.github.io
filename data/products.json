@@ -1,0 +1,22 @@
+[{
+  "name": "Piña colada",
+  "price": "8.00",
+  "id": "1",
+  "url": "https://hassanhibbert.github.io/data/products.json",
+  "description": "The piña colada is a sweet cocktail made with rum, coconut cream or coconut milk, and pineapple juice",
+  "image": "http://snipcart-angular.netlify.com/images/pina-colada.3f31d970.png"
+}, {
+  "name": "Margarita",
+  "price": "9.00",
+  "id": "2",
+  "url": "https://hassanhibbert.github.io/data/products.json",
+  "description": "The margarita is a cocktail made with tequila and citrus fruit juice.",
+  "image": ""
+}, {
+  "name": "Beer",
+  "price": "5.00",
+  "id": "3",
+  "url": "https://hassanhibbert.github.io/data/products.json",
+  "description": "You know what beer is ;)",
+  "image": ""
+}]
