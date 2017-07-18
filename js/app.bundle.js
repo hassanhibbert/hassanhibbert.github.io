@@ -74,19 +74,20 @@
 	
 	  //$locationProvider.html5Mode(true).hashPrefix('');
 	
-	  $urlRouterProvider.otherwise('/products');
+	
 	  // $urlRouterProvider.when(($injector, $location) => {
 	  //   console.log($location.path())
 	  // });
+	
+	  $urlRouterProvider.when('', '/');
 	  $urlRouterProvider.rule(function ($injector, $location) {
 	    var path = $location.path();
 	    var match = path.match(/(.*)!\/{0,1}$/);
-	    console.log({ match: match, path: path });
 	    if (match) {
 	      return match[1];
 	    }
 	  });
-	  $urlRouterProvider.when('', '/');
+	  $urlRouterProvider.otherwise('/products');
 	}]).name;
 
 /***/ }),
