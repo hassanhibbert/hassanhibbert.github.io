@@ -87,7 +87,10 @@
 	      return match[1];
 	    }
 	  });
-	  $urlRouterProvider.otherwise('/products');
+	
+	  $urlRouterProvider.otherwise(function ($injector, $location) {
+	    console.log($location.path());
+	  });
 	}]).name;
 
 /***/ }),
@@ -45855,7 +45858,7 @@
 	  'ngInject';
 	
 	  $stateProvider.state('products', {
-	    url: '/products',
+	    url: '/',
 	    component: 'products',
 	    resolve: {
 	      productList: ["ProductService", function productList(ProductService) {
