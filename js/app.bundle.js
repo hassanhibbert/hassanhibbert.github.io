@@ -73,6 +73,17 @@
 	  'ngInject';
 	
 	  $locationProvider.html5Mode(true);
+	
+	  $urlRouterProvider.rule(function ($injector, $location) {
+	    var path = $location.path();
+	    var match = path.match(/(.*)!\/{0,1}$/);
+	
+	    if (match) {
+	      return match[1];
+	    }
+	  });
+	
+	  $urlRouterProvider.when('', '/products');
 	}]).name;
 
 /***/ }),
@@ -48250,7 +48261,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/products/products.html';
-	var html = "<nav-bar></nav-bar>\n\n\n<h1>Product Page: List of products</h1>\n\n<button\n\t\tclass=\"snipcart-add-item\"\n\t\tdata-item-id=\"2\"\n\t\tdata-item-name=\"Web Learning Course\"\n\t\tdata-item-price=\"29.99\"\n\t\tdata-item-url=\"/\"\n\t\tdata-item-description=\"A web app to learn new things.\">\n\tBuy My Special Software\n</button>\n<br><br>\n<a href=\"#\" class=\"snipcart-checkout\">Click here to checkout</a>\n<br><br>\n\n<div class=\"snipcart-summary\">\n\tNumber of items: <span class=\"snipcart-total-items\"></span>\n\tTotal price: <span class=\"snipcart-total-price\"></span>\n</div>";
+	var html = "<nav-bar></nav-bar>\n\n\n<h1>Product Page: List of products</h1>\n\n<button\n\t\tclass=\"snipcart-add-item\"\n\t\tdata-item-id=\"2\"\n\t\tdata-item-name=\"Web Learning Course\"\n\t\tdata-item-price=\"29.99\"\n\t\tdata-item-url=\"https://hassanhibbert.github.io/data/products.json\"\n\t\tdata-item-description=\"A web app to learn new things.\">\n\tBuy My Special Software\n</button>\n<br><br>\n<a href=\"#\" class=\"snipcart-checkout\">Click here to checkout</a>\n<br><br>\n\n<div class=\"snipcart-summary\">\n\tNumber of items: <span class=\"snipcart-total-items\"></span>\n\tTotal price: <span class=\"snipcart-total-price\"></span>\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
