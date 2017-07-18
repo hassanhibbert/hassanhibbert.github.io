@@ -76,25 +76,28 @@
     margin: 0; }
 .app {
   margin-left: 250px; }
-.nav-bar-brand ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background-color: #333; }
-
-.nav-bar-brand li a {
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none; }
-
-.nav-bar-brand li a:hover:not(.active) {
-  background-color: #111; }
-
-.nav-bar-brand .active {
-  background-color: #4CAF50; }
+.nav-bar-brand {
+  background-color: #470f6f; }
+  .nav-bar-brand ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; }
+  .nav-bar-brand li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    background-color: #470f6f; }
+  .nav-bar-brand li a:hover:not(.active) {
+    background-color: #5d1590; }
+  .nav-bar-brand .active {
+    background-color: #7d22bd; }
+  .nav-bar-brand .nav-bar-container {
+    width: 90%;
+    max-width: 92.3em;
+    margin: 0 auto; }
 .auth {
   background: #fff;
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -102,13 +105,18 @@
   padding: 20px 30px;
   width: 600px;
   margin: 50px auto 0; }
+  .auth .auth-form {
+    background: #fff; }
   .auth h1 {
-    margin: 0 0 10px; }
+    margin: 0 0 10px;
+    background: #fff; }
   .auth label {
     margin-bottom: 10px;
-    display: block; }
+    display: block;
+    background: #fff; }
   .auth input {
-    width: 100%; }
+    width: 100%;
+    background: #fff; }
   .auth__info {
     text-align: center;
     margin-top: 20px; }
@@ -117,7 +125,8 @@
       .auth__info a:hover {
         text-decoration: underline; }
   .auth .auth-button {
-    text-align: center; }
+    text-align: center;
+    background: #fff; }
 .contacts__empty {
   text-align: center;
   padding: 30px 0;
@@ -232,6 +241,33 @@
     -webkit-align-items: center;
     /* Safari */
     align-items: center; }
+.panel {
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.1);
+  background: #fff; }
+
+.panel-body {
+  padding: 30px; }
+
+.section {
+  margin-bottom: 30px; }
+
+.main-content {
+  clear: both;
+  width: 90%;
+  font-size: 0.8125em;
+  max-width: 92.3em;
+  margin: 0 auto;
+  padding: 1em 0px;
+  color: #333;
+  line-height: 1.5em;
+  position: relative; }
+  .main-content p {
+    font-size: 12px; }
+  .main-content h1 {
+    text-align: center;
+    padding: 33px; }
+  .main-content h2 {
+    margin-bottom: 5px; }
 * {
   box-sizing: border-box;
   margin: 0;
@@ -240,7 +276,7 @@
 body {
   font: 300 14px/1.4 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: #5c5c5c;
-  background: #FFFFFF; }
+  background: #fbfbfb; }
 
 a {
   color: #5c5c5c;
@@ -459,6 +495,25 @@ button {
 
 .flex-none {
   flex: none; }
+
+/*  GRID OF THREE   ============================================================================= */
+.span_3_of_3 {
+  width: 100%; }
+
+.span_2_of_3 {
+  width: 66.13%; }
+
+.span_1_of_3 {
+  width: 32.26%; }
+
+/*  GO FULL WIDTH AT LESS THAN 480 PIXELS */
+@media only screen and (max-width: 480px) {
+  .span_3_of_3 {
+    width: 100%; }
+  .span_2_of_3 {
+    width: 100%; }
+  .span_1_of_3 {
+    width: 100%; } }
 
 root {
   display: block; }

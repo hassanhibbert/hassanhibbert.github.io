@@ -74,7 +74,7 @@
 	
 	  //$locationProvider.html5Mode(true).hashPrefix('');
 	
-	  $urlRouterProvider.when('', '/');
+	  $urlRouterProvider.otherwise('/products');
 	  // $urlRouterProvider.when(($injector, $location) => {
 	  //   console.log($location.path())
 	  // });
@@ -86,6 +86,7 @@
 	      return match[1];
 	    }
 	  });
+	  $urlRouterProvider.when('', '/');
 	}]).name;
 
 /***/ }),
@@ -44705,7 +44706,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/auth-form/auth-form.html';
-	var html = "<form name=\"authForm\" novalidate ng-submit=\"$ctrl.submitForm();\">\n  <label ng-hide=\"$ctrl.isLoginForm\">\n    <input\n        type=\"text\"\n        placeholder=\"Enter your first name\"\n        ng-required=\"!$ctrl.isLoginForm\"\n        ng-model=\"$ctrl.user.firstName\">\n  </label>\n  <label>\n    <input\n      type=\"email\"\n      name=\"email\"\n      required=\"required\"\n      placeholder=\"Enter your email\"\n      ng-model=\"$ctrl.user.email\">\n  </label>\n  <label>\n    <input\n      type=\"password\"\n      name=\"password\"\n      required=\"required\"\n      placeholder=\"Enter your password\"\n      ng-model=\"$ctrl.user.password\">\n  </label>\n  <div class=\"auth-button\">\n    <button type=\"submit\" ng-disabled=\"authForm.$invalid\">\n      {{ $ctrl.button }}\n    </button>\n  </div>\n  <div ng-if=\"$ctrl.message\">\n    {{ $ctrl.message }}\n  </div>\n</form>\n";
+	var html = "<form name=\"authForm\" novalidate ng-submit=\"$ctrl.submitForm();\" class=\"auth-form\">\n  <label ng-hide=\"$ctrl.isLoginForm\">\n    <input\n        type=\"text\"\n        placeholder=\"Enter your first name\"\n        ng-required=\"!$ctrl.isLoginForm\"\n        ng-model=\"$ctrl.user.firstName\">\n  </label>\n  <label>\n    <input\n      type=\"email\"\n      name=\"email\"\n      required=\"required\"\n      placeholder=\"Enter your email\"\n      ng-model=\"$ctrl.user.email\">\n  </label>\n  <label>\n    <input\n      type=\"password\"\n      name=\"password\"\n      required=\"required\"\n      placeholder=\"Enter your password\"\n      ng-model=\"$ctrl.user.password\">\n  </label>\n  <div class=\"auth-button\">\n    <button type=\"submit\" ng-disabled=\"authForm.$invalid\">\n      {{ $ctrl.button }}\n    </button>\n  </div>\n  <div ng-if=\"$ctrl.message\">\n    {{ $ctrl.message }}\n  </div>\n</form>\n";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
@@ -44756,7 +44757,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/common/nav-bar/nav-bar.html';
-	var html = "<!--<header class=\"header\">-->\n  <!--<div class=\"header__fixed\">-->\n    <!--<div>-->\n      <!--<div class=\"header__brand\">-->\n        <!--Contacts-->\n        <!--<a ui-sref=\"new\" class=\"header__button header__button&#45;&#45;new-contact\">-->\n          <!--<i class=\"material-icons\">add_circle_outline</i>-->\n          <!--New Contact-->\n        <!--</a>-->\n      <!--</div>-->\n      <!--<div class=\"header__logout\">-->\n        <!--{{ ::$ctrl.user.email }}-->\n        <!--<a href=\"\" ng-click=\"$ctrl.onLogout();\">-->\n          <!--<span class=\"header__button\">-->\n            <!--<i class=\"material-icons\">power_settings_new</i>-->\n            <!--Logout-->\n          <!--</span>-->\n        <!--</a>-->\n      <!--</div>-->\n    <!--</div>-->\n  <!--</div>-->\n<!--</header>-->\n<div class=\"nav-bar-brand\">\n  <ul class=\"flex\">\n    <li><a class=\"active\" href=\"#/products\">Products</a></li>\n    <li><a href=\"#/auth/login\">Membership Login</a></li>\n    <!--<li><a href=\"#contact\">Contact</a></li>-->\n    <!--<li><a href=\"#about\">About</a></li>-->\n  </ul>\n</div>";
+	var html = "<!--<header class=\"header\">-->\n  <!--<div class=\"header__fixed\">-->\n    <!--<div>-->\n      <!--<div class=\"header__brand\">-->\n        <!--Contacts-->\n        <!--<a ui-sref=\"new\" class=\"header__button header__button&#45;&#45;new-contact\">-->\n          <!--<i class=\"material-icons\">add_circle_outline</i>-->\n          <!--New Contact-->\n        <!--</a>-->\n      <!--</div>-->\n      <!--<div class=\"header__logout\">-->\n        <!--{{ ::$ctrl.user.email }}-->\n        <!--<a href=\"\" ng-click=\"$ctrl.onLogout();\">-->\n          <!--<span class=\"header__button\">-->\n            <!--<i class=\"material-icons\">power_settings_new</i>-->\n            <!--Logout-->\n          <!--</span>-->\n        <!--</a>-->\n      <!--</div>-->\n    <!--</div>-->\n  <!--</div>-->\n<!--</header>-->\n<div class=\"nav-bar-brand\">\n    <div class=\"flex nav-bar-container\">\n      <ul>\n        <li><a href=\"/#/\">COACH S. RENEE</a></li>\n      </ul>\n\n      <ul class=\" flex-end\">\n        <li><a ui-sref-active=\"active\" ui-sref=\"products\">Products</a></li>\n        <li><a ui-sref-active=\"active\" ui-sref=\"auth.login\">Membership Login</a></li>\n        <!--<li><a href=\"#contact\">Contact</a></li>-->\n        <!--<li><a href=\"#about\">About</a></li>-->\n      </ul>\n    </div>\n\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
@@ -45917,7 +45918,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/products/products.html';
-	var html = "<nav-bar></nav-bar>\n\n\n<h1>Product Page: List of products</h1>\n\n<button\n\t\tclass=\"snipcart-add-item\"\n\t\tdata-item-id=\"2\"\n\t\tdata-item-name=\"Web Learning Course\"\n\t\tdata-item-price=\"29.99\"\n\t\tdata-item-url=\"https://hassanhibbert.github.io/data/products.json\"\n\t\tdata-item-description=\"A web app to learn new things.\">\n\tBuy My Special Software\n</button>\n<br><br>\n<a href=\"#\" class=\"snipcart-checkout\">Click here to checkout</a>\n<br><br>\n\n<div class=\"snipcart-summary\">\n\tNumber of items: <span class=\"snipcart-total-items\"></span>\n\tTotal price: <span class=\"snipcart-total-price\"></span>\n</div>";
+	var html = "\n<nav-bar></nav-bar>\n<div class=\"main-content\">\n\n\t<h1>Product Page: List of products</h1>\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #2</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #3</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #2</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #3</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\n\n\t<button\n\t\t\tclass=\"snipcart-add-item\"\n\t\t\tdata-item-id=\"2\"\n\t\t\tdata-item-name=\"Web Learning Course\"\n\t\t\tdata-item-price=\"29.99\"\n\t\t\tdata-item-url=\"https://hassanhibbert.github.io/data/products.json\"\n\t\t\tdata-item-description=\"A web app to learn new things.\">\n\t\tBuy My Special Software\n\t</button>\n\t<br><br>\n\t<a href=\"#\" class=\"snipcart-checkout\">Click here to checkout</a>\n\t<br><br>\n\n\t<div class=\"snipcart-summary\">\n\t\tNumber of items: <span class=\"snipcart-total-items\"></span>\n\t\tTotal price: <span class=\"snipcart-total-price\"></span>\n\t</div>\n\n\n</div>\n\n\n\n";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
