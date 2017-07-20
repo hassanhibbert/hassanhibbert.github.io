@@ -1,22 +1,15 @@
 [{
-  "name": "Piña colada",
-  "price": "8.00",
-  "id": "1",
+  "name": "There Is More Inside Self-Image & Attitude Development Program",
+  "price": "197.00",
+  "id": "CSR-0001",
   "url": "https://hassanhibbert.github.io/data/products.json",
-  "description": "The piña colada is a sweet cocktail made with rum, coconut cream or coconut milk, and pineapple juice",
-  "image": "http://snipcart-angular.netlify.com/images/pina-colada.3f31d970.png"
-}, {
-  "name": "Margarita",
-  "price": "9.00",
-  "id": "2",
-  "url": "https://hassanhibbert.github.io/data/products.json",
-  "description": "The margarita is a cocktail made with tequila and citrus fruit juice.",
+  "description": "7-Module Professional Advancement Online Course",
   "image": ""
 }, {
-  "name": "Beer",
-  "price": "5.00",
-  "id": "3",
+  "name": "UnBottle Your Business Brand with S. Renee Online Program",
+  "price": "197.00",
+  "id": "CSR-0002",
   "url": "https://hassanhibbert.github.io/data/products.json",
-  "description": "You know what beer is ;)",
+  "description": "13-Module Professional Advancement Online Course",
   "image": ""
 }]

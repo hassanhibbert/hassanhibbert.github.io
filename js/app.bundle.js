@@ -65,7 +65,7 @@
 	
 	var _components = __webpack_require__(26);
 	
-	__webpack_require__(103);
+	__webpack_require__(104);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -40610,11 +40610,11 @@
 	
 	var _auth = __webpack_require__(27);
 	
-	var _contact = __webpack_require__(56);
+	var _contact = __webpack_require__(57);
 	
-	var _membersArea = __webpack_require__(84);
+	var _membersArea = __webpack_require__(85);
 	
-	var _product = __webpack_require__(91);
+	var _product = __webpack_require__(92);
 	
 	var components = exports.components = angular.module('components', [_auth.auth, _contact.contact, _membersArea.membersArea, _product.product]).name;
 
@@ -40647,11 +40647,11 @@
 	
 	var _register = __webpack_require__(43);
 	
-	var _authForm = __webpack_require__(46);
+	var _authForm = __webpack_require__(47);
 	
-	var _navBar = __webpack_require__(49);
+	var _navBar = __webpack_require__(50);
 	
-	__webpack_require__(54);
+	__webpack_require__(55);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -40666,7 +40666,7 @@
 	
 	var app = exports.app = _firebase2.default.initializeApp(firebaseConfig);
 	
-	var auth = exports.auth = angular.module('components.auth', [_angularfire2.default, _angularUiRouter2.default, _login.login, _register.register, _authForm.authForm, _navBar.navBar]).config(["$firebaseRefProvider", "$urlRouterProvider", function ($firebaseRefProvider, $urlRouterProvider) {
+	var auth = exports.auth = angular.module('components.auth', [_angularfire2.default, _angularUiRouter2.default, _login.login, _register.register, _authForm.authForm, _navBar.navBar]).config(["$firebaseRefProvider", function ($firebaseRefProvider) {
 	  'ngInject';
 	
 	  $firebaseRefProvider.registerUrl({
@@ -40691,7 +40691,7 @@
 	    });
 	  });
 	  $transitions.onStart({
-	    to: 'auth.*'
+	    to: 'auth.login'
 	  }, function () {
 	    if (AuthService.isAuthenticated()) return $state.target('app');
 	  });
@@ -44396,12 +44396,16 @@
 	    }
 	  }, {
 	    key: 'createUserAccount',
-	    value: function createUserAccount(user) {
+	    value: function createUserAccount() {
+	      var firstName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+	      var lastName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+	      var email = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+	
 	      var ref = _firebase2.default.database().ref('users');
 	      var userObject = this.$firebaseObject(ref.child(this.authData.uid));
-	      userObject.firstName = user.firstName || '';
-	      userObject.lastName = user.lastName || '';
-	      userObject.email = user.email || '';
+	      userObject.firstName = firstName;
+	      userObject.lastName = lastName;
+	      userObject.email = email;
 	      return userObject.$save();
 	    }
 	  }, {
@@ -44457,7 +44461,16 @@
 	    template: '<div ui-view></div>'
 	  }).state('auth.login', {
 	    url: '/login',
-	    component: 'login'
+	    component: 'login',
+	    params: { orderItems: false },
+	    resolve: {
+	      cartOrderItems: ["$transition$", "$state", "ProductService", function cartOrderItems($transition$, $state, ProductService) {
+	        'ngInject';
+	
+	        var orderItems = $transition$.params().orderItems;
+	        return $q.when(orderItems);
+	      }]
+	    }
 	  });
 	  //$urlRouterProvider.otherwise('/auth/login');
 	}]).name;
@@ -44485,6 +44498,9 @@
 	
 	var loginComponent = exports.loginComponent = {
 	  templateUrl: _login2.default,
+	  bindings: {
+	    cartOrderItems: '<'
+	  },
 	  controller: function () {
 	    LoginComponent.$inject = ["AuthService", "$state"];
 	    function LoginComponent(AuthService, $state) {
@@ -44499,6 +44515,11 @@
 	    _createClass(LoginComponent, [{
 	      key: '$onInit',
 	      value: function $onInit() {
+	        this.cartOrderItems.forEach(function (order) {
+	          Snipcart.api.items.add(order).then(function (item) {
+	            console.log(item);
+	          });
+	        });
 	        this.error = null;
 	        this.user = {
 	          email: '',
@@ -44511,6 +44532,7 @@
 	        var _this = this;
 	
 	        return this.authService.login(event.user).then(function (user) {
+	          Snipcart.api.modal.show();
 	          //console.log('event.user', event.user)
 	          //console.log('is email verified: ', user.emailVerified, user.email);
 	          _this.$state.go('app');
@@ -44550,14 +44572,27 @@
 	
 	var _register = __webpack_require__(44);
 	
+	var _compareTo = __webpack_require__(46);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var register = exports.register = angular.module('components.auth.register', [_angularUiRouter2.default]).component('register', _register.registerComponent).config(["$stateProvider", function ($stateProvider) {
+	var register = exports.register = angular.module('components.auth.register', [_angularUiRouter2.default]).component('register', _register.registerComponent).directive('compareTo', _compareTo.compareTo).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
 	
 	  $stateProvider.state('auth.register', {
 	    url: '/register',
-	    component: 'register'
+	    component: 'register',
+	    params: { isNewUser: false },
+	    resolve: {
+	      reviewPage: ["$transition$", "$state", function reviewPage($transition$, $state) {
+	        'ngInject';
+	
+	        var isNewUser = $transition$.params().isNewUser;
+	        if (!isNewUser) {
+	          $state.go('auth.login');
+	        }
+	      }]
+	    }
 	  });
 	}]).name;
 
@@ -44578,6 +44613,10 @@
 	
 	var _register2 = _interopRequireDefault(_register);
 	
+	var _firebase = __webpack_require__(28);
+	
+	var _firebase2 = _interopRequireDefault(_firebase);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -44585,37 +44624,55 @@
 	var registerComponent = exports.registerComponent = {
 	  templateUrl: _register2.default,
 	  controller: function () {
-	    RegisterComponent.$inject = ["AuthService", "$state"];
-	    function RegisterComponent(AuthService, $state) {
+	    RegisterComponent.$inject = ["AuthService", "$state", "$firebaseAuth"];
+	    function RegisterComponent(AuthService, $state, $firebaseAuth) {
 	      'ngInject';
 	
 	      _classCallCheck(this, RegisterComponent);
 	
 	      this.authService = AuthService;
 	      this.$state = $state;
+	      this.auth = $firebaseAuth(_firebase2.default.auth());
 	    }
 	
 	    _createClass(RegisterComponent, [{
 	      key: '$onInit',
 	      value: function $onInit() {
 	        this.error = null;
-	        this.user = {
-	          email: '',
-	          password: '',
-	          firstName: ''
-	        };
+	        this.user = { email: '', password: '' };
+	        var currentUser = this.authService.getUser();
+	        console.log({ currentUser: currentUser });
+	        if (currentUser) {
+	          console.log(currentUser);
+	          this.user.email = currentUser.email;
+	        }
+	      }
+	    }, {
+	      key: 'updateAccount',
+	      value: function updateAccount() {
+	        var _this = this;
+	
+	        console.log(this.user.password);
+	        //return
+	        this.auth.$updatePassword(this.user.password).then(function () {
+	          console.log('password changed');
+	          _this.$state.go('app');
+	        }, function (reason) {
+	          _this.error = reason.message;
+	          _this.message = reason.message;
+	        });
 	      }
 	    }, {
 	      key: 'createUser',
 	      value: function createUser(event) {
-	        var _this = this;
-	
-	        return this.authService.register(event.user).then(function (user) {
-	          _this.authService.createUserAccount(event.user);
-	          _this.$state.go('app');
-	        }, function (reason) {
-	          _this.error = reason.message;
-	        });
+	        // return this.authService
+	        //   .register(event.user)
+	        //   .then((user) => {
+	        //     this.authService.createUserAccount(event.user);
+	        //     this.$state.go('app');
+	        //   }, reason => {
+	        //     this.error = reason.message;
+	        //   });
 	      }
 	    }]);
 	
@@ -44628,12 +44685,41 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/register/register.html';
-	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Register</h1>\n  <auth-form\n    user=\"$ctrl.user\"\n    message=\"{{ $ctrl.error }}\"\n    button=\"Create user\"\n    on-submit=\"$ctrl.createUser($event);\">\n  </auth-form>\n</div>\n\n<div class=\"auth__info\">\n  <a href=\"\" ui-sref=\"auth.login\">\n    Already have an account? Log in here.\n  </a>\n</div>\n";
+	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Register</h1>\n  <p>Please complete the registration form below to gain access to your purchased items.</p>\n  <!--<hr>-->\n  <!--<auth-form-->\n    <!--user=\"$ctrl.user\"-->\n    <!--message=\"{{ $ctrl.error }}\"-->\n    <!--button=\"Create Account &amp; Gain Access\"-->\n    <!--on-submit=\"$ctrl.createUser($event);\">-->\n  <!--</auth-form>-->\n\n  <form name=\"authForm\" novalidate ng-submit=\"$ctrl.submitForm();\" class=\"auth-form\">\n    <label ng-hide=\"$ctrl.isLoginForm\">\n      <input\n          type=\"text\"\n          placeholder=\"email@sample.com\"\n          ng-value=\"$ctrl.user.email\"\n          readonly>\n    </label>\n    <label>\n      <input\n          type=\"password\"\n          name=\"password\"\n          required=\"required\"\n          placeholder=\"Enter your password\"\n          ng-model=\"$ctrl.user.password\">\n    </label>\n    <label>\n      <input\n          type=\"password\"\n          name=\"confirmPassword\"\n          required=\"required\"\n          placeholder=\"Enter your password\"\n          ng-model=\"$ctrl.user.confirmPassword\"\n          compare-to=\"$ctrl.user.password\">\n    </label>\n    <div class=\"auth-button\">\n      <button class=\"btn btn-primary\" type=\"submit\" ng-click=\"$ctrl.updateAccount()\" ng-disabled=\"authForm.$invalid\">\n        Create Account\n      </button>\n    </div>\n    <div ng-if=\"$ctrl.message\">{{ $ctrl.message }}</div>\n  </form>\n</div>\n\n<div class=\"auth__info\">\n  <a href=\"\" ui-sref=\"auth.login\">\n    Alr'eady have an account? Log in here.\n  </a>\n</div>\n";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
 /***/ }),
 /* 46 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.compareTo = compareTo;
+	function compareTo() {
+	  return {
+	    restrict: 'A',
+	    require: 'ngModel',
+	    scope: {
+	      otherModuleValue: '=compareTo'
+	    },
+	    link: function link(scope, element, attributes, ngModel) {
+	      ngModel.$validators.compareTo = function (modelValue) {
+	        return modelValue == scope.otherModelValue;
+	      };
+	
+	      scope.$watch("otherModelValue", function () {
+	        ngModel.$validate();
+	      });
+	    }
+	  };
+	};
+
+/***/ }),
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44643,12 +44729,12 @@
 	});
 	exports.authForm = undefined;
 	
-	var _authForm = __webpack_require__(47);
+	var _authForm = __webpack_require__(48);
 	
 	var authForm = exports.authForm = angular.module('components.auth.auth-form', []).component('authForm', _authForm.formComponent).name;
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44660,7 +44746,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _authForm = __webpack_require__(48);
+	var _authForm = __webpack_require__(49);
 	
 	var _authForm2 = _interopRequireDefault(_authForm);
 	
@@ -44707,30 +44793,13 @@
 	};
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/auth-form/auth-form.html';
 	var html = "<form name=\"authForm\" novalidate ng-submit=\"$ctrl.submitForm();\" class=\"auth-form\">\n  <label ng-hide=\"$ctrl.isLoginForm\">\n    <input\n        type=\"text\"\n        placeholder=\"Enter your first name\"\n        ng-required=\"!$ctrl.isLoginForm\"\n        ng-model=\"$ctrl.user.firstName\">\n  </label>\n  <label>\n    <input\n      type=\"email\"\n      name=\"email\"\n      required=\"required\"\n      placeholder=\"Enter your email\"\n      ng-model=\"$ctrl.user.email\">\n  </label>\n  <label>\n    <input\n      type=\"password\"\n      name=\"password\"\n      required=\"required\"\n      placeholder=\"Enter your password\"\n      ng-model=\"$ctrl.user.password\">\n  </label>\n  <div class=\"auth-button\">\n    <button class=\"btn btn-primary\" type=\"submit\" ng-disabled=\"authForm.$invalid\">\n      {{ $ctrl.button }}\n    </button>\n  </div>\n  <div ng-if=\"$ctrl.message\">\n    {{ $ctrl.message }}\n  </div>\n</form>\n";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
-
-/***/ }),
-/* 49 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.navBar = undefined;
-	
-	var _navBar = __webpack_require__(50);
-	
-	__webpack_require__(52);
-	
-	var navBar = exports.navBar = angular.module('common.nav-bar', []).component('navBar', _navBar.navBarComponent).name;
 
 /***/ }),
 /* 50 */
@@ -44741,47 +44810,115 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.navBarComponent = undefined;
+	exports.navBar = undefined;
 	
 	var _navBar = __webpack_require__(51);
+	
+	__webpack_require__(53);
+	
+	var navBar = exports.navBar = angular.module('common.nav-bar', []).component('navBar', _navBar.navBarComponent).name;
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.navBarComponent = undefined;
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _navBar = __webpack_require__(52);
 	
 	var _navBar2 = _interopRequireDefault(_navBar);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var navBarComponent = exports.navBarComponent = {
 	  bindings: {
 	    // user: '<',
 	    // onLogout: '&',
 	  },
-	  templateUrl: _navBar2.default
+	  templateUrl: _navBar2.default,
+	  controller: function () {
+	    NavBarController.$inject = ["AuthService", "$state"];
+	    function NavBarController(AuthService, $state) {
+	      'ngInject';
+	
+	      var _this = this;
+	
+	      _classCallCheck(this, NavBarController);
+	
+	      this.$state = $state;
+	      this.authService = AuthService;
+	      this.checkCartStatus = function () {
+	        var count = Snipcart.api.items.count();
+	        _this.cartCount = count;
+	      };
+	
+	      Snipcart.subscribe('cart.closed', this.checkCartStatus);
+	      Snipcart.subscribe('item.added', this.checkCartStatus);
+	      Snipcart.subscribe('cart.ready', this.checkCartStatus);
+	    }
+	
+	    _createClass(NavBarController, [{
+	      key: '$onDestroy',
+	      value: function $onDestroy() {
+	        Snipcart.unsubscribe('item.added');
+	        Snipcart.unsubscribe('cart.closed');
+	        Snipcart.unsubscribe('cart.ready');
+	      }
+	    }, {
+	      key: '$onInit',
+	      value: function $onInit() {
+	        this.authStatus = this.authService.isAuthenticated();
+	        this.checkCartStatus();
+	      }
+	    }, {
+	      key: 'logout',
+	      value: function logout() {
+	        var _this2 = this;
+	
+	        return this.authService.logout().then(function () {
+	          _this2.$state.go('auth.login');
+	        });
+	      }
+	    }]);
+	
+	    return NavBarController;
+	  }()
 	};
-
-/***/ }),
-/* 51 */
-/***/ (function(module, exports) {
-
-	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/common/nav-bar/nav-bar.html';
-	var html = "<!--<header class=\"header\">-->\n  <!--<div class=\"header__fixed\">-->\n    <!--<div>-->\n      <!--<div class=\"header__brand\">-->\n        <!--Contacts-->\n        <!--<a ui-sref=\"new\" class=\"header__button header__button&#45;&#45;new-contact\">-->\n          <!--<i class=\"material-icons\">add_circle_outline</i>-->\n          <!--New Contact-->\n        <!--</a>-->\n      <!--</div>-->\n      <!--<div class=\"header__logout\">-->\n        <!--{{ ::$ctrl.user.email }}-->\n        <!--<a href=\"\" ng-click=\"$ctrl.onLogout();\">-->\n          <!--<span class=\"header__button\">-->\n            <!--<i class=\"material-icons\">power_settings_new</i>-->\n            <!--Logout-->\n          <!--</span>-->\n        <!--</a>-->\n      <!--</div>-->\n    <!--</div>-->\n  <!--</div>-->\n<!--</header>-->\n<div class=\"nav-bar-brand\">\n    <div class=\"flex nav-bar-container\">\n      <ul>\n        <li><a class=\"logo\" href=\"/#/\">COACH S. RENEE</a></li>\n      </ul>\n\n      <ul class=\" flex-end\">\n        <li class=\"flex flex-align-center flex-end\">\n          <div class=\"snipcart-summary\">\n            <a href=\"#\" class=\"snipcart-checkout\">\n              <!--<i class=\"material-icons\">shopping_cart</i>-->\n              Items In Cart: <span class=\"snipcart-total-items\"></span>\n            </a>\n          </div>\n        </li>\n        <li><a ui-sref-active=\"active\" ui-sref=\"products\">Products</a></li>\n        <li><a ui-sref-active=\"active\" ui-sref=\"auth.login\">Membership Login</a></li>\n        <!--<li><a href=\"#contact\">Contact</a></li>-->\n        <!--<li><a href=\"#about\">About</a></li>-->\n      </ul>\n    </div>\n\n</div>";
-	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
-	module.exports = path;
 
 /***/ }),
 /* 52 */
 /***/ (function(module, exports) {
 
-	// removed by extract-text-webpack-plugin
+	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/common/nav-bar/nav-bar.html';
+	var html = "<div class=\"nav-bar-brand\">\n  <div class=\"flex nav-bar-container\">\n    <ul>\n      <li><a class=\"logo\" href=\"/#/\">COACH S. RENEE</a></li>\n    </ul>\n    <ul class=\"flex-end\">\n      <li><a ui-sref-active=\"active\" ui-sref=\"products\">Products</a></li>\n      <li ng-if=\"!$ctrl.authStatus\"><a ui-sref-active=\"active\" ui-sref=\"auth.login\">Login</a></li>\n      <li ng-if=\"$ctrl.authStatus\"><a href=\"\" ng-click=\"$ctrl.logout();\">Logout</a></li>\n      <li>\n        <a href=\"#\" class=\"snipcart-checkout\">\n          <i class=\"material-icons\">shopping_cart</i>\n          <span>Cart ({{$ctrl.cartCount}})</span>\n        </a>\n      </li>\n    </ul>\n  </div>\n</div>";
+	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
+	module.exports = path;
 
 /***/ }),
-/* 53 */,
-/* 54 */
+/* 53 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 55 */,
-/* 56 */
+/* 54 */,
+/* 55 */
+/***/ (function(module, exports) {
+
+	// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 56 */,
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44791,26 +44928,26 @@
 	});
 	exports.contact = undefined;
 	
-	var _contact = __webpack_require__(57);
+	var _contact = __webpack_require__(58);
 	
-	var _lengthCheck = __webpack_require__(58);
+	var _lengthCheck = __webpack_require__(59);
 	
-	var _contacts = __webpack_require__(59);
+	var _contacts = __webpack_require__(60);
 	
-	var _contact2 = __webpack_require__(65);
+	var _contact2 = __webpack_require__(66);
 	
-	var _contactNew = __webpack_require__(70);
+	var _contactNew = __webpack_require__(71);
 	
-	var _contactDetail = __webpack_require__(73);
+	var _contactDetail = __webpack_require__(74);
 	
-	var _contactEdit = __webpack_require__(78);
+	var _contactEdit = __webpack_require__(79);
 	
-	var _contactTag = __webpack_require__(81);
+	var _contactTag = __webpack_require__(82);
 	
 	var contact = exports.contact = angular.module('components.contact', [_contacts.contacts, _contact2.contactSingle, _contactNew.contactNew, _contactDetail.contactDetail, _contactEdit.contactEdit, _contactTag.contactTag]).service('ContactService', _contact.ContactService).directive('lengthCheck', _lengthCheck.lengthCheck).name;
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44874,7 +45011,7 @@
 	}();
 
 /***/ }),
-/* 58 */
+/* 59 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -44882,31 +45019,28 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.lengthCheck = lengthCheck;
-	function lengthCheck() {
+	exports.compareTo = compareTo;
+	function compareTo() {
 	  return {
 	    restrict: 'A',
 	    require: 'ngModel',
-	    compile: function compile($elem) {
-	      $elem.addClass('dynamic-input');
-	      return function ($scope, $element, $attrs, $ctrl) {
-	        var dynamicClass = 'dynamic-input--no-contents';
-	        $scope.$watch(function () {
-	          return $ctrl.$viewValue;
-	        }, function (newValue) {
-	          if (newValue) {
-	            $element.removeClass(dynamicClass);
-	          } else {
-	            $element.addClass(dynamicClass);
-	          }
-	        });
+	    scope: {
+	      otherModuleValue: '=compareTo'
+	    },
+	    link: function link(scope, element, attributes, ngModel) {
+	      ngModel.$validators.compareTo = function (modelValue) {
+	        return modelValue == scope.otherModelValue;
 	      };
+	
+	      scope.$watch("otherModelValue", function () {
+	        ngModel.$validate();
+	      });
 	    }
 	  };
-	}
+	};
 
 /***/ }),
-/* 59 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44920,11 +45054,11 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _contacts = __webpack_require__(60);
+	var _contacts = __webpack_require__(61);
 	
-	var _contacts2 = __webpack_require__(62);
+	var _contacts2 = __webpack_require__(63);
 	
-	__webpack_require__(63);
+	__webpack_require__(64);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -44956,7 +45090,7 @@
 	}]).name;
 
 /***/ }),
-/* 60 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44968,7 +45102,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contacts = __webpack_require__(61);
+	var _contacts = __webpack_require__(62);
 	
 	var _contacts2 = _interopRequireDefault(_contacts);
 	
@@ -45012,7 +45146,7 @@
 	};
 
 /***/ }),
-/* 61 */
+/* 62 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contacts/contacts.html';
@@ -45021,7 +45155,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 62 */
+/* 63 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -45039,14 +45173,14 @@
 	}
 
 /***/ }),
-/* 63 */
+/* 64 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 64 */,
-/* 65 */
+/* 65 */,
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45056,14 +45190,14 @@
 	});
 	exports.contactSingle = undefined;
 	
-	var _contact = __webpack_require__(66);
+	var _contact = __webpack_require__(67);
 	
-	__webpack_require__(68);
+	__webpack_require__(69);
 	
 	var contactSingle = exports.contactSingle = angular.module('components.contact.contact', []).component('contact', _contact.contactComponent).name;
 
 /***/ }),
-/* 66 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45075,7 +45209,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contact = __webpack_require__(67);
+	var _contact = __webpack_require__(68);
 	
 	var _contact2 = _interopRequireDefault(_contact);
 	
@@ -45112,7 +45246,7 @@
 	};
 
 /***/ }),
-/* 67 */
+/* 68 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact/contact.html';
@@ -45121,14 +45255,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 68 */
+/* 69 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 69 */,
-/* 70 */
+/* 70 */,
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45142,7 +45276,7 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _contactNew = __webpack_require__(71);
+	var _contactNew = __webpack_require__(72);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -45157,7 +45291,7 @@
 	}]).name;
 
 /***/ }),
-/* 71 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45169,7 +45303,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contactNew = __webpack_require__(72);
+	var _contactNew = __webpack_require__(73);
 	
 	var _contactNew2 = _interopRequireDefault(_contactNew);
 	
@@ -45225,7 +45359,7 @@
 	};
 
 /***/ }),
-/* 72 */
+/* 73 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact-new/contact-new.html';
@@ -45234,7 +45368,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 73 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45244,14 +45378,14 @@
 	});
 	exports.contactDetail = undefined;
 	
-	var _contactDetail = __webpack_require__(74);
+	var _contactDetail = __webpack_require__(75);
 	
-	__webpack_require__(76);
+	__webpack_require__(77);
 	
 	var contactDetail = exports.contactDetail = angular.module('components.contact.contact-detail', []).component('contactDetail', _contactDetail.contactDetailComponent).name;
 
 /***/ }),
-/* 74 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45263,7 +45397,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contactDetail = __webpack_require__(75);
+	var _contactDetail = __webpack_require__(76);
 	
 	var _contactDetail2 = _interopRequireDefault(_contactDetail);
 	
@@ -45331,7 +45465,7 @@
 	};
 
 /***/ }),
-/* 75 */
+/* 76 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact-detail/contact-detail.html';
@@ -45340,14 +45474,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 76 */
+/* 77 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 77 */,
-/* 78 */
+/* 78 */,
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45361,7 +45495,7 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _contactEdit = __webpack_require__(79);
+	var _contactEdit = __webpack_require__(80);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -45384,7 +45518,7 @@
 	}]).name;
 
 /***/ }),
-/* 79 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45396,7 +45530,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contactEdit = __webpack_require__(80);
+	var _contactEdit = __webpack_require__(81);
 	
 	var _contactEdit2 = _interopRequireDefault(_contactEdit);
 	
@@ -45453,7 +45587,7 @@
 	};
 
 /***/ }),
-/* 80 */
+/* 81 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact-edit/contact-edit.html';
@@ -45462,7 +45596,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 81 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45472,12 +45606,12 @@
 	});
 	exports.contactTag = undefined;
 	
-	var _contactTag = __webpack_require__(82);
+	var _contactTag = __webpack_require__(83);
 	
 	var contactTag = exports.contactTag = angular.module('components.contact.contact-tag', []).component('contactTag', _contactTag.contactTagComponent).name;
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45489,7 +45623,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contactTag = __webpack_require__(83);
+	var _contactTag = __webpack_require__(84);
 	
 	var _contactTag2 = _interopRequireDefault(_contactTag);
 	
@@ -45538,30 +45672,13 @@
 	};
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact-tag/contact-tag.html';
 	var html = "<div class=\"contact__field contact__field--long\">\n  <label>Tag</label>\n  <ul>\n    <li class=\"contact-card__pill contact-card__pill--{{ tag }}\"\n      ng-repeat=\"tag in ::$ctrl.tags\"\n      ng-class=\"{ 'contact__pill--active': $ctrl.tag == tag }\">\n      <a href=\"\" ng-click=\"$ctrl.updateTag(tag);\">{{ ::tag }}</a>\n    </li>\n  </ul>\n</div>\n";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
-
-/***/ }),
-/* 84 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.membersArea = undefined;
-	
-	var _membersArea = __webpack_require__(85);
-	
-	var _membersArea2 = __webpack_require__(90);
-	
-	var membersArea = exports.membersArea = angular.module('components.members-area', [_membersArea.membersAreaPage]).service('MembersAreaService', _membersArea2.MembersAreaService).name;
 
 /***/ }),
 /* 85 */
@@ -45572,11 +45689,28 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.membersAreaPage = undefined;
+	exports.membersArea = undefined;
 	
 	var _membersArea = __webpack_require__(86);
 	
-	__webpack_require__(88);
+	var _membersArea2 = __webpack_require__(91);
+	
+	var membersArea = exports.membersArea = angular.module('components.members-area', [_membersArea.membersAreaPage]).service('MembersAreaService', _membersArea2.MembersAreaService).name;
+
+/***/ }),
+/* 86 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.membersAreaPage = undefined;
+	
+	var _membersArea = __webpack_require__(87);
+	
+	__webpack_require__(89);
 	
 	var membersAreaPage = exports.membersAreaPage = angular.module('components.members-area.members-area', []).component('membersArea', _membersArea.membersAreaComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -45586,12 +45720,14 @@
 	    url: '/members-area',
 	    component: 'membersArea',
 	    resolve: {
+	      purchasedData: ["MembersAreaService", function purchasedData(MembersAreaService) {
+	        'ngInject';
+	
+	        return MembersAreaService.getPurchasedProducts().$loaded();
+	      }],
 	      user: ["MembersAreaService", function user(MembersAreaService) {
 	        'ngInject';
 	
-	        MembersAreaService.getImage().then(function (url) {
-	          console.log('image url', url);
-	        });
 	        return MembersAreaService.getUserProfile().$loaded();
 	      }]
 	    }
@@ -45599,7 +45735,7 @@
 	}]).name;
 
 /***/ }),
-/* 86 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45611,7 +45747,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _membersArea = __webpack_require__(87);
+	var _membersArea = __webpack_require__(88);
 	
 	var _membersArea2 = _interopRequireDefault(_membersArea);
 	
@@ -45621,7 +45757,8 @@
 	
 	var membersAreaComponent = exports.membersAreaComponent = {
 	  bindings: {
-	    user: '<'
+	    user: '<',
+	    purchasedData: '<'
 	  },
 	  templateUrl: _membersArea2.default,
 	  controller: function () {
@@ -45637,15 +45774,8 @@
 	
 	    _createClass(MembersAreaComponent, [{
 	      key: '$onInit',
-	      value: function $onInit() {}
-	    }, {
-	      key: 'logout',
-	      value: function logout() {
-	        var _this = this;
-	
-	        return this.authService.logout().then(function () {
-	          _this.$state.go('auth.login');
-	        });
+	      value: function $onInit() {
+	        console.log('allowed courses', this.purchasedData);
 	      }
 	    }]);
 	
@@ -45654,7 +45784,7 @@
 	};
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/members-area/members-area/members-area.html';
@@ -45663,14 +45793,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 89 */,
-/* 90 */
+/* 90 */,
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45702,6 +45832,7 @@
 	    this.authService = AuthService;
 	    //console.log('MembersAreaService:db access')
 	    this.ref = _firebase2.default.database().ref('users');
+	    this.perchasesRef = _firebase2.default.database().ref('purchases');
 	  }
 	
 	  _createClass(MembersAreaService, [{
@@ -45711,44 +45842,21 @@
 	
 	    }
 	  }, {
+	    key: 'getPurchasedProducts',
+	    value: function getPurchasedProducts() {
+	      var userId = this.authService.getUser().uid;
+	      return this.$firebaseArray(this.perchasesRef.child(userId));
+	    }
+	  }, {
 	    key: 'getUserProfile',
 	    value: function getUserProfile() {
 	      var userId = this.authService.getUser().uid;
-	      //console.log('what is this',userId)
 	      return this.$firebaseObject(this.ref.child(userId));
-	    }
-	  }, {
-	    key: 'getImage',
-	    value: function getImage() {
-	      var storage = _firebase2.default.storage();
-	      var storageRef = storage.refFromURL('gs://coach-srenee.appspot.com/bottle.jpg');
-	      return storageRef.getDownloadURL();
 	    }
 	  }]);
 	
 	  return MembersAreaService;
 	}();
-
-/***/ }),
-/* 91 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.product = undefined;
-	
-	var _product = __webpack_require__(92);
-	
-	var _products = __webpack_require__(97);
-	
-	var _product2 = __webpack_require__(102);
-	
-	var _navBar = __webpack_require__(49);
-	
-	var product = exports.product = angular.module('components.product', [_product.productSingle, _products.products, _navBar.navBar]).service('ProductService', _product2.ProductService).name;
 
 /***/ }),
 /* 92 */
@@ -45759,11 +45867,32 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.productSingle = undefined;
+	exports.product = undefined;
 	
 	var _product = __webpack_require__(93);
 	
-	__webpack_require__(95);
+	var _products = __webpack_require__(98);
+	
+	var _product2 = __webpack_require__(103);
+	
+	var _navBar = __webpack_require__(50);
+	
+	var product = exports.product = angular.module('components.product', [_product.productSingle, _products.products, _navBar.navBar]).service('ProductService', _product2.ProductService).name;
+
+/***/ }),
+/* 93 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.productSingle = undefined;
+	
+	var _product = __webpack_require__(94);
+	
+	__webpack_require__(96);
 	
 	var productSingle = exports.productSingle = angular.module('components.product.product', []).component('product', _product.productComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -45775,7 +45904,7 @@
 	}]).name;
 
 /***/ }),
-/* 93 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45787,9 +45916,13 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _product = __webpack_require__(94);
+	var _product = __webpack_require__(95);
 	
 	var _product2 = _interopRequireDefault(_product);
+	
+	var _firebase = __webpack_require__(28);
+	
+	var _firebase2 = _interopRequireDefault(_firebase);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -45799,17 +45932,224 @@
 	  bindings: {},
 	  templateUrl: _product2.default,
 	  controller: function () {
-	    function ProductController() {
+	    ProductController.$inject = ["AuthService", "$firebaseArray", "$q", "$state"];
+	    function ProductController(AuthService, $firebaseArray, $q, $state) {
 	      'ngInject';
 	
 	      _classCallCheck(this, ProductController);
+	
+	      this.authService = AuthService;
+	      this.$firebaseArray = $firebaseArray;
+	      //this.$firebaseArray = $firebaseArray;
+	      this.$q = $q;
+	      this.$state = $state;
 	    }
 	
 	    _createClass(ProductController, [{
 	      key: '$onInit',
 	      value: function $onInit() {
+	        // TODO on a fake purchase populate th firebase database with the approriate data [done]
+	        // TODO log into the membership area with the default email and password provided [done]
+	        // TODO make sure that i have access to view courses [done]
+	        // TODO only provide user with courses they paied for and populate their dashboard [done...sort of]
+	        // TODO lock down register route it redirects if there's no secret data passed with uirouter []
+	
 	        Snipcart.subscribe('order.completed', function (data) {
-	          console.log(data);
+	          //console.log(data);
+	        });
+	
+	        Snipcart.subscribe('page.change', function (test) {
+	          console.log({ test: test });
+	        });
+	
+	        //this.authService
+	      }
+	    }, {
+	      key: 'fakePurchase',
+	      value: function fakePurchase() {
+	        var _this = this;
+	
+	        //this.productService.
+	        var order = {
+	          "token": "6bb9a364-0f3b-4b02-ad09-910151e89591",
+	          "email": "hhibbert0024@mailinator.com",
+	          "mode": "Test",
+	          "status": "Processed",
+	          "currency": "cad",
+	          "customFields": [{
+	            "name": "Slug",
+	            "options": "",
+	            "type": "textbox",
+	            "value": "Test",
+	            "required": true
+	          }, {
+	            "name": "Do you accept terms",
+	            "options": "true|false",
+	            "type": "checkbox",
+	            "value": "true",
+	            "required": true
+	          }],
+	          "shipToBillingAddress": true,
+	          "billingAddress": {
+	            "name": "Hassan Hibbert",
+	            "company": "Snipcart",
+	            "address1": "226 rue St-Joseph E",
+	            "address2": "",
+	            "city": "Quebec",
+	            "country": "CA",
+	            "postalCode": "G1K3A9",
+	            "province": "QC",
+	            "phone": "418 888 8888",
+	            "email": "hhibbert@mailinator.com",
+	            "shippingSameAsBilling": true,
+	            "errors": null
+	          },
+	          "completionDate": "2016-04-09T14:07:09.0508127Z",
+	          "invoiceNumber": "SNIP-1004",
+	          "paymentMethod": "CreditCard",
+	          "items": [{
+	            "uniqueId": "ab3a830d-0dad-4d0e-899e-06375694429b",
+	            "id": "CSR-0001",
+	            "name": "Un poster",
+	            "price": 300,
+	            "description": "Un beau poster de Nicolas Cage",
+	            "url": "//localhost:3005",
+	            "quantity": 1,
+	            "stackable": true,
+	            "token": "6bb9a364-0f3b-4b02-ad09-910151e89591",
+	            "image": "http://placecage.com/50/50",
+	            "minQuantity": null,
+	            "maxQuantity": null,
+	            "shippable": true,
+	            "taxable": true,
+	            "taxes": [],
+	            "customFields": [],
+	            "duplicatable": false,
+	            "alternatePrices": {
+	              "vip": 200
+	            },
+	            "unitPrice": 300,
+	            "totalPrice": 300,
+	            "addedOn": "2016-04-09T14:05:38.463Z",
+	            "dimensions": {}
+	          }, {
+	            "uniqueId": "83283ac8-999c-41f6-8163-962d4315a059",
+	            "id": "CSR-0002",
+	            "name": "Smartphone",
+	            "price": 399,
+	            "description": "",
+	            "url": "/",
+	            "quantity": 2,
+	            "stackable": true,
+	            "token": "6bb9a364-0f3b-4b02-ad09-910151e89591",
+	            "image": "",
+	            "minQuantity": null,
+	            "maxQuantity": null,
+	            "shippable": true,
+	            "taxable": true,
+	            "taxes": [],
+	            "customFields": [{
+	              "name": "Memory size",
+	              "options": "16GB|32GB[+50.00]",
+	              "type": "dropdown",
+	              "value": "32GB",
+	              "operation": "50",
+	              "required": false,
+	              "sanitizedName": "snipcart_custom_Memory-size"
+	            }],
+	            "duplicatable": false,
+	            "alternatePrices": {
+	              "vip": 299
+	            },
+	            "unitPrice": 449,
+	            "totalPrice": 898,
+	            "addedOn": "2016-04-09T14:04:59.32Z",
+	            "dimensions": {}
+	          }],
+	          "discounts": [{
+	            "id": "a0518987-4e6f-4969-9ea8-58c65c027f4b",
+	            "amountSaved": 20,
+	            "name": "20$ off",
+	            "type": "FixedAmount",
+	            "trigger": "Code",
+	            "code": "Snipcart rocks",
+	            "affectedItems": []
+	          }],
+	          "plans": [],
+	          "total": 1365.9,
+	          "taxes": [{
+	            "name": "GST",
+	            "rate": 0.05,
+	            "amount": 59.4,
+	            "numberForInvoice": ""
+	          }, {
+	            "name": "QST",
+	            "rate": 0.09975,
+	            "amount": 118.5,
+	            "numberForInvoice": ""
+	          }],
+	          "shippingAddress": {
+	            "name": "John Doe",
+	            "company": "Snipcart",
+	            "address1": "226 rue St-Joseph E",
+	            "address2": "",
+	            "city": "Quebec",
+	            "country": "CA",
+	            "postalCode": "G1K3A9",
+	            "province": "QC",
+	            "phone": "418 888 8888",
+	            "email": "geeks@snipcart.com",
+	            "shippingSameAsBilling": true
+	          },
+	          "shippingInformation": {
+	            "method": "Livraison",
+	            "fees": 10
+	          },
+	          "card": {
+	            "last4Digits": "4242",
+	            "ownerName": "John Doe",
+	            "type": "Visa"
+	          }
+	        };
+	
+	        var nameSplit = order.billingAddress.name.split(' ');
+	        var firstName = nameSplit[0];
+	        var lastName = nameSplit[1];
+	
+	        var updatePurchases = function updatePurchases() {
+	          var ref = _firebase2.default.database().ref('purchases');
+	          var uid = _this.authService.getUser().uid;
+	          var purchasedItems = order.items.map(function (item) {
+	            return _this.$firebaseArray(ref.child(uid)).$add({ id: item.id });
+	          });
+	          return _this.$q.all(purchasedItems);
+	        };
+	
+	        var newUserPath = function newUserPath() {
+	          return _this.authService.register({ email: order.email, password: 'MwYEHxD446AzSzuz' }).then(function () {
+	            return _this.authService.createUserAccount(firstName, lastName, order.email);
+	          }).then(function () {
+	            return _this.authService.getUser().updateProfile({ displayName: firstName });
+	          }).then(updatePurchases).then(function () {
+	            _this.$state.go('auth.register', { isNewUser: true });
+	          });
+	        };
+	
+	        _firebase2.default.auth().fetchProvidersForEmail(order.email).then(function (status) {
+	          var emailAvailable = status.length;
+	          if (emailAvailable) {
+	            if (_this.authService.isAuthenticated()) {
+	              updatePurchases().then(function () {
+	                return _this.$state.go('app');
+	              });
+	            } else {
+	              _this.$state.go('auth.login', { orderItems: order.items });
+	            }
+	          } else {
+	            return newUserPath();
+	          }
+	        }).catch(function (error) {
+	          console.error('error:register', error);
 	        });
 	      }
 	    }]);
@@ -45819,23 +46159,23 @@
 	};
 
 /***/ }),
-/* 94 */
+/* 95 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/product/product.html';
-	var html = "<nav-bar></nav-bar>\n<div class=\"main-content\">\n\n\t<h1>Title</h1>\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_2_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t\t<button\n\t\t\t\t\t\tclass=\"snipcart-add-item btn btn-primary btn-cart\"\n\t\t\t\t\t\tdata-item-id=\"2\"\n\t\t\t\t\t\tdata-item-name=\"Margarita\"\n\t\t\t\t\t\tdata-item-price=\"9.00\"\n\t\t\t\t\t\tdata-item-url=\"https://hassanhibbert.github.io/data/products.json\"\n\t\t\t\t\t\tdata-item-description=\"The margarita is a cocktail made with tequila and citrus fruit juice\">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>";
+	var html = "<nav-bar></nav-bar>\n<div class=\"main-content\">\n\n\t<h1>Title</h1>\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_2_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t\t<div class=\"btn btn-primary\" ng-click=\"$ctrl.fakePurchase()\">Make Purchase</div>\n\t\t\t\t<!--<button-->\n\t\t\t\t\t\t<!--class=\"snipcart-add-item btn btn-primary btn-cart\"-->\n\t\t\t\t\t\t<!--data-item-id=\"2\"-->\n\t\t\t\t\t\t<!--data-item-name=\"Margarita\"-->\n\t\t\t\t\t\t<!--data-item-price=\"9.00\"-->\n\t\t\t\t\t\t<!--data-item-url=\"https://hassanhibbert.github.io/data/products.json\"-->\n\t\t\t\t\t\t<!--data-item-description=\"The margarita is a cocktail made with tequila and citrus fruit juice\">-->\n\t\t\t\t\t<!--Add To Cart-->\n\t\t\t\t<!--</button>-->\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
 /***/ }),
-/* 95 */
+/* 96 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 96 */,
-/* 97 */
+/* 97 */,
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45845,9 +46185,9 @@
 	});
 	exports.products = undefined;
 	
-	var _products = __webpack_require__(98);
+	var _products = __webpack_require__(99);
 	
-	__webpack_require__(100);
+	__webpack_require__(101);
 	
 	var products = exports.products = angular.module('components.product.products', []).component('products', _products.productsComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -45866,7 +46206,7 @@
 	}]).name;
 
 /***/ }),
-/* 98 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45878,7 +46218,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _products = __webpack_require__(99);
+	var _products = __webpack_require__(100);
 	
 	var _products2 = _interopRequireDefault(_products);
 	
@@ -45913,23 +46253,23 @@
 	};
 
 /***/ }),
-/* 99 */
+/* 100 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/products/products.html';
-	var html = "\n<nav-bar></nav-bar>\n<div class=\"main-content\">\n\n\t<h1>Product Listing</h1>\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #2</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #3</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t\t<a class=\"btn btn-primary\" ui-sref=\"product({id:1})\">Learn More</a>\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #2</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #3</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\n\n\t<button\n\t\t\tclass=\"snipcart-add-item btn btn-primary\"\n\t\t\tdata-item-id=\"2\"\n\t\t\tdata-item-name=\"Web Learning Course\"\n\t\t\tdata-item-price=\"29.99\"\n\t\t\tdata-item-url=\"https://hassanhibbert.github.io/data/products.json\"\n\t\t\tdata-item-description=\"A web app to learn new things.\">\n\t\tBuy My Special Software\n\t</button>\n\t<br><br>\n\t<a href=\"#\" class=\"snipcart-checkout\">Click here to checkout</a>\n\t<br><br>\n\n\n\n\n</div>\n\n\n\n";
+	var html = "\n<nav-bar></nav-bar>\n<div class=\"main-content\">\n\n\t<h1>Product Listing</h1>\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #2</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #3</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t\t<a class=\"btn btn-primary btn-light\" ui-sref=\"product({id:1})\">Learn More</a>\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #2</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #3</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\n\n\t<button\n\t\t\tclass=\"snipcart-add-item btn btn-primary\"\n\t\t\tdata-item-id=\"2\"\n\t\t\tdata-item-name=\"Web Learning Course\"\n\t\t\tdata-item-price=\"29.99\"\n\t\t\tdata-item-url=\"https://hassanhibbert.github.io/data/products.json\"\n\t\t\tdata-item-description=\"A web app to learn new things.\">\n\t\tBuy My Special Software\n\t</button>\n\t<br><br>\n\t<a href=\"#\" class=\"snipcart-checkout\">Click here to checkout</a>\n\t<br><br>\n\n\n\n\n</div>\n\n\n\n";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
 /***/ }),
-/* 100 */
+/* 101 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 101 */,
-/* 102 */
+/* 102 */,
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45988,7 +46328,7 @@
 	}();
 
 /***/ }),
-/* 103 */
+/* 104 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
