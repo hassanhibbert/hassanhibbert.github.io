@@ -40647,9 +40647,11 @@
 	
 	var _register = __webpack_require__(43);
 	
-	var _authForm = __webpack_require__(47);
+	var _authForm = __webpack_require__(46);
 	
-	var _navBar = __webpack_require__(50);
+	var _navBar = __webpack_require__(49);
+	
+	var _compareTo = __webpack_require__(54);
 	
 	__webpack_require__(55);
 	
@@ -40666,7 +40668,7 @@
 	
 	var app = exports.app = _firebase2.default.initializeApp(firebaseConfig);
 	
-	var auth = exports.auth = angular.module('components.auth', [_angularfire2.default, _angularUiRouter2.default, _login.login, _register.register, _authForm.authForm, _navBar.navBar]).config(["$firebaseRefProvider", function ($firebaseRefProvider) {
+	var auth = exports.auth = angular.module('components.auth', [_angularfire2.default, _angularUiRouter2.default, _login.login, _register.register, _authForm.authForm, _navBar.navBar, _compareTo.compareTo]).config(["$firebaseRefProvider", function ($firebaseRefProvider) {
 	  'ngInject';
 	
 	  $firebaseRefProvider.registerUrl({
@@ -44572,11 +44574,9 @@
 	
 	var _register = __webpack_require__(44);
 	
-	var _compareTo = __webpack_require__(46);
-	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var register = exports.register = angular.module('components.auth.register', [_angularUiRouter2.default]).component('register', _register.registerComponent).directive('compareTo', _compareTo.compareTo).config(["$stateProvider", function ($stateProvider) {
+	var register = exports.register = angular.module('components.auth.register', [_angularUiRouter2.default]).component('register', _register.registerComponent).directive('compareTo', compareTo).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
 	
 	  $stateProvider.state('auth.register', {
@@ -44691,35 +44691,6 @@
 
 /***/ }),
 /* 46 */
-/***/ (function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.compareTo = compareTo;
-	function compareTo() {
-	  return {
-	    restrict: 'A',
-	    require: 'ngModel',
-	    scope: {
-	      otherModuleValue: '=compareTo'
-	    },
-	    link: function link(scope, element, attributes, ngModel) {
-	      ngModel.$validators.compareTo = function (modelValue) {
-	        return modelValue == scope.otherModelValue;
-	      };
-	
-	      scope.$watch("otherModelValue", function () {
-	        ngModel.$validate();
-	      });
-	    }
-	  };
-	};
-
-/***/ }),
-/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44729,12 +44700,12 @@
 	});
 	exports.authForm = undefined;
 	
-	var _authForm = __webpack_require__(48);
+	var _authForm = __webpack_require__(47);
 	
 	var authForm = exports.authForm = angular.module('components.auth.auth-form', []).component('authForm', _authForm.formComponent).name;
 
 /***/ }),
-/* 48 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44746,7 +44717,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _authForm = __webpack_require__(49);
+	var _authForm = __webpack_require__(48);
 	
 	var _authForm2 = _interopRequireDefault(_authForm);
 	
@@ -44793,7 +44764,7 @@
 	};
 
 /***/ }),
-/* 49 */
+/* 48 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/auth-form/auth-form.html';
@@ -44802,7 +44773,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 50 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44812,14 +44783,14 @@
 	});
 	exports.navBar = undefined;
 	
-	var _navBar = __webpack_require__(51);
+	var _navBar = __webpack_require__(50);
 	
-	__webpack_require__(53);
+	__webpack_require__(52);
 	
 	var navBar = exports.navBar = angular.module('common.nav-bar', []).component('navBar', _navBar.navBarComponent).name;
 
 /***/ }),
-/* 51 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44831,7 +44802,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _navBar = __webpack_require__(52);
+	var _navBar = __webpack_require__(51);
 	
 	var _navBar2 = _interopRequireDefault(_navBar);
 	
@@ -44895,7 +44866,7 @@
 	};
 
 /***/ }),
-/* 52 */
+/* 51 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/common/nav-bar/nav-bar.html';
@@ -44904,13 +44875,42 @@
 	module.exports = path;
 
 /***/ }),
-/* 53 */
+/* 52 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 54 */,
+/* 53 */,
+/* 54 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.compareTo = compareTo;
+	function compareTo() {
+	  return {
+	    restrict: 'A',
+	    require: 'ngModel',
+	    scope: {
+	      otherModuleValue: '=compareTo'
+	    },
+	    link: function link(scope, element, attributes, ngModel) {
+	      ngModel.$validators.compareTo = function (modelValue) {
+	        return modelValue == scope.otherModelValue;
+	      };
+	
+	      scope.$watch("otherModelValue", function () {
+	        ngModel.$validate();
+	      });
+	    }
+	  };
+	};
+
+/***/ }),
 /* 55 */
 /***/ (function(module, exports) {
 
@@ -45875,7 +45875,7 @@
 	
 	var _product2 = __webpack_require__(103);
 	
-	var _navBar = __webpack_require__(50);
+	var _navBar = __webpack_require__(49);
 	
 	var product = exports.product = angular.module('components.product', [_product.productSingle, _products.products, _navBar.navBar]).service('ProductService', _product2.ProductService).name;
 
