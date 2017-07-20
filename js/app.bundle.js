@@ -45940,7 +45940,6 @@
 	
 	      this.authService = AuthService;
 	      this.$firebaseArray = $firebaseArray;
-	      //this.$firebaseArray = $firebaseArray;
 	      this.$q = $q;
 	      this.$state = $state;
 	    }
@@ -45948,210 +45947,58 @@
 	    _createClass(ProductController, [{
 	      key: '$onInit',
 	      value: function $onInit() {
-	        // TODO on a fake purchase populate th firebase database with the approriate data [done]
-	        // TODO log into the membership area with the default email and password provided [done]
-	        // TODO make sure that i have access to view courses [done]
-	        // TODO only provide user with courses they paied for and populate their dashboard [done...sort of]
-	        // TODO lock down register route it redirects if there's no secret data passed with uirouter []
 	
 	        Snipcart.subscribe('order.completed', function (data) {
-	          //console.log(data);
+	          var _this = this;
+	
+	          var nameSplit = order.billingAddress.name.split(' ');
+	          var firstName = nameSplit[0];
+	          var lastName = nameSplit[1];
+	
+	          var updatePurchases = function updatePurchases() {
+	            var ref = _firebase2.default.database().ref('purchases');
+	            var uid = _this.authService.getUser().uid;
+	            var purchasedItems = order.items.map(function (item) {
+	              return _this.$firebaseArray(ref.child(uid)).$add({ id: item.id });
+	            });
+	            return _this.$q.all(purchasedItems);
+	          };
+	
+	          var newUserPath = function newUserPath() {
+	            return _this.authService.register({ email: order.email, password: 'MwYEHxD446AzSzuz' }).then(function () {
+	              return _this.authService.createUserAccount(firstName, lastName, order.email);
+	            }).then(function () {
+	              return _this.authService.getUser().updateProfile({ displayName: firstName });
+	            }).then(updatePurchases).then(function () {
+	              _this.$state.go('auth.register', { isNewUser: true });
+	            });
+	          };
+	
+	          _firebase2.default.auth().fetchProvidersForEmail(order.email).then(function (status) {
+	            var emailAvailable = status.length;
+	            if (emailAvailable) {
+	              if (_this.authService.isAuthenticated()) {
+	                updatePurchases().then(function () {
+	                  return _this.$state.go('app');
+	                });
+	              } else {
+	                _this.$state.go('auth.login', { orderItems: order.items });
+	              }
+	            } else {
+	              return newUserPath();
+	            }
+	          }).catch(function (error) {
+	            console.error('error:register', error);
+	          });
 	        });
 	
-	        Snipcart.subscribe('page.change', function (test) {
-	          console.log({ test: test });
-	        });
-	
-	        //this.authService
+	        // Snipcart.subscribe('page.change', (test) => {
+	        //
+	        // })
 	      }
 	    }, {
 	      key: 'fakePurchase',
-	      value: function fakePurchase() {
-	        var _this = this;
-	
-	        //this.productService.
-	        var order = {
-	          "token": "6bb9a364-0f3b-4b02-ad09-910151e89591",
-	          "email": "hhibbert0024@mailinator.com",
-	          "mode": "Test",
-	          "status": "Processed",
-	          "currency": "cad",
-	          "customFields": [{
-	            "name": "Slug",
-	            "options": "",
-	            "type": "textbox",
-	            "value": "Test",
-	            "required": true
-	          }, {
-	            "name": "Do you accept terms",
-	            "options": "true|false",
-	            "type": "checkbox",
-	            "value": "true",
-	            "required": true
-	          }],
-	          "shipToBillingAddress": true,
-	          "billingAddress": {
-	            "name": "Hassan Hibbert",
-	            "company": "Snipcart",
-	            "address1": "226 rue St-Joseph E",
-	            "address2": "",
-	            "city": "Quebec",
-	            "country": "CA",
-	            "postalCode": "G1K3A9",
-	            "province": "QC",
-	            "phone": "418 888 8888",
-	            "email": "hhibbert@mailinator.com",
-	            "shippingSameAsBilling": true,
-	            "errors": null
-	          },
-	          "completionDate": "2016-04-09T14:07:09.0508127Z",
-	          "invoiceNumber": "SNIP-1004",
-	          "paymentMethod": "CreditCard",
-	          "items": [{
-	            "uniqueId": "ab3a830d-0dad-4d0e-899e-06375694429b",
-	            "id": "CSR-0001",
-	            "name": "Un poster",
-	            "price": 300,
-	            "description": "Un beau poster de Nicolas Cage",
-	            "url": "//localhost:3005",
-	            "quantity": 1,
-	            "stackable": true,
-	            "token": "6bb9a364-0f3b-4b02-ad09-910151e89591",
-	            "image": "http://placecage.com/50/50",
-	            "minQuantity": null,
-	            "maxQuantity": null,
-	            "shippable": true,
-	            "taxable": true,
-	            "taxes": [],
-	            "customFields": [],
-	            "duplicatable": false,
-	            "alternatePrices": {
-	              "vip": 200
-	            },
-	            "unitPrice": 300,
-	            "totalPrice": 300,
-	            "addedOn": "2016-04-09T14:05:38.463Z",
-	            "dimensions": {}
-	          }, {
-	            "uniqueId": "83283ac8-999c-41f6-8163-962d4315a059",
-	            "id": "CSR-0002",
-	            "name": "Smartphone",
-	            "price": 399,
-	            "description": "",
-	            "url": "/",
-	            "quantity": 2,
-	            "stackable": true,
-	            "token": "6bb9a364-0f3b-4b02-ad09-910151e89591",
-	            "image": "",
-	            "minQuantity": null,
-	            "maxQuantity": null,
-	            "shippable": true,
-	            "taxable": true,
-	            "taxes": [],
-	            "customFields": [{
-	              "name": "Memory size",
-	              "options": "16GB|32GB[+50.00]",
-	              "type": "dropdown",
-	              "value": "32GB",
-	              "operation": "50",
-	              "required": false,
-	              "sanitizedName": "snipcart_custom_Memory-size"
-	            }],
-	            "duplicatable": false,
-	            "alternatePrices": {
-	              "vip": 299
-	            },
-	            "unitPrice": 449,
-	            "totalPrice": 898,
-	            "addedOn": "2016-04-09T14:04:59.32Z",
-	            "dimensions": {}
-	          }],
-	          "discounts": [{
-	            "id": "a0518987-4e6f-4969-9ea8-58c65c027f4b",
-	            "amountSaved": 20,
-	            "name": "20$ off",
-	            "type": "FixedAmount",
-	            "trigger": "Code",
-	            "code": "Snipcart rocks",
-	            "affectedItems": []
-	          }],
-	          "plans": [],
-	          "total": 1365.9,
-	          "taxes": [{
-	            "name": "GST",
-	            "rate": 0.05,
-	            "amount": 59.4,
-	            "numberForInvoice": ""
-	          }, {
-	            "name": "QST",
-	            "rate": 0.09975,
-	            "amount": 118.5,
-	            "numberForInvoice": ""
-	          }],
-	          "shippingAddress": {
-	            "name": "John Doe",
-	            "company": "Snipcart",
-	            "address1": "226 rue St-Joseph E",
-	            "address2": "",
-	            "city": "Quebec",
-	            "country": "CA",
-	            "postalCode": "G1K3A9",
-	            "province": "QC",
-	            "phone": "418 888 8888",
-	            "email": "geeks@snipcart.com",
-	            "shippingSameAsBilling": true
-	          },
-	          "shippingInformation": {
-	            "method": "Livraison",
-	            "fees": 10
-	          },
-	          "card": {
-	            "last4Digits": "4242",
-	            "ownerName": "John Doe",
-	            "type": "Visa"
-	          }
-	        };
-	
-	        var nameSplit = order.billingAddress.name.split(' ');
-	        var firstName = nameSplit[0];
-	        var lastName = nameSplit[1];
-	
-	        var updatePurchases = function updatePurchases() {
-	          var ref = _firebase2.default.database().ref('purchases');
-	          var uid = _this.authService.getUser().uid;
-	          var purchasedItems = order.items.map(function (item) {
-	            return _this.$firebaseArray(ref.child(uid)).$add({ id: item.id });
-	          });
-	          return _this.$q.all(purchasedItems);
-	        };
-	
-	        var newUserPath = function newUserPath() {
-	          return _this.authService.register({ email: order.email, password: 'MwYEHxD446AzSzuz' }).then(function () {
-	            return _this.authService.createUserAccount(firstName, lastName, order.email);
-	          }).then(function () {
-	            return _this.authService.getUser().updateProfile({ displayName: firstName });
-	          }).then(updatePurchases).then(function () {
-	            _this.$state.go('auth.register', { isNewUser: true });
-	          });
-	        };
-	
-	        _firebase2.default.auth().fetchProvidersForEmail(order.email).then(function (status) {
-	          var emailAvailable = status.length;
-	          if (emailAvailable) {
-	            if (_this.authService.isAuthenticated()) {
-	              updatePurchases().then(function () {
-	                return _this.$state.go('app');
-	              });
-	            } else {
-	              _this.$state.go('auth.login', { orderItems: order.items });
-	            }
-	          } else {
-	            return newUserPath();
-	          }
-	        }).catch(function (error) {
-	          console.error('error:register', error);
-	        });
-	      }
+	      value: function fakePurchase() {}
 	    }]);
 	
 	    return ProductController;
