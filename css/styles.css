@@ -241,24 +241,40 @@
     margin: 10px 15px; }
   .contact button {
     float: right; }
-.members-area-container {
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px 30px;
-  width: 600px;
-  margin: 50px auto 0; }
-  .members-area-container h1 {
-    margin: 0 0 10px; }
-  .members-area-container .flex-row {
-    display: -webkit-flex;
-    display: flex;
-    -webkit-justify-content: space-between;
-    /* Safari */
-    justify-content: space-between;
-    -webkit-align-items: center;
-    /* Safari */
-    align-items: center; }
+.membership-area .module-list-container {
+  width: 250px;
+  margin-right: 30px; }
+
+.membership-area a.bread-crumb {
+  font-size: 1em;
+  color: #470f6f; }
+
+.membership-area .container {
+  padding: 30px 40px; }
+
+.membership-area .course-panel {
+  background: #efefef;
+  padding: 20px;
+  border: 1px solid #e4e4e4;
+  border-radius: 6px;
+  margin-bottom: 30px; }
+  .membership-area .course-panel a.btn-primary {
+    width: 22%;
+    font-size: 16px;
+    color: #fff;
+    min-height: 65px; }
+  .membership-area .course-panel-left {
+    padding-right: 45px;
+    width: 80%; }
+  .membership-area .course-panel-title {
+    font-weight: bold;
+    font-size: 16px;
+    color: #7b30b1;
+    margin-bottom: 10px; }
+  .membership-area .course-panel-description {
+    font-size: 13px;
+    color: #565656;
+    line-height: 19px; }
 .panel {
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.1);
   background: #fff; }
@@ -279,16 +295,57 @@
   color: #333;
   line-height: 1.5em;
   position: relative; }
-  .main-content p {
-    font-size: 13px;
+  .main-content a {
+    color: #47a6ef;
+    text-decoration: underline;
+    font-size: 14px; }
+  .main-content .page-header {
+    font-weight: bold; }
+  .main-content .sidebar-center {
+    text-align: center; }
+  .main-content .sidebar-header {
+    border-bottom: 1px solid #e2e2e2;
+    padding-bottom: 20px;
+    margin-bottom: 20px; }
+  .main-content .details-header {
+    font-size: 2.5em;
+    line-height: 40px;
     margin-bottom: 15px; }
+  .main-content .list-header {
+    margin-bottom: 10px;
+    color: #525252; }
+  .main-content .list-style {
+    list-style-type: disc;
+    margin-bottom: 20px; }
+    .main-content .list-style li {
+      margin-left: 40px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #6b6b6b; }
+  .main-content strong {
+    font-weight: 700; }
+  .main-content p {
+    font-size: 0.880rem;
+    margin-bottom: 15px;
+    line-height: 25px;
+    color: #6b6b6b; }
+  .main-content h3 {
+    color: #525252;
+    font-size: 16px;
+    margin-bottom: 10px; }
+  .main-content h4 {
+    font-size: 15px;
+    margin-bottom: 10px; }
   .main-content h1 {
     text-align: center;
     padding: 33px;
     font-weight: 400; }
   .main-content h2 {
-    margin-bottom: 5px;
-    font-size: 18px; }
+    margin-bottom: 10px;
+    font-size: 20px;
+    line-height: 27px;
+    letter-spacing: 0.3px;
+    color: #525252; }
 * {
   box-sizing: border-box;
   margin: 0;
@@ -299,6 +356,13 @@ body {
   color: #5c5c5c;
   background: #f1f1f1; }
 
+hr {
+  border: 0;
+  height: 0;
+  border-top: 1px solid #e2e2e2;
+  border-bottom: 1px solid #fff;
+  margin-bottom: 20px; }
+
 a {
   color: #5c5c5c;
   text-decoration: none; }
@@ -308,6 +372,19 @@ ul {
 
 img {
   max-width: 100%; }
+
+footer {
+  text-align: center;
+  padding-bottom: 30px;
+  font-size: 11px; }
+
+.site {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column; }
+
+.site-content {
+  flex: 1; }
 
 @font-face {
   font-family: "Material Icons";
@@ -344,9 +421,15 @@ input {
     border: 1px solid #0085d7;
     outline: none; }
 
+.btn-center {
+  margin: 0 auto; }
+
 .btn {
   font-size: 14px;
   cursor: pointer; }
+
+.btn-full-width {
+  width: 100%; }
 
 .btn-disabled {
   color: #fff;
@@ -379,8 +462,21 @@ input {
   text-decoration: none;
   -webkit-transition: all .5s;
   transition: all .5s;
+  text-decoration: none;
   font-weight: normal;
   border: none !important; }
+
+a.btn-primary {
+  text-decoration: none; }
+
+.btn-primary[disabled] {
+  background-color: #ccc;
+  color: #ffffff;
+  text-decoration: none; }
+
+.btn-primary[disabled]:hover {
+  background-color: #ccc;
+  color: #ffffff; }
 
 .btn-primary:active {
   background-color: #5B4D65; }
@@ -391,6 +487,11 @@ input {
 .btn-primary:hover {
   background-color: #7021A9;
   text-decoration: none; }
+
+.btn-green {
+  background-color: #48a871; }
+  .btn-green:hover {
+    background-color: #429160; }
 
 .btn-light {
   background-color: #7d22bd; }

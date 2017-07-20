@@ -65,9 +65,11 @@
 	
 	var _components = __webpack_require__(26);
 	
-	__webpack_require__(104);
+	__webpack_require__(112);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	//import '../../node_modules/videogular/dist/videogular';
 	
 	var root = exports.root = _angular2.default.module('root', [_angularUiRouter2.default, _common.common, _components.components]).component('root', _root.rootComponent).config(["$locationProvider", "$urlRouterProvider", function ($locationProvider, $urlRouterProvider) {
 	  'ngInject';
@@ -89,7 +91,7 @@
 	  });
 	
 	  $urlRouterProvider.otherwise(function ($injector, $location) {
-	    console.log($location.path());
+	    //console.log($location.path())
 	  });
 	}]).name;
 
@@ -40614,7 +40616,7 @@
 	
 	var _membersArea = __webpack_require__(85);
 	
-	var _product = __webpack_require__(92);
+	var _product = __webpack_require__(97);
 	
 	var components = exports.components = angular.module('components', [_auth.auth, _contact.contact, _membersArea.membersArea, _product.product]).name;
 
@@ -40665,10 +40667,13 @@
 	  storageBucket: "coach-srenee.appspot.com",
 	  messagingSenderId: "818763746733"
 	};
+	//import { compareTo } from './register/compare-to.directive';
 	
 	var app = exports.app = _firebase2.default.initializeApp(firebaseConfig);
 	
-	var auth = exports.auth = angular.module('components.auth', [_angularfire2.default, _angularUiRouter2.default, _login.login, _register.register, _authForm.authForm, _navBar.navBar, _compareTo.compareTo]).directive('compareTo', _compareTo.compareTo).config(["$firebaseRefProvider", function ($firebaseRefProvider) {
+	var auth = exports.auth = angular.module('components.auth', [_angularfire2.default, _angularUiRouter2.default, _login.login, _register.register, _authForm.authForm, _navBar.navBar]
+	//compareTo
+	).config(["$firebaseRefProvider", function ($firebaseRefProvider) {
 	  'ngInject';
 	
 	  $firebaseRefProvider.registerUrl({
@@ -40697,7 +40702,26 @@
 	  }, function () {
 	    if (AuthService.isAuthenticated()) return $state.target('app');
 	  });
-	}]).service('AuthService', _auth.AuthService).name;
+	}])
+	// .directive('compareTo', () => {
+	//   return {
+	//     require: "ngModel",
+	//     scope: {
+	//       otherModelValue: "=compareTo"
+	//     },
+	//     link(scope, element, attributes, ngModel) {
+	//
+	//       ngModel.$validators.compareTo = (modelValue) => {
+	//         return modelValue == scope.otherModelValue;
+	//       };
+	//
+	//       scope.$watch("otherModelValue",() => {
+	//         ngModel.$validate();
+	//       });
+	//     }
+	//   };
+	// })
+	.directive('compareTo', _compareTo.compareTo).service('AuthService', _auth.AuthService).name;
 
 /***/ }),
 /* 28 */
@@ -44466,7 +44490,7 @@
 	    component: 'login',
 	    params: { orderItems: false },
 	    resolve: {
-	      cartOrderItems: ["$transition$", "$state", "ProductService", function cartOrderItems($transition$, $state, ProductService) {
+	      cartOrderItems: ["$transition$", "$state", "ProductService", "$q", function cartOrderItems($transition$, $state, ProductService, $q) {
 	        'ngInject';
 	
 	        var orderItems = $transition$.params().orderItems;
@@ -44517,11 +44541,14 @@
 	    _createClass(LoginComponent, [{
 	      key: '$onInit',
 	      value: function $onInit() {
-	        this.cartOrderItems.forEach(function (order) {
-	          Snipcart.api.items.add(order).then(function (item) {
-	            console.log(item);
+	        if (this.cartOrderItems) {
+	          this.cartOrderItems.forEach(function (order) {
+	            Snipcart.api.items.add(order).then(function (item) {
+	              console.log(item);
+	            });
 	          });
-	        });
+	        }
+	
 	        this.error = null;
 	        this.user = {
 	          email: '',
@@ -44534,7 +44561,9 @@
 	        var _this = this;
 	
 	        return this.authService.login(event.user).then(function (user) {
-	          Snipcart.api.modal.show();
+	          if (_this.cartOrderItems) {
+	            Snipcart.api.modal.show();
+	          }
 	          //console.log('event.user', event.user)
 	          //console.log('is email verified: ', user.emailVerified, user.email);
 	          _this.$state.go('app');
@@ -44553,7 +44582,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/login/login.html';
-	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Login</h1>\n  <auth-form\n    user=\"$ctrl.user\"\n    message=\"{{ $ctrl.error }}\"\n    button=\"Login\"\n    on-submit=\"$ctrl.loginUser($event);\"\n    is-login-form=\"true\">\n  </auth-form>\n</div>\n\n<div class=\"auth__info\">\n  <a href=\"\" ui-sref=\"auth.register\">\n    Don't have an account? Create one here.\n  </a>\n</div>\n";
+	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Login</h1>\n  <auth-form\n    user=\"$ctrl.user\"\n    message=\"{{ $ctrl.error }}\"\n    button=\"Login\"\n    on-submit=\"$ctrl.loginUser($event);\"\n    is-login-form=\"true\">\n  </auth-form>\n</div>\n\n<!--<div class=\"auth__info\">-->\n  <!--<a href=\"\" ui-sref=\"auth.register\">-->\n    <!--Don't have an account? Create one here.-->\n  <!--</a>-->\n<!--</div>-->\n";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
@@ -44576,7 +44605,11 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var register = exports.register = angular.module('components.auth.register', [_angularUiRouter2.default]).component('register', _register.registerComponent).config(["$stateProvider", function ($stateProvider) {
+	//import { compareTo } from '../compare-to/compare-to.directive';
+	
+	var register = exports.register = angular.module('components.auth.register', [_angularUiRouter2.default])
+	//.directive('compareTo', compareTo)
+	.component('register', _register.registerComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
 	
 	  $stateProvider.state('auth.register', {
@@ -44584,12 +44617,13 @@
 	    component: 'register',
 	    params: { isNewUser: false },
 	    resolve: {
-	      reviewPage: ["$transition$", "$state", function reviewPage($transition$, $state) {
+	      reviewPage: ["$transition$", "$state", "cfpLoadingBar", function reviewPage($transition$, $state, cfpLoadingBar) {
 	        'ngInject';
 	
 	        var isNewUser = $transition$.params().isNewUser;
 	        if (!isNewUser) {
 	          $state.go('auth.login');
+	          cfpLoadingBar.complete();
 	        }
 	      }]
 	    }
@@ -44641,9 +44675,9 @@
 	        this.error = null;
 	        this.user = { email: '', password: '' };
 	        var currentUser = this.authService.getUser();
-	        console.log({ currentUser: currentUser });
+	        //console.log({currentUser})
 	        if (currentUser) {
-	          console.log(currentUser);
+	          //console.log(currentUser);
 	          this.user.email = currentUser.email;
 	        }
 	      }
@@ -44652,10 +44686,10 @@
 	      value: function updateAccount() {
 	        var _this = this;
 	
-	        console.log(this.user.password);
+	        //console.log(this.user.password)
 	        //return
 	        this.auth.$updatePassword(this.user.password).then(function () {
-	          console.log('password changed');
+	          //console.log('password changed');
 	          _this.$state.go('app');
 	        }, function (reason) {
 	          _this.error = reason.message;
@@ -44685,7 +44719,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/register/register.html';
-	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Register</h1>\n  <p>Please complete the registration form below to gain access to your purchased items.</p>\n  <!--<hr>-->\n  <!--<auth-form-->\n    <!--user=\"$ctrl.user\"-->\n    <!--message=\"{{ $ctrl.error }}\"-->\n    <!--button=\"Create Account &amp; Gain Access\"-->\n    <!--on-submit=\"$ctrl.createUser($event);\">-->\n  <!--</auth-form>-->\n\n  <form name=\"authForm\" novalidate ng-submit=\"$ctrl.submitForm();\" class=\"auth-form\">\n    <label ng-hide=\"$ctrl.isLoginForm\">\n      <input\n          type=\"text\"\n          placeholder=\"email@sample.com\"\n          ng-value=\"$ctrl.user.email\"\n          readonly>\n    </label>\n    <label>\n      <input\n          type=\"password\"\n          name=\"password\"\n          required=\"required\"\n          placeholder=\"Enter your password\"\n          ng-model=\"$ctrl.user.password\">\n    </label>\n    <label>\n      <input\n          type=\"password\"\n          name=\"confirmPassword\"\n          required=\"required\"\n          placeholder=\"Enter your password\"\n          ng-model=\"$ctrl.user.confirmPassword\"\n          compare-to=\"$ctrl.user.password\">\n    </label>\n    <div class=\"auth-button\">\n      <button class=\"btn btn-primary\" type=\"submit\" ng-click=\"$ctrl.updateAccount()\" ng-disabled=\"authForm.$invalid\">\n        Create Account\n      </button>\n    </div>\n    <div ng-if=\"$ctrl.message\">{{ $ctrl.message }}</div>\n  </form>\n</div>\n\n<div class=\"auth__info\">\n  <a href=\"\" ui-sref=\"auth.login\">\n    Alr'eady have an account? Log in here.\n  </a>\n</div>\n";
+	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Register</h1>\n  <p>Please complete the registration form below to gain access to your purchased items.</p>\n  <!--<hr>-->\n  <!--<auth-form-->\n    <!--user=\"$ctrl.user\"-->\n    <!--message=\"{{ $ctrl.error }}\"-->\n    <!--button=\"Create Account &amp; Gain Access\"-->\n    <!--on-submit=\"$ctrl.createUser($event);\">-->\n  <!--</auth-form>-->\n\n  <form name=\"authForm\" novalidate ng-submit=\"$ctrl.submitForm();\" class=\"auth-form\">\n    <label ng-hide=\"$ctrl.isLoginForm\">\n      <input\n          type=\"text\"\n          placeholder=\"email@sample.com\"\n          ng-value=\"$ctrl.user.email\"\n          readonly>\n    </label>\n    <label>\n      <input\n          type=\"password\"\n          name=\"password\"\n          required=\"required\"\n          placeholder=\"Enter your password\"\n          ng-model=\"$ctrl.user.password\">\n    </label>\n    <label>\n      <input\n          type=\"password\"\n          name=\"confirmPassword\"\n          required=\"required\"\n          placeholder=\"Confirm your password\"\n          ng-model=\"$ctrl.user.confirmPassword\"\n          compare-to=\"$ctrl.user.password\">\n    </label>\n    <div class=\"auth-button\">\n      <button class=\"btn btn-primary\" type=\"submit\" ng-click=\"$ctrl.updateAccount()\" ng-disabled=\"authForm.$invalid\">\n        Create Account\n      </button>\n    </div>\n    <div ng-if=\"$ctrl.message\">{{ $ctrl.message }}</div>\n    <div>{{$ctrl.user.confirmPassword.$error}}</div>\n  </form>\n</div>\n\n<!--<div class=\"auth__info\">-->\n  <!--<a href=\"\" ui-sref=\"auth.login\">-->\n    <!--Already have an account? Log in here.-->\n  <!--</a>-->\n<!--</div>-->\n";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
@@ -44832,6 +44866,7 @@
 	        _this.cartCount = count;
 	      };
 	
+	      // TODO comment back
 	      Snipcart.subscribe('cart.closed', this.checkCartStatus);
 	      Snipcart.subscribe('item.added', this.checkCartStatus);
 	      Snipcart.subscribe('cart.ready', this.checkCartStatus);
@@ -44840,9 +44875,10 @@
 	    _createClass(NavBarController, [{
 	      key: '$onDestroy',
 	      value: function $onDestroy() {
-	        Snipcart.unsubscribe('item.added');
-	        Snipcart.unsubscribe('cart.closed');
-	        Snipcart.unsubscribe('cart.ready');
+	        // TODO comment back
+	        // Snipcart.unsubscribe('item.added');
+	        // Snipcart.unsubscribe('cart.closed');
+	        // Snipcart.unsubscribe('cart.ready');
 	      }
 	    }, {
 	      key: '$onInit',
@@ -44870,7 +44906,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/common/nav-bar/nav-bar.html';
-	var html = "<div class=\"nav-bar-brand\">\n  <div class=\"flex nav-bar-container\">\n    <ul>\n      <li><a class=\"logo\" href=\"/#/\">COACH S. RENEE</a></li>\n    </ul>\n    <ul class=\"flex-end\">\n      <li><a ui-sref-active=\"active\" ui-sref=\"products\">Products</a></li>\n      <li ng-if=\"!$ctrl.authStatus\"><a ui-sref-active=\"active\" ui-sref=\"auth.login\">Login</a></li>\n      <li ng-if=\"$ctrl.authStatus\"><a href=\"\" ng-click=\"$ctrl.logout();\">Logout</a></li>\n      <li>\n        <a href=\"#\" class=\"snipcart-checkout\">\n          <i class=\"material-icons\">shopping_cart</i>\n          <span>Cart ({{$ctrl.cartCount}})</span>\n        </a>\n      </li>\n    </ul>\n  </div>\n</div>";
+	var html = "<div class=\"nav-bar-brand\">\n  <div class=\"flex nav-bar-container\">\n    <ul>\n      <li><a class=\"logo\" href=\"/#/\">COACH S. RENEE</a></li>\n    </ul>\n    <ul class=\"flex-end\">\n      <li><a ui-sref-active=\"active\" ui-sref=\"products\">Products</a></li>\n\n      <li ng-if=\"!$ctrl.authStatus\"><a ui-sref-active=\"active\" ui-sref=\"auth.login\">Login</a></li>\n      <li ng-if=\"$ctrl.authStatus\"><a ui-sref-active=\"active\" ui-sref=\"app\">Dashboard</a></li>\n      <li ng-if=\"$ctrl.authStatus\"><a href=\"\" ng-click=\"$ctrl.logout();\">Logout</a></li>\n      <li>\n        <a href=\"#\" class=\"snipcart-checkout\">\n          <i class=\"material-icons\">shopping_cart</i>\n          <span>Cart ({{$ctrl.cartCount}})</span>\n        </a>\n      </li>\n    </ul>\n  </div>\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
@@ -44885,20 +44921,19 @@
 /* 54 */
 /***/ (function(module, exports) {
 
-	'use strict';
+	"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.compareTo = compareTo;
-	function compareTo() {
+	var compareTo = exports.compareTo = function compareTo() {
 	  return {
-	    restrict: 'A',
-	    require: 'ngModel',
+	    require: "ngModel",
 	    scope: {
-	      otherModuleValue: '=compareTo'
+	      otherModelValue: "=compareTo"
 	    },
 	    link: function link(scope, element, attributes, ngModel) {
+	
 	      ngModel.$validators.compareTo = function (modelValue) {
 	        return modelValue == scope.otherModelValue;
 	      };
@@ -45019,25 +45054,28 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.compareTo = compareTo;
-	function compareTo() {
+	exports.lengthCheck = lengthCheck;
+	function lengthCheck() {
 	  return {
 	    restrict: 'A',
 	    require: 'ngModel',
-	    scope: {
-	      otherModuleValue: '=compareTo'
-	    },
-	    link: function link(scope, element, attributes, ngModel) {
-	      ngModel.$validators.compareTo = function (modelValue) {
-	        return modelValue == scope.otherModelValue;
+	    compile: function compile($elem) {
+	      $elem.addClass('dynamic-input');
+	      return function ($scope, $element, $attrs, $ctrl) {
+	        var dynamicClass = 'dynamic-input--no-contents';
+	        $scope.$watch(function () {
+	          return $ctrl.$viewValue;
+	        }, function (newValue) {
+	          if (newValue) {
+	            $element.removeClass(dynamicClass);
+	          } else {
+	            $element.addClass(dynamicClass);
+	          }
+	        });
 	      };
-	
-	      scope.$watch("otherModelValue", function () {
-	        ngModel.$validate();
-	      });
 	    }
 	  };
-	};
+	}
 
 /***/ }),
 /* 60 */
@@ -45695,7 +45733,14 @@
 	
 	var _membersArea2 = __webpack_require__(91);
 	
-	var membersArea = exports.membersArea = angular.module('components.members-area', [_membersArea.membersAreaPage]).service('MembersAreaService', _membersArea2.MembersAreaService).name;
+	var _membersAreaProgram = __webpack_require__(92);
+	
+	var membersArea = exports.membersArea = angular.module('components.members-area', [
+	//"com.2fdevs.videogular",
+	// "com.2fdevs.videogular.plugins.controls",
+	// "com.2fdevs.videogular.plugins.overlayplay",
+	// "com.2fdevs.videogular.plugins.poster",
+	_membersArea.membersAreaPage, _membersAreaProgram.membersAreaProgramPage]).service('MembersAreaService', _membersArea2.MembersAreaService).name;
 
 /***/ }),
 /* 86 */
@@ -45729,6 +45774,20 @@
 	        'ngInject';
 	
 	        return MembersAreaService.getUserProfile().$loaded();
+	      }],
+	      programs: ["MembersAreaService", "purchasedData", function programs(MembersAreaService, purchasedData) {
+	        'ngInject';
+	
+	        return MembersAreaService.getProgramData().$loaded().then(function (programs) {
+	          var purchasedIds = purchasedData.map(function (item) {
+	            return item.id;
+	          });
+	          var updatedPrograms = programs.filter(function (program) {
+	            return purchasedIds.indexOf(program.$id) >= 0;
+	          });
+	          //console.log({updatedPrograms});
+	          return updatedPrograms;
+	        });
 	      }]
 	    }
 	  });
@@ -45758,7 +45817,8 @@
 	var membersAreaComponent = exports.membersAreaComponent = {
 	  bindings: {
 	    user: '<',
-	    purchasedData: '<'
+	    purchasedData: '<',
+	    programs: '<'
 	  },
 	  templateUrl: _membersArea2.default,
 	  controller: function () {
@@ -45775,6 +45835,7 @@
 	    _createClass(MembersAreaComponent, [{
 	      key: '$onInit',
 	      value: function $onInit() {
+	        console.log('programs', this.programs);
 	        console.log('allowed courses', this.purchasedData);
 	      }
 	    }]);
@@ -45788,7 +45849,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/members-area/members-area/members-area.html';
-	var html = "<div class=\"members-area-container\">\r\n  <div class=\"flex-row\">\r\n    <h1>Members Area</h1>\r\n    <a href=\"\" ng-click=\"$ctrl.logout();\">\r\n      <span class=\"header__button\">\r\n        <i class=\"material-icons\">power_settings_new</i>\r\n        Logout\r\n      </span>\r\n    </a>\r\n  </div>\r\n\r\n  <p>Welcome {{::$ctrl.user.firstName}}</p>\r\n</div>";
+	var html = "<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\">Members Area / Dashboard</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div class=\"container\">\r\n        <div class=\"flex\">\r\n          <p class=\"\">Welcome&nbsp;<strong> {{::$ctrl.user.firstName}}</strong>!</p>\r\n        </div>\r\n        <hr>\r\n\r\n        <h2>Available Programs</h2>\r\n        <div ng-repeat=\"program in $ctrl.programs\" class=\"course-panel flex flex-around\">\r\n          <div class=\"course-panel-left\">\r\n            <div class=\"course-panel-title\">{{::program.name}}</div>\r\n            <div class=\"course-panel-description\">{{::program.description}}</div>\r\n          </div>\r\n          <a class=\"btn btn-primary flex-align-center flex-center\" href=\"#/app/members-area/{{::program.$id}}\">Start Program</a>\r\n        </div>\r\n\r\n        <!--<div class=\"course-panel flex flex-around\">-->\r\n          <!--<div class=\"course-panel-left\">-->\r\n            <!--<div class=\"course-panel-title\">Self-Image &amp; Attitude Development Program</div>-->\r\n            <!--<div class=\"course-panel-description\">In this course, self-esteem and branding expert and coach S. Renee takes a deep dive with you and shows you how to release yourself from the past.</div>-->\r\n          <!--</div>-->\r\n          <!--<button class=\"btn btn-primary\">Start Program</button>-->\r\n        <!--</div>-->\r\n\r\n        <!--<hr>-->\r\n        <h2>Bonus Material</h2>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
@@ -45833,13 +45894,14 @@
 	    //console.log('MembersAreaService:db access')
 	    this.ref = _firebase2.default.database().ref('users');
 	    this.perchasesRef = _firebase2.default.database().ref('purchases');
+	    this.productsRf = _firebase2.default.database().ref('products');
 	  }
 	
 	  _createClass(MembersAreaService, [{
 	    key: '$onInit',
 	    value: function $onInit() {
 	      // console.log(this.ref.child(this.uid));
-	
+	      //this.getProgramData()
 	    }
 	  }, {
 	    key: 'getPurchasedProducts',
@@ -45852,6 +45914,11 @@
 	    value: function getUserProfile() {
 	      var userId = this.authService.getUser().uid;
 	      return this.$firebaseObject(this.ref.child(userId));
+	    }
+	  }, {
+	    key: 'getProgramData',
+	    value: function getProgramData() {
+	      return this.$firebaseArray(this.productsRf);
 	    }
 	  }]);
 	
@@ -45867,17 +45934,47 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.product = undefined;
+	exports.membersAreaProgramPage = undefined;
 	
-	var _product = __webpack_require__(93);
+	var _membersAreaProgram = __webpack_require__(93);
 	
-	var _products = __webpack_require__(98);
+	__webpack_require__(95);
 	
-	var _product2 = __webpack_require__(103);
+	var membersAreaProgramPage = exports.membersAreaProgramPage = angular.module('components.members-area.members-area-program', []).component('membersAreaProgram', _membersAreaProgram.membersAreaProgramComponent).config(["$stateProvider", function ($stateProvider) {
+	  'ngInject';
 	
-	var _navBar = __webpack_require__(49);
+	  $stateProvider.state('members-area-program', {
+	    parent: 'app',
+	    url: '/members-area/:id',
+	    component: 'membersAreaProgram',
+	    resolve: {
+	      purchasedData: ["MembersAreaService", function purchasedData(MembersAreaService) {
+	        'ngInject';
 	
-	var product = exports.product = angular.module('components.product', [_product.productSingle, _products.products, _navBar.navBar]).service('ProductService', _product2.ProductService).name;
+	        return MembersAreaService.getPurchasedProducts().$loaded();
+	      }],
+	      user: ["MembersAreaService", function user(MembersAreaService) {
+	        'ngInject';
+	
+	        return MembersAreaService.getUserProfile().$loaded();
+	      }],
+	      programs: ["MembersAreaService", "purchasedData", function programs(MembersAreaService, purchasedData) {
+	        'ngInject';
+	
+	        return MembersAreaService.getProgramData().$loaded().then(function (programs) {
+	          var purchasedIds = purchasedData.map(function (item) {
+	            return item.id;
+	          });
+	          var updatedPrograms = programs.filter(function (program) {
+	            return purchasedIds.indexOf(program.$id) >= 0;
+	          });
+	          //console.log({updatedPrograms});
+	          return updatedPrograms;
+	        });
+	      }]
+	    }
+	  });
+	}]).name;
 
 /***/ }),
 /* 93 */
@@ -45888,23 +45985,122 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	exports.membersAreaProgramComponent = undefined;
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _membersAreaProgram = __webpack_require__(94);
+	
+	var _membersAreaProgram2 = _interopRequireDefault(_membersAreaProgram);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var membersAreaProgramComponent = exports.membersAreaProgramComponent = {
+	  bindings: {
+	    user: '<',
+	    purchasedData: '<',
+	    programs: '<'
+	  },
+	  templateUrl: _membersAreaProgram2.default,
+	  controller: function () {
+	    MembersAreaProgramComponent.$inject = ["AuthService", "$state"];
+	    function MembersAreaProgramComponent(AuthService, $state) {
+	      'ngInject';
+	
+	      _classCallCheck(this, MembersAreaProgramComponent);
+	
+	      this.authService = AuthService;
+	      this.$state = $state;
+	    }
+	
+	    _createClass(MembersAreaProgramComponent, [{
+	      key: '$onInit',
+	      value: function $onInit() {
+	        console.log('programs', this.programs);
+	        console.log('allowed courses', this.purchasedData);
+	      }
+	    }]);
+	
+	    return MembersAreaProgramComponent;
+	  }()
+	};
+
+/***/ }),
+/* 94 */
+/***/ (function(module, exports) {
+
+	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/members-area/members-area-program/members-area-program.html';
+	var html = "<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\"><a class=\"bread-crumb\" ui-sref=\"members-area\">Members Area</a> / Program Modules</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div class=\"container\">\r\n        <div class=\"flex\">\r\n          <div class=\"module-list-container\">\r\n            <p>Module List</p>\r\n          </div>\r\n          <div>\r\n            <video width=\"780\" controls>\r\n              <source src=\"https://s3.us-east-2.amazonaws.com/coach-srenee/Self-Image+_+Attitude+Program+/videos/Video+1+Introduction+to+Self-Image.mp4.mp4\" type=\"video/mp4\">\r\n              <source src=\"https://s3.us-east-2.amazonaws.com/coach-srenee/Self-Image+_+Attitude+Program+/videos/Video+1+Introduction+to+Self-Image.oggtheora.ogv\" type=\"video/ogg\">\r\n              Your browser does not support HTML5 video.\r\n            </video>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
+	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
+	module.exports = path;
+
+/***/ }),
+/* 95 */
+/***/ (function(module, exports) {
+
+	// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 96 */,
+/* 97 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.product = undefined;
+	
+	var _product = __webpack_require__(98);
+	
+	var _products = __webpack_require__(104);
+	
+	var _product2 = __webpack_require__(109);
+	
+	var _navBar = __webpack_require__(49);
+	
+	var _angularSanitize = __webpack_require__(110);
+	
+	var _angularSanitize2 = _interopRequireDefault(_angularSanitize);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var product = exports.product = angular.module('components.product', [_product.productSingle, _products.products, _navBar.navBar, _angularSanitize2.default]).service('ProductService', _product2.ProductService).name;
+
+/***/ }),
+/* 98 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
 	exports.productSingle = undefined;
 	
-	var _product = __webpack_require__(94);
+	var _product = __webpack_require__(99);
 	
-	__webpack_require__(96);
+	__webpack_require__(102);
 	
 	var productSingle = exports.productSingle = angular.module('components.product.product', []).component('product', _product.productComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
 	
 	  $stateProvider.state('product', {
 	    url: '/product/:id',
-	    component: 'product'
+	    component: 'product',
+	    resolve: {
+	      id: ["$transition$", function id($transition$) {
+	        return $transition$.params().id;
+	      }]
+	    }
 	  });
 	}]).name;
 
 /***/ }),
-/* 94 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45916,7 +46112,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _product = __webpack_require__(95);
+	var _product = __webpack_require__(100);
 	
 	var _product2 = _interopRequireDefault(_product);
 	
@@ -45924,16 +46120,20 @@
 	
 	var _firebase2 = _interopRequireDefault(_firebase);
 	
+	var _productDetails = __webpack_require__(101);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var productComponent = exports.productComponent = {
-	  bindings: {},
+	  bindings: {
+	    id: '<'
+	  },
 	  templateUrl: _product2.default,
 	  controller: function () {
-	    ProductController.$inject = ["AuthService", "$firebaseArray", "$q", "$state"];
-	    function ProductController(AuthService, $firebaseArray, $q, $state) {
+	    ProductController.$inject = ["AuthService", "$firebaseArray", "$q", "$state", "$sce"];
+	    function ProductController(AuthService, $firebaseArray, $q, $state, $sce) {
 	      'ngInject';
 	
 	      _classCallCheck(this, ProductController);
@@ -45942,15 +46142,25 @@
 	      this.$firebaseArray = $firebaseArray;
 	      this.$q = $q;
 	      this.$state = $state;
+	      this.$sce = $sce;
 	    }
 	
 	    _createClass(ProductController, [{
+	      key: '$onDestroy',
+	      value: function $onDestroy() {
+	        //Snipcart.unsubscribe('order.completed');
+	      }
+	    }, {
 	      key: '$onInit',
 	      value: function $onInit() {
+	        var _this = this;
 	
-	        Snipcart.subscribe('order.completed', function (data) {
-	          var _this = this;
+	        //this.id = 'CSR-0001';
+	        this.mainContent = this.$sce.trustAsHtml(_productDetails.productDetails[this.id][0]);
+	        this.sideBar = this.$sce.trustAsHtml(_productDetails.productDetails[this.id][1]);
 	
+	        //console.log(this.authService.register)
+	        Snipcart.subscribe('order.completed', function (order) {
 	          var nameSplit = order.billingAddress.name.split(' ');
 	          var firstName = nameSplit[0];
 	          var lastName = nameSplit[1];
@@ -46006,23 +46216,37 @@
 	};
 
 /***/ }),
-/* 95 */
+/* 100 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/product/product.html';
-	var html = "<nav-bar></nav-bar>\n<div class=\"main-content\">\n\n\t<h1>Title</h1>\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_2_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t\t<!--<div class=\"btn btn-primary\" ng-click=\"$ctrl.fakePurchase()\">Make Purchase</div>-->\n\t\t\t\t<button\n\t\t\t\t\t\tclass=\"snipcart-add-item btn btn-primary btn-cart\"\n\t\t\t\t\t\tdata-item-id=\"2\"\n\t\t\t\t\t\tdata-item-name=\"Margarita\"\n\t\t\t\t\t\tdata-item-price=\"9.00\"\n\t\t\t\t\t\tdata-item-url=\"https://hassanhibbert.github.io/data/products.json\"\n\t\t\t\t\t\tdata-item-description=\"The margarita is a cocktail made with tequila and citrus fruit juice\">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>";
+	var html = "<nav-bar></nav-bar>\n<div class=\"main-content\">\n\n\t<h1 class=\"page-header\">Product Details</h1>\n\t<!-- product 1 start -->\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_2_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<!--<h2>Self-Image & Attitude Development Program</h2>-->\n\t\t\t\t<!--<p>Description Here</p>-->\n\t\t\t\t<div ng-bind-html=\"$ctrl.mainContent\"></div>\n\t\t\t\t<!--<div ng-include=\"'product-details-self-image.html'\"></div>-->\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\" ng-bind-html=\"$ctrl.sideBar\"></div>\n\t\t</div>\n\t</div>\n\t<!-- end -->\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
 /***/ }),
-/* 96 */
+/* 101 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var productDetails = exports.productDetails = {
+	  'CSR-0001': ['\n    <h2 class="details-header">There Is More Inside Self-Image & Attitude Development Program</h2>\n    <p>\n      Your self perception is a predictor of the job you\u2019ll land, the quality of the relationships you\u2019ll\n      attract and the opportunities you\u2019ll take advantage of. If you want to break through to the next\n      level, you must discover the truth of who you are and the power that lies within you.\n      In this course, self-esteem and branding expert and coach S. Renee takes a deep dive with you\n      and shows you how to release yourself from the past, recover your personal power and rebuild\n      yourself from within.\n    </p>\n\n    <p>\n      S. Renee has been on her own journey of self-mastery since age 13. As a professional, she has\n      been helping others find their path to a positive self-image for the last 12 years. In this program,\n      delivers to you the spiritual principals and personal tools that will truly sustain and elevate your\n      self-awareness and self-esteem.\n    </p>\n\n    <p>Get ready for the shift and new life that awaits you. This program is Christian based.</p>\n\n    <h3>There Is More Inside Self-Image & Attitude Development Program</h3>\n    <h4>$197.00 USD</h4>\n\n    <p>\n      There Is More Inside Self-Image & Attitude Development Program is a tested and proven\n      system of change. Self-Esteem and Branding Coach S. Renee takes a deep dive with you and\n      shows you how to release yourself from the past, recover your personal power and rebuild\n      yourself from within. This program includes over $2000.00 of valuable products and services,\n      including 12 months of access to S. Renee via private Facebook community. It\u2019s a huge\n      discount today.\n    </p>\n\n    <p class="list-header"><strong>7-Module Professional Advancement Online Course ($450 value)</strong></p>\n    \n    <ul class="list-style">\n      <li>There Is More Inside Audio Book</li>\n      <li>There Is More Inside PDF</li>\n    </ul>\n\n    <p class="list-header"><strong>Bonus #1: Audio Downloads ($199.96 value)</strong></p>\n    \n    <ul class="list-style">\n      <li> Behind the Brand: The Spiritual Practices of S. Renee</li>\n      <li>Shake Your Fear Become Empowered</li>\n      <li>The Most Important Building Block to Self-Esteem</li>\n      <li>When to Hold On Or Let Go of Your Relationship</li>\n    </ul>\n\n    <p class="list-header"><strong>Bonus #2: An Interactive Small Group Coaching Session ($999.00 value)</strong></p>\n    <p>This powerful small-group LIVE virtual session enables you to ask questions and be coached by S. Renee.</p>\n    <p class="list-header"><strong>Bonus #3: Private Advancement Community with S. Renee and fellow students for an\n      entire YEAR! ($1200 value).</strong></p>\n    <p>That\'s over $2000 of value... But you can get in right now for just one payment of <strong>$197</strong>!</p>\n\n    <p>100% SATISFACTION GUARANTEE: If you don\'t love it for any reason whatsoever, let us know\n    within 30 days and you\'ll receive a full refund.</p>\n\n    <p class="list-header"><strong>Program Testimonials:</strong></p>\n\n    <p>This program has been tested by over 200 people. Ninety-eight percent experienced a change in their lives.</p>\n    <ul class="list-style">\n      <li>\u201CThis is the catalyst for moving you beyond your personal plateau.\u201D</li>   \n      <li>\u201CForced me to face myself so that I could see the real me.\u201D</li>     \n      <li>\u201CRejuvenating imparting of knowledge about the power within.\u201D</li>\n      <li>\u201CThis felt like a cold splash of water in my face.\u201D</li>\n      <li>\u201CI applied the information immediately and started apply for job that, I once thought, were out\n      of reach.</li>\n      <li>\u201CThis put me back on the right track.\u201D</li>\n      <li>\u201CWonderful energy, provoking exercises. Turned the earth over, the hard packed earth...\u201D</li>\n    </ul>\n<!--\nVideo 1: Introduction to Self-Image\nVideo 2 Wilt Thou Be Made Whole?\nVideo 3: The Rock\nVideo 4: That\u2019s Not My Stuff\nVideo 5: Poison of Unforgiveness\nAudio 1: Time Wizard\nVideo 6: Where Did I Come From?\nAudio 2: Mirror, Mirror\nVideo 7: You Have It!\nVideo 8:Do You Believe In What You\u2019re Hoping For?\nVideo 9:Come Out of the Box\nVideo 10: What is Attitude?\nVideo 11: It\u2019s Not What You Think It Is\nVideo 12: Mountain Be Moved\nVideo 13: Check Your Operating System Your Spirit Will Carry You!\n\nWorkbook\n\nThere Is More Inside Audio Book (8 audios)\n\nThere Is More Inside (PDF)\n\nBonus 1:\n\nAudio Downloads\n\nBehind the Brand: The Spiritual Practices of S. Renee\n\nShake Your Fear Become Empowered\n\nThe Most Important Building Block to Self-Esteem\n\nWhen to Let Go Or Hold On to a Relationship\n\nBonus #2: An Interactive Small Group Coaching Session ($999.00)\n\nThis powerful small-group LIVE virtual session enables you to ask questions and be coached by\n\nS. Renee.\n\nSend your questions to questions@srenee.com\n\nBonus #3: Private Advancement Community with S. Renee and fellow students for an\n\nentire YEAR! ($1200 value).\n\nThat\'s over $2000 of value... But you can get in right now for just one payment of $197!\n\nLink to Facebook Group - Make your request to join the group by clicking this link: There Is\n\nMore Inside...YOU! -->\n<hr>\n<div class="sidebar-center"> \n    <h4>Self-Image & Attitude Development Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-center"\n\t\t\t\t\t\tdata-item-id="CSR-0001"\n\t\t\t\t\t\tdata-item-name="There Is More Inside Self-Image & Attitude Development Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="7-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n\t\t\t\t</div>\n  ', '\n<div class="sidebar-center">\n<h2 class="sidebar-header">ONLINE PROGRAM</h2>\n    <h4>Self-Image & Attitude Development Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-full-width"\n\t\t\t\t\t\tdata-item-id="CSR-0001"\n\t\t\t\t\t\tdata-item-name="There Is More Inside Self-Image & Attitude Development Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="7-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n</div>\n\n  '],
+	  'CSR-0002': ['\n  <h2 class="details-header">UnBottle Your Business Brand With S. Renee</h2>\n\n<p>Business success starts with a brand\u2014a message that people will engage, connect and\nrespond to. When you brand yourself properly people come to know, like and trust you. In this\ncourse, S. Renee gives you an insider look at how to take the wisdom from your wounds to\nlaunch a speaking business, earn more bucks by living your brand, boost your confidence when\ncommunicating with your customers, and master overcoming moments of uncertainty.</p>\n\n<p class="list-header"><strong>S. Renee reveals her daily spiritual and business practices on how to:</strong></p>\n\n<ul class="list-style"> \n<li>craft your marketing mission, message and story</li>\n\n<li>differentiate yourself in the marketplace</li>\n\n<li>connect with customers</li>\n\n<li>be confident in moments of uncertainty</li>\n\n<li>create buzz for business</li>\n</ul>\n\n<p class="list-header"><strong>Special Testimonial Video: &nbsp;</strong><a href="https://www.youtube.com/watch?v=SQ39edfz8xo">https://www.youtube.com/watch?v=SQ39edfz8xo</a></p><br>\n<h3>UnBottle Your Business Brand with S. Renee Online Program</h3>\n\n<h4>$197.00 USD</h4>\n\n<p>\nS. Renee gives you an insider look at how to take the wisdom from your wounds to launch a\nspeaking business, earn more bucks by living your brand, boost your confidence when\ncommunicating with your customers, and master overcoming your moments of uncertainty.</p>\n<p>\nUnBottle Your Business Brand With S. Renee Online Course includes over $2000.00 of valuable\nproducts and services, including 12 months of access to S. Renee via private Facebook community. It\u2019s a huge discount today.\n</p>\n\n<p class="list-header"><strong>13-Module Professional Advancement Online Course ($597 value)</strong></p>\n\n<p class="list-header"><strong>Bridge to Your Brand E-Book</strong></p>\n\n<p class="list-header"><strong>Bonus #1: Downloads ($199.95 value)</strong>\n\n<ul class="list-style"> \n<li>How to Find Your Passion</li>\n\n<li>Behind the Brand: The Spiritual Practices of S. Renee</li>\n\n<li>Shake Your Fear Become Empowered</li>\n\n<li>The Most Important Building Block to Self-Esteem</li>\n\n<li>When to Hold On Or Let Go of Your Relationship</li>\n\n<p class="list-header"><strong>Bonus #2: Interactive Small Group Coaching Session ($999.97 value)</strong></p>\n\n<p>This powerful small-group LIVE virtual session enables you to ask questions and be coached byS. Renee.</p>\n\n<p class="list-header"><strong>Bonus #3: Private Advancement Community with S. Renee and fellow students for an entire YEAR! ($1200 value).</strong></p>\n\n<p>That\'s over $2000 of value... But you can get in right now for just one payment of <strong>$197</strong>!</p>\n<p>\n100% SATISFACTION GUARANTEE: If you don\'t love it for any reason whatsoever, let us know\nwithin 30 days and you\'ll receive a full refund.</p>\n<hr>\n<div class="sidebar-center"> \n <h4>UnBottle Your Business Brand With S. Renee Online Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green"\n\t\t\t\t\t\tdata-item-id="CSR-0002"\n\t\t\t\t\t\tdata-item-name="UnBottle Your Business Brand with S. Renee Online Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="13-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n\t\t\t\t</div>\n  ', '\n  <div class="sidebar-center">\n<h2 class="sidebar-header">ONLINE PROGRAM</h2>\n    <h4>UnBottle Your Business Brand With S. Renee Online Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-full-width"\n\t\t\t\t\t\tdata-item-id="CSR-0002"\n\t\t\t\t\t\tdata-item-name="UnBottle Your Business Brand with S. Renee Online Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="13-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n</div>\n  ']
+	};
+
+/***/ }),
+/* 102 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 97 */,
-/* 98 */
+/* 103 */,
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46032,9 +46256,9 @@
 	});
 	exports.products = undefined;
 	
-	var _products = __webpack_require__(99);
+	var _products = __webpack_require__(105);
 	
-	__webpack_require__(101);
+	__webpack_require__(107);
 	
 	var products = exports.products = angular.module('components.product.products', []).component('products', _products.productsComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -46053,7 +46277,7 @@
 	}]).name;
 
 /***/ }),
-/* 99 */
+/* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46065,7 +46289,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _products = __webpack_require__(100);
+	var _products = __webpack_require__(106);
 	
 	var _products2 = _interopRequireDefault(_products);
 	
@@ -46100,23 +46324,23 @@
 	};
 
 /***/ }),
-/* 100 */
+/* 106 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/products/products.html';
-	var html = "\n<nav-bar></nav-bar>\n<div class=\"main-content\">\n\n\t<h1>Product Listing</h1>\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #2</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #3</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t\t<a class=\"btn btn-primary btn-light\" ui-sref=\"product({id:1})\">Learn More</a>\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #1</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #2</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Title #3</h2>\n\t\t\t\t<p>Description Here</p>\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\n\n\t<button\n\t\t\tclass=\"snipcart-add-item btn btn-primary\"\n\t\t\tdata-item-id=\"2\"\n\t\t\tdata-item-name=\"Web Learning Course\"\n\t\t\tdata-item-price=\"29.99\"\n\t\t\tdata-item-url=\"https://hassanhibbert.github.io/data/products.json\"\n\t\t\tdata-item-description=\"A web app to learn new things.\">\n\t\tBuy My Special Software\n\t</button>\n\t<br><br>\n\t<a href=\"#\" class=\"snipcart-checkout\">Click here to checkout</a>\n\t<br><br>\n\n\n\n\n</div>\n\n\n\n";
+	var html = "\n<nav-bar></nav-bar>\n<div class=\"main-content\">\n\n\t<h1 class=\"page-header\">Product Listing</h1>\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Self-Image &amp;amp; Attitude Development Program</h2>\n\t\t\t\t<p>In this course, self-esteem and branding expert and coach S. Renee takes a deep dive with you\n\t\t\t\t\tand shows you how to release yourself from the past.</p>\n\t\t\t\t<a class=\"btn btn-primary \" ui-sref=\"product({id:'CSR-0001'})\">Learn More</a>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>UnBottle Your Business Brand with S. Renee Online Program</h2>\n\t\t\t\t<p>S. Renee gives you an insider look at how to take the wisdom from your wounds to launch a\n\t\t\t\t\tspeaking business.</p>\n\t\t\t\t<a class=\"btn btn-primary\" ui-sref=\"product({id:'CSR-0002'})\">Learn More</a>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>UnBottle Your Genie Design Your Brand Action Plan</h2>\n\t\t\t\t<p>If you want to discover how people currently perceive you and redesign and communicate your\n\t\t\t\t\tbrand so that you produce the results you dream of and hunger to accomplish.</p>\n\t\t\t\t<a class=\"btn btn-primary\" ng-disabled=\"true\" http=\"\">Coming Soon</a>\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\n\n\n\t<!--<button-->\n\t\t\t<!--class=\"snipcart-add-item btn btn-primary\"-->\n\t\t\t<!--data-item-id=\"2\"-->\n\t\t\t<!--data-item-name=\"Web Learning Course\"-->\n\t\t\t<!--data-item-price=\"29.99\"-->\n\t\t\t<!--data-item-url=\"https://hassanhibbert.github.io/data/products.json\"-->\n\t\t\t<!--data-item-description=\"A web app to learn new things.\">-->\n\t\t<!--Buy My Special Software-->\n\t<!--</button>-->\n\t<!--<br><br>-->\n\t<!--<a href=\"#\" class=\"snipcart-checkout\">Click here to checkout</a>-->\n\t<!--<br><br>-->\n\n\n\n\n</div>\n\n\n\n";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
 /***/ }),
-/* 101 */
+/* 107 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 102 */,
-/* 103 */
+/* 108 */,
+/* 109 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46175,7 +46399,760 @@
 	}();
 
 /***/ }),
-/* 104 */
+/* 110 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	__webpack_require__(111);
+	module.exports = 'ngSanitize';
+
+
+/***/ }),
+/* 111 */
+/***/ (function(module, exports) {
+
+	/**
+	 * @license AngularJS v1.5.11
+	 * (c) 2010-2017 Google, Inc. http://angularjs.org
+	 * License: MIT
+	 */
+	(function(window, angular) {'use strict';
+	
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+	 *     Any commits to this file should be reviewed with security in mind.  *
+	 *   Changes to this file can potentially create security vulnerabilities. *
+	 *          An approval from 2 Core members with history of modifying      *
+	 *                         this file is required.                          *
+	 *                                                                         *
+	 *  Does the change somehow allow for arbitrary javascript to be executed? *
+	 *    Or allows for someone to change the prototype of built-in objects?   *
+	 *     Or gives undesired access to variables likes document or window?    *
+	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+	
+	var $sanitizeMinErr = angular.$$minErr('$sanitize');
+	var bind;
+	var extend;
+	var forEach;
+	var isDefined;
+	var lowercase;
+	var noop;
+	var htmlParser;
+	var htmlSanitizeWriter;
+	
+	/**
+	 * @ngdoc module
+	 * @name ngSanitize
+	 * @description
+	 *
+	 * # ngSanitize
+	 *
+	 * The `ngSanitize` module provides functionality to sanitize HTML.
+	 *
+	 *
+	 * <div doc-module-components="ngSanitize"></div>
+	 *
+	 * See {@link ngSanitize.$sanitize `$sanitize`} for usage.
+	 */
+	
+	/**
+	 * @ngdoc service
+	 * @name $sanitize
+	 * @kind function
+	 *
+	 * @description
+	 *   Sanitizes an html string by stripping all potentially dangerous tokens.
+	 *
+	 *   The input is sanitized by parsing the HTML into tokens. All safe tokens (from a whitelist) are
+	 *   then serialized back to properly escaped html string. This means that no unsafe input can make
+	 *   it into the returned string.
+	 *
+	 *   The whitelist for URL sanitization of attribute values is configured using the functions
+	 *   `aHrefSanitizationWhitelist` and `imgSrcSanitizationWhitelist` of {@link ng.$compileProvider
+	 *   `$compileProvider`}.
+	 *
+	 *   The input may also contain SVG markup if this is enabled via {@link $sanitizeProvider}.
+	 *
+	 * @param {string} html HTML input.
+	 * @returns {string} Sanitized HTML.
+	 *
+	 * @example
+	   <example module="sanitizeExample" deps="angular-sanitize.js" name="sanitize-service">
+	   <file name="index.html">
+	     <script>
+	         angular.module('sanitizeExample', ['ngSanitize'])
+	           .controller('ExampleController', ['$scope', '$sce', function($scope, $sce) {
+	             $scope.snippet =
+	               '<p style="color:blue">an html\n' +
+	               '<em onmouseover="this.textContent=\'PWN3D!\'">click here</em>\n' +
+	               'snippet</p>';
+	             $scope.deliberatelyTrustDangerousSnippet = function() {
+	               return $sce.trustAsHtml($scope.snippet);
+	             };
+	           }]);
+	     </script>
+	     <div ng-controller="ExampleController">
+	        Snippet: <textarea ng-model="snippet" cols="60" rows="3"></textarea>
+	       <table>
+	         <tr>
+	           <td>Directive</td>
+	           <td>How</td>
+	           <td>Source</td>
+	           <td>Rendered</td>
+	         </tr>
+	         <tr id="bind-html-with-sanitize">
+	           <td>ng-bind-html</td>
+	           <td>Automatically uses $sanitize</td>
+	           <td><pre>&lt;div ng-bind-html="snippet"&gt;<br/>&lt;/div&gt;</pre></td>
+	           <td><div ng-bind-html="snippet"></div></td>
+	         </tr>
+	         <tr id="bind-html-with-trust">
+	           <td>ng-bind-html</td>
+	           <td>Bypass $sanitize by explicitly trusting the dangerous value</td>
+	           <td>
+	           <pre>&lt;div ng-bind-html="deliberatelyTrustDangerousSnippet()"&gt;
+	&lt;/div&gt;</pre>
+	           </td>
+	           <td><div ng-bind-html="deliberatelyTrustDangerousSnippet()"></div></td>
+	         </tr>
+	         <tr id="bind-default">
+	           <td>ng-bind</td>
+	           <td>Automatically escapes</td>
+	           <td><pre>&lt;div ng-bind="snippet"&gt;<br/>&lt;/div&gt;</pre></td>
+	           <td><div ng-bind="snippet"></div></td>
+	         </tr>
+	       </table>
+	       </div>
+	   </file>
+	   <file name="protractor.js" type="protractor">
+	     it('should sanitize the html snippet by default', function() {
+	       expect(element(by.css('#bind-html-with-sanitize div')).getAttribute('innerHTML')).
+	         toBe('<p>an html\n<em>click here</em>\nsnippet</p>');
+	     });
+	
+	     it('should inline raw snippet if bound to a trusted value', function() {
+	       expect(element(by.css('#bind-html-with-trust div')).getAttribute('innerHTML')).
+	         toBe("<p style=\"color:blue\">an html\n" +
+	              "<em onmouseover=\"this.textContent='PWN3D!'\">click here</em>\n" +
+	              "snippet</p>");
+	     });
+	
+	     it('should escape snippet without any filter', function() {
+	       expect(element(by.css('#bind-default div')).getAttribute('innerHTML')).
+	         toBe("&lt;p style=\"color:blue\"&gt;an html\n" +
+	              "&lt;em onmouseover=\"this.textContent='PWN3D!'\"&gt;click here&lt;/em&gt;\n" +
+	              "snippet&lt;/p&gt;");
+	     });
+	
+	     it('should update', function() {
+	       element(by.model('snippet')).clear();
+	       element(by.model('snippet')).sendKeys('new <b onclick="alert(1)">text</b>');
+	       expect(element(by.css('#bind-html-with-sanitize div')).getAttribute('innerHTML')).
+	         toBe('new <b>text</b>');
+	       expect(element(by.css('#bind-html-with-trust div')).getAttribute('innerHTML')).toBe(
+	         'new <b onclick="alert(1)">text</b>');
+	       expect(element(by.css('#bind-default div')).getAttribute('innerHTML')).toBe(
+	         "new &lt;b onclick=\"alert(1)\"&gt;text&lt;/b&gt;");
+	     });
+	   </file>
+	   </example>
+	 */
+	
+	
+	/**
+	 * @ngdoc provider
+	 * @name $sanitizeProvider
+	 * @this
+	 *
+	 * @description
+	 * Creates and configures {@link $sanitize} instance.
+	 */
+	function $SanitizeProvider() {
+	  var svgEnabled = false;
+	
+	  this.$get = ['$$sanitizeUri', function($$sanitizeUri) {
+	    if (svgEnabled) {
+	      extend(validElements, svgElements);
+	    }
+	    return function(html) {
+	      var buf = [];
+	      htmlParser(html, htmlSanitizeWriter(buf, function(uri, isImage) {
+	        return !/^unsafe:/.test($$sanitizeUri(uri, isImage));
+	      }));
+	      return buf.join('');
+	    };
+	  }];
+	
+	
+	  /**
+	   * @ngdoc method
+	   * @name $sanitizeProvider#enableSvg
+	   * @kind function
+	   *
+	   * @description
+	   * Enables a subset of svg to be supported by the sanitizer.
+	   *
+	   * <div class="alert alert-warning">
+	   *   <p>By enabling this setting without taking other precautions, you might expose your
+	   *   application to click-hijacking attacks. In these attacks, sanitized svg elements could be positioned
+	   *   outside of the containing element and be rendered over other elements on the page (e.g. a login
+	   *   link). Such behavior can then result in phishing incidents.</p>
+	   *
+	   *   <p>To protect against these, explicitly setup `overflow: hidden` css rule for all potential svg
+	   *   tags within the sanitized content:</p>
+	   *
+	   *   <br>
+	   *
+	   *   <pre><code>
+	   *   .rootOfTheIncludedContent svg {
+	   *     overflow: hidden !important;
+	   *   }
+	   *   </code></pre>
+	   * </div>
+	   *
+	   * @param {boolean=} flag Enable or disable SVG support in the sanitizer.
+	   * @returns {boolean|ng.$sanitizeProvider} Returns the currently configured value if called
+	   *    without an argument or self for chaining otherwise.
+	   */
+	  this.enableSvg = function(enableSvg) {
+	    if (isDefined(enableSvg)) {
+	      svgEnabled = enableSvg;
+	      return this;
+	    } else {
+	      return svgEnabled;
+	    }
+	  };
+	
+	  //////////////////////////////////////////////////////////////////////////////////////////////////
+	  // Private stuff
+	  //////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	  bind = angular.bind;
+	  extend = angular.extend;
+	  forEach = angular.forEach;
+	  isDefined = angular.isDefined;
+	  lowercase = angular.lowercase;
+	  noop = angular.noop;
+	
+	  htmlParser = htmlParserImpl;
+	  htmlSanitizeWriter = htmlSanitizeWriterImpl;
+	
+	  // Regular Expressions for parsing tags and attributes
+	  var SURROGATE_PAIR_REGEXP = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g,
+	    // Match everything outside of normal chars and " (quote character)
+	    NON_ALPHANUMERIC_REGEXP = /([^#-~ |!])/g;
+	
+	
+	  // Good source of info about elements and attributes
+	  // http://dev.w3.org/html5/spec/Overview.html#semantics
+	  // http://simon.html5.org/html-elements
+	
+	  // Safe Void Elements - HTML5
+	  // http://dev.w3.org/html5/spec/Overview.html#void-elements
+	  var voidElements = toMap('area,br,col,hr,img,wbr');
+	
+	  // Elements that you can, intentionally, leave open (and which close themselves)
+	  // http://dev.w3.org/html5/spec/Overview.html#optional-tags
+	  var optionalEndTagBlockElements = toMap('colgroup,dd,dt,li,p,tbody,td,tfoot,th,thead,tr'),
+	      optionalEndTagInlineElements = toMap('rp,rt'),
+	      optionalEndTagElements = extend({},
+	                                              optionalEndTagInlineElements,
+	                                              optionalEndTagBlockElements);
+	
+	  // Safe Block Elements - HTML5
+	  var blockElements = extend({}, optionalEndTagBlockElements, toMap('address,article,' +
+	          'aside,blockquote,caption,center,del,dir,div,dl,figure,figcaption,footer,h1,h2,h3,h4,h5,' +
+	          'h6,header,hgroup,hr,ins,map,menu,nav,ol,pre,section,table,ul'));
+	
+	  // Inline Elements - HTML5
+	  var inlineElements = extend({}, optionalEndTagInlineElements, toMap('a,abbr,acronym,b,' +
+	          'bdi,bdo,big,br,cite,code,del,dfn,em,font,i,img,ins,kbd,label,map,mark,q,ruby,rp,rt,s,' +
+	          'samp,small,span,strike,strong,sub,sup,time,tt,u,var'));
+	
+	  // SVG Elements
+	  // https://wiki.whatwg.org/wiki/Sanitization_rules#svg_Elements
+	  // Note: the elements animate,animateColor,animateMotion,animateTransform,set are intentionally omitted.
+	  // They can potentially allow for arbitrary javascript to be executed. See #11290
+	  var svgElements = toMap('circle,defs,desc,ellipse,font-face,font-face-name,font-face-src,g,glyph,' +
+	          'hkern,image,linearGradient,line,marker,metadata,missing-glyph,mpath,path,polygon,polyline,' +
+	          'radialGradient,rect,stop,svg,switch,text,title,tspan');
+	
+	  // Blocked Elements (will be stripped)
+	  var blockedElements = toMap('script,style');
+	
+	  var validElements = extend({},
+	                                     voidElements,
+	                                     blockElements,
+	                                     inlineElements,
+	                                     optionalEndTagElements);
+	
+	  //Attributes that have href and hence need to be sanitized
+	  var uriAttrs = toMap('background,cite,href,longdesc,src,xlink:href');
+	
+	  var htmlAttrs = toMap('abbr,align,alt,axis,bgcolor,border,cellpadding,cellspacing,class,clear,' +
+	      'color,cols,colspan,compact,coords,dir,face,headers,height,hreflang,hspace,' +
+	      'ismap,lang,language,nohref,nowrap,rel,rev,rows,rowspan,rules,' +
+	      'scope,scrolling,shape,size,span,start,summary,tabindex,target,title,type,' +
+	      'valign,value,vspace,width');
+	
+	  // SVG attributes (without "id" and "name" attributes)
+	  // https://wiki.whatwg.org/wiki/Sanitization_rules#svg_Attributes
+	  var svgAttrs = toMap('accent-height,accumulate,additive,alphabetic,arabic-form,ascent,' +
+	      'baseProfile,bbox,begin,by,calcMode,cap-height,class,color,color-rendering,content,' +
+	      'cx,cy,d,dx,dy,descent,display,dur,end,fill,fill-rule,font-family,font-size,font-stretch,' +
+	      'font-style,font-variant,font-weight,from,fx,fy,g1,g2,glyph-name,gradientUnits,hanging,' +
+	      'height,horiz-adv-x,horiz-origin-x,ideographic,k,keyPoints,keySplines,keyTimes,lang,' +
+	      'marker-end,marker-mid,marker-start,markerHeight,markerUnits,markerWidth,mathematical,' +
+	      'max,min,offset,opacity,orient,origin,overline-position,overline-thickness,panose-1,' +
+	      'path,pathLength,points,preserveAspectRatio,r,refX,refY,repeatCount,repeatDur,' +
+	      'requiredExtensions,requiredFeatures,restart,rotate,rx,ry,slope,stemh,stemv,stop-color,' +
+	      'stop-opacity,strikethrough-position,strikethrough-thickness,stroke,stroke-dasharray,' +
+	      'stroke-dashoffset,stroke-linecap,stroke-linejoin,stroke-miterlimit,stroke-opacity,' +
+	      'stroke-width,systemLanguage,target,text-anchor,to,transform,type,u1,u2,underline-position,' +
+	      'underline-thickness,unicode,unicode-range,units-per-em,values,version,viewBox,visibility,' +
+	      'width,widths,x,x-height,x1,x2,xlink:actuate,xlink:arcrole,xlink:role,xlink:show,xlink:title,' +
+	      'xlink:type,xml:base,xml:lang,xml:space,xmlns,xmlns:xlink,y,y1,y2,zoomAndPan', true);
+	
+	  var validAttrs = extend({},
+	                                  uriAttrs,
+	                                  svgAttrs,
+	                                  htmlAttrs);
+	
+	  function toMap(str, lowercaseKeys) {
+	    var obj = {}, items = str.split(','), i;
+	    for (i = 0; i < items.length; i++) {
+	      obj[lowercaseKeys ? lowercase(items[i]) : items[i]] = true;
+	    }
+	    return obj;
+	  }
+	
+	  var inertBodyElement;
+	  (function(window) {
+	    var doc;
+	    if (window.document && window.document.implementation) {
+	      doc = window.document.implementation.createHTMLDocument('inert');
+	    } else {
+	      throw $sanitizeMinErr('noinert', 'Can\'t create an inert html document');
+	    }
+	    var docElement = doc.documentElement || doc.getDocumentElement();
+	    var bodyElements = docElement.getElementsByTagName('body');
+	
+	    // usually there should be only one body element in the document, but IE doesn't have any, so we need to create one
+	    if (bodyElements.length === 1) {
+	      inertBodyElement = bodyElements[0];
+	    } else {
+	      var html = doc.createElement('html');
+	      inertBodyElement = doc.createElement('body');
+	      html.appendChild(inertBodyElement);
+	      doc.appendChild(html);
+	    }
+	  })(window);
+	
+	  /**
+	   * @example
+	   * htmlParser(htmlString, {
+	   *     start: function(tag, attrs) {},
+	   *     end: function(tag) {},
+	   *     chars: function(text) {},
+	   *     comment: function(text) {}
+	   * });
+	   *
+	   * @param {string} html string
+	   * @param {object} handler
+	   */
+	  function htmlParserImpl(html, handler) {
+	    if (html === null || html === undefined) {
+	      html = '';
+	    } else if (typeof html !== 'string') {
+	      html = '' + html;
+	    }
+	    inertBodyElement.innerHTML = html;
+	
+	    //mXSS protection
+	    var mXSSAttempts = 5;
+	    do {
+	      if (mXSSAttempts === 0) {
+	        throw $sanitizeMinErr('uinput', 'Failed to sanitize html because the input is unstable');
+	      }
+	      mXSSAttempts--;
+	
+	      // strip custom-namespaced attributes on IE<=11
+	      if (window.document.documentMode) {
+	        stripCustomNsAttrs(inertBodyElement);
+	      }
+	      html = inertBodyElement.innerHTML; //trigger mXSS
+	      inertBodyElement.innerHTML = html;
+	    } while (html !== inertBodyElement.innerHTML);
+	
+	    var node = inertBodyElement.firstChild;
+	    while (node) {
+	      switch (node.nodeType) {
+	        case 1: // ELEMENT_NODE
+	          handler.start(node.nodeName.toLowerCase(), attrToMap(node.attributes));
+	          break;
+	        case 3: // TEXT NODE
+	          handler.chars(node.textContent);
+	          break;
+	      }
+	
+	      var nextNode;
+	      if (!(nextNode = node.firstChild)) {
+	      if (node.nodeType === 1) {
+	          handler.end(node.nodeName.toLowerCase());
+	        }
+	        nextNode = node.nextSibling;
+	        if (!nextNode) {
+	          while (nextNode == null) {
+	            node = node.parentNode;
+	            if (node === inertBodyElement) break;
+	            nextNode = node.nextSibling;
+	          if (node.nodeType === 1) {
+	              handler.end(node.nodeName.toLowerCase());
+	            }
+	          }
+	        }
+	      }
+	      node = nextNode;
+	    }
+	
+	    while ((node = inertBodyElement.firstChild)) {
+	      inertBodyElement.removeChild(node);
+	    }
+	  }
+	
+	  function attrToMap(attrs) {
+	    var map = {};
+	    for (var i = 0, ii = attrs.length; i < ii; i++) {
+	      var attr = attrs[i];
+	      map[attr.name] = attr.value;
+	    }
+	    return map;
+	  }
+	
+	
+	  /**
+	   * Escapes all potentially dangerous characters, so that the
+	   * resulting string can be safely inserted into attribute or
+	   * element text.
+	   * @param value
+	   * @returns {string} escaped text
+	   */
+	  function encodeEntities(value) {
+	    return value.
+	      replace(/&/g, '&amp;').
+	      replace(SURROGATE_PAIR_REGEXP, function(value) {
+	        var hi = value.charCodeAt(0);
+	        var low = value.charCodeAt(1);
+	        return '&#' + (((hi - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000) + ';';
+	      }).
+	      replace(NON_ALPHANUMERIC_REGEXP, function(value) {
+	        return '&#' + value.charCodeAt(0) + ';';
+	      }).
+	      replace(/</g, '&lt;').
+	      replace(/>/g, '&gt;');
+	  }
+	
+	  /**
+	   * create an HTML/XML writer which writes to buffer
+	   * @param {Array} buf use buf.join('') to get out sanitized html string
+	   * @returns {object} in the form of {
+	   *     start: function(tag, attrs) {},
+	   *     end: function(tag) {},
+	   *     chars: function(text) {},
+	   *     comment: function(text) {}
+	   * }
+	   */
+	  function htmlSanitizeWriterImpl(buf, uriValidator) {
+	    var ignoreCurrentElement = false;
+	    var out = bind(buf, buf.push);
+	    return {
+	      start: function(tag, attrs) {
+	        tag = lowercase(tag);
+	        if (!ignoreCurrentElement && blockedElements[tag]) {
+	          ignoreCurrentElement = tag;
+	        }
+	        if (!ignoreCurrentElement && validElements[tag] === true) {
+	          out('<');
+	          out(tag);
+	          forEach(attrs, function(value, key) {
+	            var lkey = lowercase(key);
+	            var isImage = (tag === 'img' && lkey === 'src') || (lkey === 'background');
+	            if (validAttrs[lkey] === true &&
+	              (uriAttrs[lkey] !== true || uriValidator(value, isImage))) {
+	              out(' ');
+	              out(key);
+	              out('="');
+	              out(encodeEntities(value));
+	              out('"');
+	            }
+	          });
+	          out('>');
+	        }
+	      },
+	      end: function(tag) {
+	        tag = lowercase(tag);
+	        if (!ignoreCurrentElement && validElements[tag] === true && voidElements[tag] !== true) {
+	          out('</');
+	          out(tag);
+	          out('>');
+	        }
+	        // eslint-disable-next-line eqeqeq
+	        if (tag == ignoreCurrentElement) {
+	          ignoreCurrentElement = false;
+	        }
+	      },
+	      chars: function(chars) {
+	        if (!ignoreCurrentElement) {
+	          out(encodeEntities(chars));
+	        }
+	      }
+	    };
+	  }
+	
+	
+	  /**
+	   * When IE9-11 comes across an unknown namespaced attribute e.g. 'xlink:foo' it adds 'xmlns:ns1' attribute to declare
+	   * ns1 namespace and prefixes the attribute with 'ns1' (e.g. 'ns1:xlink:foo'). This is undesirable since we don't want
+	   * to allow any of these custom attributes. This method strips them all.
+	   *
+	   * @param node Root element to process
+	   */
+	  function stripCustomNsAttrs(node) {
+	    while (node) {
+	      if (node.nodeType === window.Node.ELEMENT_NODE) {
+	        var attrs = node.attributes;
+	        for (var i = 0, l = attrs.length; i < l; i++) {
+	          var attrNode = attrs[i];
+	          var attrName = attrNode.name.toLowerCase();
+	          if (attrName === 'xmlns:ns1' || attrName.lastIndexOf('ns1:', 0) === 0) {
+	            node.removeAttributeNode(attrNode);
+	            i--;
+	            l--;
+	          }
+	        }
+	      }
+	
+	      var nextNode = node.firstChild;
+	      if (nextNode) {
+	        stripCustomNsAttrs(nextNode);
+	      }
+	
+	      node = node.nextSibling;
+	    }
+	  }
+	}
+	
+	function sanitizeText(chars) {
+	  var buf = [];
+	  var writer = htmlSanitizeWriter(buf, noop);
+	  writer.chars(chars);
+	  return buf.join('');
+	}
+	
+	
+	// define ngSanitize module and register $sanitize service
+	angular.module('ngSanitize', []).provider('$sanitize', $SanitizeProvider);
+	
+	/**
+	 * @ngdoc filter
+	 * @name linky
+	 * @kind function
+	 *
+	 * @description
+	 * Finds links in text input and turns them into html links. Supports `http/https/ftp/mailto` and
+	 * plain email address links.
+	 *
+	 * Requires the {@link ngSanitize `ngSanitize`} module to be installed.
+	 *
+	 * @param {string} text Input text.
+	 * @param {string} target Window (`_blank|_self|_parent|_top`) or named frame to open links in.
+	 * @param {object|function(url)} [attributes] Add custom attributes to the link element.
+	 *
+	 *    Can be one of:
+	 *
+	 *    - `object`: A map of attributes
+	 *    - `function`: Takes the url as a parameter and returns a map of attributes
+	 *
+	 *    If the map of attributes contains a value for `target`, it overrides the value of
+	 *    the target parameter.
+	 *
+	 *
+	 * @returns {string} Html-linkified and {@link $sanitize sanitized} text.
+	 *
+	 * @usage
+	   <span ng-bind-html="linky_expression | linky"></span>
+	 *
+	 * @example
+	   <example module="linkyExample" deps="angular-sanitize.js" name="linky-filter">
+	     <file name="index.html">
+	       <div ng-controller="ExampleController">
+	       Snippet: <textarea ng-model="snippet" cols="60" rows="3"></textarea>
+	       <table>
+	         <tr>
+	           <th>Filter</th>
+	           <th>Source</th>
+	           <th>Rendered</th>
+	         </tr>
+	         <tr id="linky-filter">
+	           <td>linky filter</td>
+	           <td>
+	             <pre>&lt;div ng-bind-html="snippet | linky"&gt;<br>&lt;/div&gt;</pre>
+	           </td>
+	           <td>
+	             <div ng-bind-html="snippet | linky"></div>
+	           </td>
+	         </tr>
+	         <tr id="linky-target">
+	          <td>linky target</td>
+	          <td>
+	            <pre>&lt;div ng-bind-html="snippetWithSingleURL | linky:'_blank'"&gt;<br>&lt;/div&gt;</pre>
+	          </td>
+	          <td>
+	            <div ng-bind-html="snippetWithSingleURL | linky:'_blank'"></div>
+	          </td>
+	         </tr>
+	         <tr id="linky-custom-attributes">
+	          <td>linky custom attributes</td>
+	          <td>
+	            <pre>&lt;div ng-bind-html="snippetWithSingleURL | linky:'_self':{rel: 'nofollow'}"&gt;<br>&lt;/div&gt;</pre>
+	          </td>
+	          <td>
+	            <div ng-bind-html="snippetWithSingleURL | linky:'_self':{rel: 'nofollow'}"></div>
+	          </td>
+	         </tr>
+	         <tr id="escaped-html">
+	           <td>no filter</td>
+	           <td><pre>&lt;div ng-bind="snippet"&gt;<br>&lt;/div&gt;</pre></td>
+	           <td><div ng-bind="snippet"></div></td>
+	         </tr>
+	       </table>
+	     </file>
+	     <file name="script.js">
+	       angular.module('linkyExample', ['ngSanitize'])
+	         .controller('ExampleController', ['$scope', function($scope) {
+	           $scope.snippet =
+	             'Pretty text with some links:\n' +
+	             'http://angularjs.org/,\n' +
+	             'mailto:us@somewhere.org,\n' +
+	             'another@somewhere.org,\n' +
+	             'and one more: ftp://127.0.0.1/.';
+	           $scope.snippetWithSingleURL = 'http://angularjs.org/';
+	         }]);
+	     </file>
+	     <file name="protractor.js" type="protractor">
+	       it('should linkify the snippet with urls', function() {
+	         expect(element(by.id('linky-filter')).element(by.binding('snippet | linky')).getText()).
+	             toBe('Pretty text with some links: http://angularjs.org/, us@somewhere.org, ' +
+	                  'another@somewhere.org, and one more: ftp://127.0.0.1/.');
+	         expect(element.all(by.css('#linky-filter a')).count()).toEqual(4);
+	       });
+	
+	       it('should not linkify snippet without the linky filter', function() {
+	         expect(element(by.id('escaped-html')).element(by.binding('snippet')).getText()).
+	             toBe('Pretty text with some links: http://angularjs.org/, mailto:us@somewhere.org, ' +
+	                  'another@somewhere.org, and one more: ftp://127.0.0.1/.');
+	         expect(element.all(by.css('#escaped-html a')).count()).toEqual(0);
+	       });
+	
+	       it('should update', function() {
+	         element(by.model('snippet')).clear();
+	         element(by.model('snippet')).sendKeys('new http://link.');
+	         expect(element(by.id('linky-filter')).element(by.binding('snippet | linky')).getText()).
+	             toBe('new http://link.');
+	         expect(element.all(by.css('#linky-filter a')).count()).toEqual(1);
+	         expect(element(by.id('escaped-html')).element(by.binding('snippet')).getText())
+	             .toBe('new http://link.');
+	       });
+	
+	       it('should work with the target property', function() {
+	        expect(element(by.id('linky-target')).
+	            element(by.binding("snippetWithSingleURL | linky:'_blank'")).getText()).
+	            toBe('http://angularjs.org/');
+	        expect(element(by.css('#linky-target a')).getAttribute('target')).toEqual('_blank');
+	       });
+	
+	       it('should optionally add custom attributes', function() {
+	        expect(element(by.id('linky-custom-attributes')).
+	            element(by.binding("snippetWithSingleURL | linky:'_self':{rel: 'nofollow'}")).getText()).
+	            toBe('http://angularjs.org/');
+	        expect(element(by.css('#linky-custom-attributes a')).getAttribute('rel')).toEqual('nofollow');
+	       });
+	     </file>
+	   </example>
+	 */
+	angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
+	  var LINKY_URL_REGEXP =
+	        /((ftp|https?):\/\/|(www\.)|(mailto:)?[A-Za-z0-9._%+-]+@)\S*[^\s.;,(){}<>"\u201d\u2019]/i,
+	      MAILTO_REGEXP = /^mailto:/i;
+	
+	  var linkyMinErr = angular.$$minErr('linky');
+	  var isDefined = angular.isDefined;
+	  var isFunction = angular.isFunction;
+	  var isObject = angular.isObject;
+	  var isString = angular.isString;
+	
+	  return function(text, target, attributes) {
+	    if (text == null || text === '') return text;
+	    if (!isString(text)) throw linkyMinErr('notstring', 'Expected string but received: {0}', text);
+	
+	    var attributesFn =
+	      isFunction(attributes) ? attributes :
+	      isObject(attributes) ? function getAttributesObject() {return attributes;} :
+	      function getEmptyAttributesObject() {return {};};
+	
+	    var match;
+	    var raw = text;
+	    var html = [];
+	    var url;
+	    var i;
+	    while ((match = raw.match(LINKY_URL_REGEXP))) {
+	      // We can not end in these as they are sometimes found at the end of the sentence
+	      url = match[0];
+	      // if we did not match ftp/http/www/mailto then assume mailto
+	      if (!match[2] && !match[4]) {
+	        url = (match[3] ? 'http://' : 'mailto:') + url;
+	      }
+	      i = match.index;
+	      addText(raw.substr(0, i));
+	      addLink(url, match[0].replace(MAILTO_REGEXP, ''));
+	      raw = raw.substring(i + match[0].length);
+	    }
+	    addText(raw);
+	    return $sanitize(html.join(''));
+	
+	    function addText(text) {
+	      if (!text) {
+	        return;
+	      }
+	      html.push(sanitizeText(text));
+	    }
+	
+	    function addLink(url, text) {
+	      var key, linkAttributes = attributesFn(url);
+	      html.push('<a ');
+	
+	      for (key in linkAttributes) {
+	        html.push(key + '="' + linkAttributes[key] + '" ');
+	      }
+	
+	      if (isDefined(target) && !('target' in linkAttributes)) {
+	        html.push('target="',
+	                  target,
+	                  '" ');
+	      }
+	      html.push('href="',
+	                url.replace(/"/g, '&quot;'),
+	                '">');
+	      addText(text);
+	      html.push('</a>');
+	    }
+	  };
+	}]);
+	
+	
+	})(window, window.angular);
+
+
+/***/ }),
+/* 112 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
