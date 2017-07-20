@@ -40668,7 +40668,7 @@
 	
 	var app = exports.app = _firebase2.default.initializeApp(firebaseConfig);
 	
-	var auth = exports.auth = angular.module('components.auth', [_angularfire2.default, _angularUiRouter2.default, _login.login, _register.register, _authForm.authForm, _navBar.navBar, _compareTo.compareTo]).config(["$firebaseRefProvider", function ($firebaseRefProvider) {
+	var auth = exports.auth = angular.module('components.auth', [_angularfire2.default, _angularUiRouter2.default, _login.login, _register.register, _authForm.authForm, _navBar.navBar, _compareTo.compareTo]).directive('compareTo', _compareTo.compareTo).config(["$firebaseRefProvider", function ($firebaseRefProvider) {
 	  'ngInject';
 	
 	  $firebaseRefProvider.registerUrl({
@@ -44576,7 +44576,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var register = exports.register = angular.module('components.auth.register', [_angularUiRouter2.default]).component('register', _register.registerComponent).directive('compareTo', compareTo).config(["$stateProvider", function ($stateProvider) {
+	var register = exports.register = angular.module('components.auth.register', [_angularUiRouter2.default]).component('register', _register.registerComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
 	
 	  $stateProvider.state('auth.register', {
