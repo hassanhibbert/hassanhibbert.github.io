@@ -90,9 +90,9 @@
 	    }
 	  });
 	
-	  $urlRouterProvider.otherwise(function ($injector, $location) {
-	    //console.log($location.path())
-	  });
+	  // $urlRouterProvider.otherwise(($injector, $location) => {
+	  //   //console.log($location.path())
+	  // });
 	}]).name;
 
 /***/ }),
