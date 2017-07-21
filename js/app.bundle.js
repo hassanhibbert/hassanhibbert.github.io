@@ -49204,7 +49204,9 @@
 	            }).then(function () {
 	              return _this.authService.getUser().updateProfile({ displayName: firstName });
 	            }).then(updatePurchases).then(function () {
-	              _this.$state.go('auth.account-info');
+	              _this.authService.logout().then(function () {
+	                _this.$state.go('auth.account-info');
+	              });
 	            });
 	          };
 	
