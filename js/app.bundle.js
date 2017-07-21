@@ -46302,8 +46302,8 @@
 	    _createClass(MembersAreaComponent, [{
 	      key: '$onInit',
 	      value: function $onInit() {
-	        console.log('programs', this.programs);
-	        console.log('allowed courses', this.purchasedData);
+	        // console.log('programs', this.programs)
+	        //console.log('allowed courses', this.purchasedData);
 	      }
 	    }]);
 	
@@ -46517,7 +46517,7 @@
 	        this.API = null;
 	        this.currentVideo = localStorage.getItem(storageKey) ? Number(localStorage.getItem(storageKey)) : 0;
 	
-	        console.log('this.currentVideo', this.currentVideo);
+	        //console.log('this.currentVideo', this.currentVideo);
 	        this.onPlayerReady = function (API) {
 	          _this.API = API;
 	        };
@@ -46525,7 +46525,7 @@
 	          localStorage.setItem(storageKey, index);
 	          //console.log(index, flattenedFiles)
 	          _this.currentVideoTitle = title;
-	          console.log('local set', index);
+	          //console.log('local set', index)
 	          //return
 	          _this.API.stop();
 	          _this.currentVideo = index;
@@ -46537,15 +46537,15 @@
 	          _this.currentVideo += 1;
 	          if (_this.currentVideo >= _this.videos.length) _this.currentVideo = 0;
 	          _this.setVideo(_this.currentVideo);
-	          console.log('what you do', _this.currentVideo);
+	          //console.log('what you do', this.currentVideo)
 	        };
 	        this.videoCounter = 0;
 	        this.updateVideoCount = function () {
 	          return _this.videoCounter++;
 	        };
-	        var getTransformedModuleList = function getTransformedModuleList() {
-	          //this.$sce.trustAsResourceUrl("")
-	        };
+	        //let getTransformedModuleList = () => {
+	        //this.$sce.trustAsResourceUrl("")
+	        //};
 	
 	        var sections = this.course.course_sections.map(function (section) {
 	          return section.modules;
@@ -46577,7 +46577,7 @@
 	          }, { sources: [] });
 	        });
 	
-	        console.log(flattenedFiles);
+	        //console.log(flattenedFiles);
 	        this.videos = transformedSources;
 	        // this.videos = [
 	        //   {
@@ -46599,7 +46599,7 @@
 	
 	        //console.log('programs', this.programs)
 	        ///console.log('allowed courses', this.purchasedData);
-	        console.log('Course: ', this.course);
+	        //console.log('Course: ', this.course);
 	        // this.config = {
 	        //   sources: [
 	        //     {src: this.$sce.trustAsResourceUrl(
@@ -46638,7 +46638,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/members-area/members-area-program/members-area-program.html';
-	var html = "<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\"><a class=\"bread-crumb\" ui-sref=\"members-area\">Members Area</a> / Program Modules</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div class=\"container\">\r\n        <div class=\"flex video-container\">\r\n          <div class=\"module-list-container\">\r\n            <div>\r\n              <h3>Modules</h3>\r\n              <hr>\r\n            </div>\r\n            <!-- ng repeat -->\r\n            <div class=\"tab\" ng-repeat=\"module in $ctrl.moduleList\" ng-init=\"moduleIndex = 0\">\r\n              <input id=\"tab-{{$index}}\" type=\"checkbox\" name=\"tabs\" checked>\r\n              <label class=\"truncate\" for=\"tab-{{$index}}\">{{::module.name}}</label>\r\n              <div class=\"tab-content\">\r\n\r\n                <!--<div ng-if=\"!module.videos\">-->\r\n                  <!--<div class=\"button-container\" ng-repeat=\"aud in module.audio\">-->\r\n                    <!--<button-->\r\n                        <!--class=\"flex-align-center\"-->\r\n                        <!--ng-init=\"audioCount = $ctrl.updateVideoCount()\"-->\r\n                        <!--ng-click=\"$ctrl.setVideo(audioCount, aud.name)\">-->\r\n                      <!--<i class=\"material-icons\">play_circle_outline</i>-->\r\n                      <!--<span>{{::aud.name}}</span>-->\r\n                    <!--</button>-->\r\n                  <!--</div>-->\r\n\r\n                <!--</div>-->\r\n                  <div class=\"button-container\" ng-repeat=\"file in module.files\">\r\n                    <button\r\n                        class=\"flex-align-center\"\r\n                        ng-init=\"fileCount = $ctrl.updateVideoCount()\"\r\n                        ng-click=\"$ctrl.setVideo(fileCount, file.name)\">\r\n                      <i class=\"material-icons\">play_circle_outline</i>\r\n                      <span>{{::file.name}}</span>\r\n                    </button>\r\n                  </div>\r\n\r\n              </div>\r\n            </div>\r\n\r\n\r\n          </div>\r\n          <div class=\"videogular-container\">\r\n            <div>\r\n              <h3 ng-bind=\"$ctrl.currentVideoTitle\"></h3>\r\n              <hr>\r\n            </div>\r\n            <videogular\r\n                vg-theme=\"$ctrl.config.theme\"\r\n                vg-player-ready=\"$ctrl.onPlayerReady($API)\"\r\n                vg-complete=\"controller.onCompleteVideo()\">\r\n              <vg-media\r\n                  vg-src=\"$ctrl.config.sources\"\r\n                  vg-tracks=\"$ctrl.config.tracks\">\r\n              </vg-media>\r\n\r\n              <vg-controls>\r\n                <vg-play-pause-button></vg-play-pause-button>\r\n                <vg-time-display>{{ currentTime | date:'mm:ss' }}</vg-time-display>\r\n                <vg-scrub-bar>\r\n                  <vg-scrub-bar-current-time></vg-scrub-bar-current-time>\r\n                </vg-scrub-bar>\r\n                <vg-time-display>{{ timeLeft | date:'mm:ss' }}</vg-time-display>\r\n                <vg-volume>\r\n                  <vg-mute-button></vg-mute-button>\r\n                  <vg-volume-bar></vg-volume-bar>\r\n                </vg-volume>\r\n                <vg-fullscreen-button></vg-fullscreen-button>\r\n              </vg-controls>\r\n\r\n              <vg-overlay-play></vg-overlay-play>\r\n              <vg-poster vg-url='controller.config.plugins.poster'></vg-poster>\r\n            </videogular>\r\n          </div>\r\n\r\n        </div>\r\n        <div>\r\n          <hr>\r\n          <h3>Bonus Content</h3>\r\n          <!--<hr>-->\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
+	var html = "<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\"><a class=\"bread-crumb\" ui-sref=\"members-area\">Members Area</a> / Program Modules</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div class=\"container\">\r\n        <div class=\"flex video-container\">\r\n          <div class=\"module-list-container\">\r\n            <div>\r\n              <h3>Modules</h3>\r\n              <hr>\r\n            </div>\r\n            <!-- ng repeat -->\r\n            <div class=\"accordion-wrap\">\r\n              <div class=\"tab\" ng-repeat=\"module in $ctrl.moduleList\" ng-init=\"moduleIndex = 0\">\r\n                <input id=\"tab-{{$index}}\" type=\"checkbox\" name=\"tabs\" checked>\r\n                <label class=\"truncate\" for=\"tab-{{$index}}\">{{::module.name}}</label>\r\n                <div class=\"tab-content\">\r\n                  <div class=\"button-container\" ng-repeat=\"file in module.files\">\r\n                    <button\r\n                        class=\"flex-align-center\"\r\n                        ng-init=\"fileCount = $ctrl.updateVideoCount()\"\r\n                        ng-click=\"$ctrl.setVideo(fileCount, file.name)\">\r\n                      <i class=\"material-icons\">play_circle_outline</i>\r\n                      <span>{{::file.name}}</span>\r\n                    </button>\r\n                  </div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n\r\n\r\n\r\n          </div>\r\n          <div class=\"videogular-container\">\r\n            <div>\r\n              <h3 ng-bind=\"$ctrl.currentVideoTitle\"></h3>\r\n              <hr>\r\n            </div>\r\n            <videogular\r\n                vg-theme=\"$ctrl.config.theme\"\r\n                vg-player-ready=\"$ctrl.onPlayerReady($API)\"\r\n                vg-complete=\"controller.onCompleteVideo()\">\r\n              <vg-media\r\n                  vg-src=\"$ctrl.config.sources\"\r\n                  vg-tracks=\"$ctrl.config.tracks\">\r\n              </vg-media>\r\n\r\n              <vg-controls>\r\n                <vg-play-pause-button></vg-play-pause-button>\r\n                <vg-time-display>{{ currentTime | date:'mm:ss' }}</vg-time-display>\r\n                <vg-scrub-bar>\r\n                  <vg-scrub-bar-current-time></vg-scrub-bar-current-time>\r\n                </vg-scrub-bar>\r\n                <vg-time-display>{{ timeLeft | date:'mm:ss' }}</vg-time-display>\r\n                <vg-volume>\r\n                  <vg-mute-button></vg-mute-button>\r\n                  <vg-volume-bar></vg-volume-bar>\r\n                </vg-volume>\r\n                <vg-fullscreen-button></vg-fullscreen-button>\r\n              </vg-controls>\r\n\r\n              <vg-overlay-play></vg-overlay-play>\r\n              <vg-poster vg-url='controller.config.plugins.poster'></vg-poster>\r\n            </videogular>\r\n          </div>\r\n\r\n        </div>\r\n        <div>\r\n          <hr>\r\n          <h3>Bonus Content</h3>\r\n          <!--<hr>-->\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 

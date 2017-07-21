@@ -284,6 +284,86 @@
     font-size: 13px;
     color: #565656;
     line-height: 19px; }
+/* Acordeon styles */
+.accordion-wrap {
+  /* :checked */
+  /* Icon */ }
+  .accordion-wrap .truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; }
+  .accordion-wrap .tab {
+    position: relative;
+    margin-bottom: 1px;
+    width: 100%;
+    color: #fff;
+    overflow: hidden; }
+  .accordion-wrap input {
+    position: absolute;
+    opacity: 0;
+    z-index: -1; }
+  .accordion-wrap label {
+    position: relative;
+    display: block;
+    padding: 0 0 0 1em;
+    background: #5c476b;
+    font-weight: bold;
+    line-height: 16px;
+    cursor: pointer;
+    padding: 12px 30px 12px 13px;
+    font-size: 12px; }
+  .accordion-wrap .blue label {
+    background: #2980b9; }
+  .accordion-wrap .tab-content {
+    max-height: 0;
+    overflow: hidden;
+    background: #eaeaea;
+    -webkit-transition: max-height .35s;
+    -o-transition: max-height .35s;
+    transition: max-height .35s; }
+    .accordion-wrap .tab-content button {
+      background: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      border: 0;
+      padding: 10px 25px;
+      color: #5c476b;
+      width: 100%;
+      -webkit-transition: background .35s;
+      -o-transition: background .35s;
+      transition: background .35s;
+      outline: none;
+      text-align: left; }
+      .accordion-wrap .tab-content button span {
+        padding-left: 5px; }
+      .accordion-wrap .tab-content button:hover {
+        background: #cecece; }
+  .accordion-wrap .blue .tab-content {
+    background: #3498db; }
+  .accordion-wrap .tab-content p {
+    margin: 1em; }
+  .accordion-wrap input:checked ~ .tab-content {
+    max-height: 20em; }
+  .accordion-wrap label::after {
+    position: absolute;
+    right: 0;
+    top: 0;
+    display: block;
+    width: 3em;
+    height: 3em;
+    line-height: 3;
+    text-align: center;
+    -webkit-transition: all .35s;
+    -o-transition: all .35s;
+    transition: all .35s; }
+  .accordion-wrap input[type=checkbox] + label::after {
+    content: "+"; }
+  .accordion-wrap input[type=radio] + label::after {
+    content: "\25BC"; }
+  .accordion-wrap input[type=checkbox]:checked + label::after {
+    transform: rotate(315deg); }
+  .accordion-wrap input[type=radio]:checked + label::after {
+    transform: rotateX(180deg); }
 .panel {
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.1);
   background: #fff; }
@@ -1274,99 +1354,6 @@ videogular, [videogular] {
 .ui-notification.info {
   color: #fff;
   background: #5bc0de; }
-
-/* Acordeon styles */
-.truncate {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis; }
-
-.tab {
-  position: relative;
-  margin-bottom: 1px;
-  width: 100%;
-  color: #fff;
-  overflow: hidden; }
-
-input {
-  position: absolute;
-  opacity: 0;
-  z-index: -1; }
-
-label {
-  position: relative;
-  display: block;
-  padding: 0 0 0 1em;
-  background: #5c476b;
-  font-weight: bold;
-  line-height: 16px;
-  cursor: pointer;
-  padding: 12px 30px 12px 13px;
-  font-size: 12px; }
-
-.blue label {
-  background: #2980b9; }
-
-.tab-content {
-  max-height: 0;
-  overflow: hidden;
-  background: #eaeaea;
-  -webkit-transition: max-height .35s;
-  -o-transition: max-height .35s;
-  transition: max-height .35s; }
-  .tab-content button {
-    background: none;
-    cursor: pointer;
-    -webkit-appearance: none;
-    border: 0;
-    padding: 10px 25px;
-    color: #5c476b;
-    width: 100%;
-    -webkit-transition: background .35s;
-    -o-transition: background .35s;
-    transition: background .35s;
-    outline: none;
-    text-align: left; }
-    .tab-content button span {
-      padding-left: 5px; }
-    .tab-content button:hover {
-      background: #cecece; }
-
-.blue .tab-content {
-  background: #3498db; }
-
-.tab-content p {
-  margin: 1em; }
-
-/* :checked */
-input:checked ~ .tab-content {
-  max-height: 20em; }
-
-/* Icon */
-label::after {
-  position: absolute;
-  right: 0;
-  top: 0;
-  display: block;
-  width: 3em;
-  height: 3em;
-  line-height: 3;
-  text-align: center;
-  -webkit-transition: all .35s;
-  -o-transition: all .35s;
-  transition: all .35s; }
-
-input[type=checkbox] + label::after {
-  content: "+"; }
-
-input[type=radio] + label::after {
-  content: "\25BC"; }
-
-input[type=checkbox]:checked + label::after {
-  transform: rotate(315deg); }
-
-input[type=radio]:checked + label::after {
-  transform: rotateX(180deg); }
 
 videogular vg-controls, [videogular] vg-controls {
   bottom: 50px; }
