@@ -65,7 +65,7 @@
 	
 	var _components = __webpack_require__(26);
 	
-	__webpack_require__(113);
+	__webpack_require__(119);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -40612,11 +40612,11 @@
 	
 	var _auth = __webpack_require__(27);
 	
-	var _contact = __webpack_require__(57);
+	var _contact = __webpack_require__(63);
 	
-	var _membersArea = __webpack_require__(85);
+	var _membersArea = __webpack_require__(91);
 	
-	var _product = __webpack_require__(98);
+	var _product = __webpack_require__(104);
 	
 	var components = exports.components = angular.module('components', [_auth.auth, _contact.contact, _membersArea.membersArea, _product.product]).name;
 
@@ -40655,7 +40655,11 @@
 	
 	var _compareTo = __webpack_require__(54);
 	
-	__webpack_require__(55);
+	var _accountInfo = __webpack_require__(55);
+	
+	var _resetPassword = __webpack_require__(58);
+	
+	__webpack_require__(61);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -40671,9 +40675,9 @@
 	
 	var app = exports.app = _firebase2.default.initializeApp(firebaseConfig);
 	
-	var auth = exports.auth = angular.module('components.auth', [_angularfire2.default, _angularUiRouter2.default, _login.login, _register.register, _authForm.authForm, _navBar.navBar]
+	var auth = exports.auth = angular.module('components.auth', [_angularfire2.default, _angularUiRouter2.default, _login.login, _register.register, _authForm.authForm, _navBar.navBar, _accountInfo.accountInfo, _resetPassword.resetPassword
 	//compareTo
-	).config(["$firebaseRefProvider", function ($firebaseRefProvider) {
+	]).config(["$firebaseRefProvider", function ($firebaseRefProvider) {
 	  'ngInject';
 	
 	  $firebaseRefProvider.registerUrl({
@@ -44582,7 +44586,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/login/login.html';
-	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Login</h1>\n  <auth-form\n    user=\"$ctrl.user\"\n    message=\"{{ $ctrl.error }}\"\n    button=\"Login\"\n    on-submit=\"$ctrl.loginUser($event);\"\n    is-login-form=\"true\">\n  </auth-form>\n</div>\n\n<!--<div class=\"auth__info\">-->\n  <!--<a href=\"\" ui-sref=\"auth.register\">-->\n    <!--Don't have an account? Create one here.-->\n  <!--</a>-->\n<!--</div>-->\n";
+	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Login</h1>\n  <auth-form\n    user=\"$ctrl.user\"\n    message=\"{{ $ctrl.error }}\"\n    button=\"Login\"\n    on-submit=\"$ctrl.loginUser($event);\"\n    is-login-form=\"true\">\n  </auth-form>\n</div>\n\n<div class=\"auth__info\">\n  <a href=\"\" ui-sref=\"auth.reset-password\">\n    Forgot password? Reset it here.\n  </a>\n</div>\n";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
@@ -44947,13 +44951,172 @@
 
 /***/ }),
 /* 55 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.accountInfo = undefined;
+	
+	var _angularUiRouter = __webpack_require__(3);
+	
+	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
+	
+	var _accountInfo = __webpack_require__(56);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var accountInfo = exports.accountInfo = angular.module('components.auth.account-info', [_angularUiRouter2.default]).component('accountInfo', _accountInfo.accountInfoComponent).config(["$stateProvider", function ($stateProvider) {
+	  'ngInject';
+	
+	  $stateProvider.state('auth.account-info', {
+	    url: '/account-info',
+	    component: 'accountInfo'
+	  });
+	}]).name;
+
+/***/ }),
+/* 56 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.accountInfoComponent = undefined;
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _accountInfo = __webpack_require__(57);
+	
+	var _accountInfo2 = _interopRequireDefault(_accountInfo);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var accountInfoComponent = exports.accountInfoComponent = {
+	  templateUrl: _accountInfo2.default,
+	  controller: function () {
+	    function RegisterComponent() {
+	      'ngInject';
+	
+	      _classCallCheck(this, RegisterComponent);
+	    }
+	
+	    _createClass(RegisterComponent, [{
+	      key: '$onInit',
+	      value: function $onInit() {}
+	    }]);
+	
+	    return RegisterComponent;
+	  }()
+	};
+
+/***/ }),
+/* 57 */
+/***/ (function(module, exports) {
+
+	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/account-info/account-info.html';
+	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Thank You!</h1>\n  <p>Thank you for your purchase! We have send you an email containing your login information to access your purchased items.</p>\n  <a class=\"btn btn-primary\" ui-sref=\"auth.login\">Go to login</a>\n</div>\n";
+	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
+	module.exports = path;
+
+/***/ }),
+/* 58 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.resetPassword = undefined;
+	
+	var _angularUiRouter = __webpack_require__(3);
+	
+	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
+	
+	var _resetPassword = __webpack_require__(59);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var resetPassword = exports.resetPassword = angular.module('components.auth.reset-password', [_angularUiRouter2.default]).component('resetPassword', _resetPassword.resetPasswordComponent).config(["$stateProvider", function ($stateProvider) {
+	  'ngInject';
+	
+	  $stateProvider.state('auth.reset-password', {
+	    url: '/reset-password',
+	    component: 'resetPassword'
+	  });
+	}]).name;
+
+/***/ }),
+/* 59 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.resetPasswordComponent = undefined;
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _resetPassword = __webpack_require__(60);
+	
+	var _resetPassword2 = _interopRequireDefault(_resetPassword);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var resetPasswordComponent = exports.resetPasswordComponent = {
+	  templateUrl: _resetPassword2.default,
+	  controller: function () {
+	    function ResetPasswordomponent() {
+	      'ngInject';
+	
+	      _classCallCheck(this, ResetPasswordomponent);
+	    }
+	
+	    _createClass(ResetPasswordomponent, [{
+	      key: '$onInit',
+	      value: function $onInit() {
+	        this.email = '';
+	      }
+	    }, {
+	      key: 'submitForm',
+	      value: function submitForm() {
+	        console.log('submit', this.email);
+	      }
+	    }]);
+	
+	    return ResetPasswordomponent;
+	  }()
+	};
+
+/***/ }),
+/* 60 */
+/***/ (function(module, exports) {
+
+	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/reset-password/reset-password.html';
+	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Reset Password</h1>\n  <p>Please enter the email you used when creating your account. We will send you a password reset email.</p>\n  <form name=\"resetForm\" novalidate ng-submit=\"$ctrl.submitForm();\">\n    <label>\n      <input\n          type=\"email\"\n          name=\"email\"\n          required=\"required\"\n          placeholder=\"Enter your email\"\n          ng-model=\"$ctrl.email\">\n    </label>\n    <button class=\"btn btn-primary\" ng-disabled=\"resetForm.$invalid\">Submit</button>\n  </form>\n</div>\n\n<div class=\"auth__info\">\n  <a href=\"\" ui-sref=\"auth.login\">\n    Back to login page\n  </a>\n</div>\n";
+	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
+	module.exports = path;
+
+/***/ }),
+/* 61 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 56 */,
-/* 57 */
+/* 62 */,
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44963,26 +45126,26 @@
 	});
 	exports.contact = undefined;
 	
-	var _contact = __webpack_require__(58);
+	var _contact = __webpack_require__(64);
 	
-	var _lengthCheck = __webpack_require__(59);
+	var _lengthCheck = __webpack_require__(65);
 	
-	var _contacts = __webpack_require__(60);
+	var _contacts = __webpack_require__(66);
 	
-	var _contact2 = __webpack_require__(66);
+	var _contact2 = __webpack_require__(72);
 	
-	var _contactNew = __webpack_require__(71);
+	var _contactNew = __webpack_require__(77);
 	
-	var _contactDetail = __webpack_require__(74);
+	var _contactDetail = __webpack_require__(80);
 	
-	var _contactEdit = __webpack_require__(79);
+	var _contactEdit = __webpack_require__(85);
 	
-	var _contactTag = __webpack_require__(82);
+	var _contactTag = __webpack_require__(88);
 	
 	var contact = exports.contact = angular.module('components.contact', [_contacts.contacts, _contact2.contactSingle, _contactNew.contactNew, _contactDetail.contactDetail, _contactEdit.contactEdit, _contactTag.contactTag]).service('ContactService', _contact.ContactService).directive('lengthCheck', _lengthCheck.lengthCheck).name;
 
 /***/ }),
-/* 58 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45046,7 +45209,7 @@
 	}();
 
 /***/ }),
-/* 59 */
+/* 65 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -45078,7 +45241,7 @@
 	}
 
 /***/ }),
-/* 60 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45092,11 +45255,11 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _contacts = __webpack_require__(61);
+	var _contacts = __webpack_require__(67);
 	
-	var _contacts2 = __webpack_require__(63);
+	var _contacts2 = __webpack_require__(69);
 	
-	__webpack_require__(64);
+	__webpack_require__(70);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -45128,7 +45291,7 @@
 	}]).name;
 
 /***/ }),
-/* 61 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45140,7 +45303,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contacts = __webpack_require__(62);
+	var _contacts = __webpack_require__(68);
 	
 	var _contacts2 = _interopRequireDefault(_contacts);
 	
@@ -45184,7 +45347,7 @@
 	};
 
 /***/ }),
-/* 62 */
+/* 68 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contacts/contacts.html';
@@ -45193,7 +45356,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 63 */
+/* 69 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -45211,14 +45374,14 @@
 	}
 
 /***/ }),
-/* 64 */
+/* 70 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 65 */,
-/* 66 */
+/* 71 */,
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45228,14 +45391,14 @@
 	});
 	exports.contactSingle = undefined;
 	
-	var _contact = __webpack_require__(67);
+	var _contact = __webpack_require__(73);
 	
-	__webpack_require__(69);
+	__webpack_require__(75);
 	
 	var contactSingle = exports.contactSingle = angular.module('components.contact.contact', []).component('contact', _contact.contactComponent).name;
 
 /***/ }),
-/* 67 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45247,7 +45410,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contact = __webpack_require__(68);
+	var _contact = __webpack_require__(74);
 	
 	var _contact2 = _interopRequireDefault(_contact);
 	
@@ -45284,7 +45447,7 @@
 	};
 
 /***/ }),
-/* 68 */
+/* 74 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact/contact.html';
@@ -45293,14 +45456,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 69 */
+/* 75 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 70 */,
-/* 71 */
+/* 76 */,
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45314,7 +45477,7 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _contactNew = __webpack_require__(72);
+	var _contactNew = __webpack_require__(78);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -45329,7 +45492,7 @@
 	}]).name;
 
 /***/ }),
-/* 72 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45341,7 +45504,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contactNew = __webpack_require__(73);
+	var _contactNew = __webpack_require__(79);
 	
 	var _contactNew2 = _interopRequireDefault(_contactNew);
 	
@@ -45397,7 +45560,7 @@
 	};
 
 /***/ }),
-/* 73 */
+/* 79 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact-new/contact-new.html';
@@ -45406,7 +45569,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 74 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45416,14 +45579,14 @@
 	});
 	exports.contactDetail = undefined;
 	
-	var _contactDetail = __webpack_require__(75);
+	var _contactDetail = __webpack_require__(81);
 	
-	__webpack_require__(77);
+	__webpack_require__(83);
 	
 	var contactDetail = exports.contactDetail = angular.module('components.contact.contact-detail', []).component('contactDetail', _contactDetail.contactDetailComponent).name;
 
 /***/ }),
-/* 75 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45435,7 +45598,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contactDetail = __webpack_require__(76);
+	var _contactDetail = __webpack_require__(82);
 	
 	var _contactDetail2 = _interopRequireDefault(_contactDetail);
 	
@@ -45503,7 +45666,7 @@
 	};
 
 /***/ }),
-/* 76 */
+/* 82 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact-detail/contact-detail.html';
@@ -45512,14 +45675,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 77 */
+/* 83 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 78 */,
-/* 79 */
+/* 84 */,
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45533,7 +45696,7 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _contactEdit = __webpack_require__(80);
+	var _contactEdit = __webpack_require__(86);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -45556,7 +45719,7 @@
 	}]).name;
 
 /***/ }),
-/* 80 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45568,7 +45731,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contactEdit = __webpack_require__(81);
+	var _contactEdit = __webpack_require__(87);
 	
 	var _contactEdit2 = _interopRequireDefault(_contactEdit);
 	
@@ -45625,7 +45788,7 @@
 	};
 
 /***/ }),
-/* 81 */
+/* 87 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact-edit/contact-edit.html';
@@ -45634,7 +45797,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 82 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45644,12 +45807,12 @@
 	});
 	exports.contactTag = undefined;
 	
-	var _contactTag = __webpack_require__(83);
+	var _contactTag = __webpack_require__(89);
 	
 	var contactTag = exports.contactTag = angular.module('components.contact.contact-tag', []).component('contactTag', _contactTag.contactTagComponent).name;
 
 /***/ }),
-/* 83 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45661,7 +45824,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contactTag = __webpack_require__(84);
+	var _contactTag = __webpack_require__(90);
 	
 	var _contactTag2 = _interopRequireDefault(_contactTag);
 	
@@ -45710,7 +45873,7 @@
 	};
 
 /***/ }),
-/* 84 */
+/* 90 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact-tag/contact-tag.html';
@@ -45719,7 +45882,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 85 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45729,13 +45892,13 @@
 	});
 	exports.membersArea = undefined;
 	
-	var _membersArea = __webpack_require__(86);
+	var _membersArea = __webpack_require__(92);
 	
-	var _membersArea2 = __webpack_require__(91);
+	var _membersArea2 = __webpack_require__(97);
 	
-	var _membersAreaProgram = __webpack_require__(92);
+	var _membersAreaProgram = __webpack_require__(98);
 	
-	__webpack_require__(97);
+	__webpack_require__(103);
 	
 	var membersArea = exports.membersArea = angular.module('components.members-area', ["com.2fdevs.videogular", "com.2fdevs.videogular.plugins.controls",
 	//"com.2fdevs.videogular.plugins.overlayplay",
@@ -45743,7 +45906,7 @@
 	_membersArea.membersAreaPage, _membersAreaProgram.membersAreaProgramPage]).service('MembersAreaService', _membersArea2.MembersAreaService).name;
 
 /***/ }),
-/* 86 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45753,9 +45916,9 @@
 	});
 	exports.membersAreaPage = undefined;
 	
-	var _membersArea = __webpack_require__(87);
+	var _membersArea = __webpack_require__(93);
 	
-	__webpack_require__(89);
+	__webpack_require__(95);
 	
 	var membersAreaPage = exports.membersAreaPage = angular.module('components.members-area.members-area', []).component('membersArea', _membersArea.membersAreaComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -45794,7 +45957,7 @@
 	}]).name;
 
 /***/ }),
-/* 87 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45806,7 +45969,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _membersArea = __webpack_require__(88);
+	var _membersArea = __webpack_require__(94);
 	
 	var _membersArea2 = _interopRequireDefault(_membersArea);
 	
@@ -45845,7 +46008,7 @@
 	};
 
 /***/ }),
-/* 88 */
+/* 94 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/members-area/members-area/members-area.html';
@@ -45854,14 +46017,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 89 */
+/* 95 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 90 */,
-/* 91 */
+/* 96 */,
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45926,7 +46089,7 @@
 	}();
 
 /***/ }),
-/* 92 */
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45936,9 +46099,9 @@
 	});
 	exports.membersAreaProgramPage = undefined;
 	
-	var _membersAreaProgram = __webpack_require__(93);
+	var _membersAreaProgram = __webpack_require__(99);
 	
-	__webpack_require__(95);
+	__webpack_require__(101);
 	
 	var membersAreaProgramPage = exports.membersAreaProgramPage = angular.module('components.members-area.members-area-program', []).component('membersAreaProgram', _membersAreaProgram.membersAreaProgramComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -45977,7 +46140,7 @@
 	}]).name;
 
 /***/ }),
-/* 93 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45989,7 +46152,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _membersAreaProgram = __webpack_require__(94);
+	var _membersAreaProgram = __webpack_require__(100);
 	
 	var _membersAreaProgram2 = _interopRequireDefault(_membersAreaProgram);
 	
@@ -46044,7 +46207,7 @@
 	};
 
 /***/ }),
-/* 94 */
+/* 100 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/members-area/members-area-program/members-area-program.html';
@@ -46053,14 +46216,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 95 */
+/* 101 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 96 */,
-/* 97 */
+/* 102 */,
+/* 103 */
 /***/ (function(module, exports) {
 
 	/**
@@ -48905,7 +49068,7 @@
 	}]);
 
 /***/ }),
-/* 98 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48915,15 +49078,15 @@
 	});
 	exports.product = undefined;
 	
-	var _product = __webpack_require__(99);
+	var _product = __webpack_require__(105);
 	
-	var _products = __webpack_require__(105);
+	var _products = __webpack_require__(111);
 	
-	var _product2 = __webpack_require__(110);
+	var _product2 = __webpack_require__(116);
 	
 	var _navBar = __webpack_require__(49);
 	
-	var _angularSanitize = __webpack_require__(111);
+	var _angularSanitize = __webpack_require__(117);
 	
 	var _angularSanitize2 = _interopRequireDefault(_angularSanitize);
 	
@@ -48932,7 +49095,7 @@
 	var product = exports.product = angular.module('components.product', [_product.productSingle, _products.products, _navBar.navBar, _angularSanitize2.default]).service('ProductService', _product2.ProductService).name;
 
 /***/ }),
-/* 99 */
+/* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48942,9 +49105,9 @@
 	});
 	exports.productSingle = undefined;
 	
-	var _product = __webpack_require__(100);
+	var _product = __webpack_require__(106);
 	
-	__webpack_require__(103);
+	__webpack_require__(109);
 	
 	var productSingle = exports.productSingle = angular.module('components.product.product', []).component('product', _product.productComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -48961,7 +49124,7 @@
 	}]).name;
 
 /***/ }),
-/* 100 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48973,7 +49136,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _product = __webpack_require__(101);
+	var _product = __webpack_require__(107);
 	
 	var _product2 = _interopRequireDefault(_product);
 	
@@ -48981,7 +49144,7 @@
 	
 	var _firebase2 = _interopRequireDefault(_firebase);
 	
-	var _productDetails = __webpack_require__(102);
+	var _productDetails = __webpack_require__(108);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -49041,7 +49204,7 @@
 	            }).then(function () {
 	              return _this.authService.getUser().updateProfile({ displayName: firstName });
 	            }).then(updatePurchases).then(function () {
-	              _this.$state.go('auth.register', { isNewUser: true });
+	              _this.$state.go('auth.account-info');
 	            });
 	          };
 	
@@ -49050,7 +49213,7 @@
 	            if (emailAvailable) {
 	              if (_this.authService.isAuthenticated()) {
 	                updatePurchases().then(function () {
-	                  return _this.$state.go('app');
+	                  return _this.$state.go('app', {}, { reload: true });
 	                });
 	              } else {
 	                _this.$state.go('auth.login', { orderItems: order.items });
@@ -49077,7 +49240,7 @@
 	};
 
 /***/ }),
-/* 101 */
+/* 107 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/product/product.html';
@@ -49086,7 +49249,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 102 */
+/* 108 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -49100,14 +49263,14 @@
 	};
 
 /***/ }),
-/* 103 */
+/* 109 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 104 */,
-/* 105 */
+/* 110 */,
+/* 111 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49117,9 +49280,9 @@
 	});
 	exports.products = undefined;
 	
-	var _products = __webpack_require__(106);
+	var _products = __webpack_require__(112);
 	
-	__webpack_require__(108);
+	__webpack_require__(114);
 	
 	var products = exports.products = angular.module('components.product.products', []).component('products', _products.productsComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -49138,7 +49301,7 @@
 	}]).name;
 
 /***/ }),
-/* 106 */
+/* 112 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49150,7 +49313,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _products = __webpack_require__(107);
+	var _products = __webpack_require__(113);
 	
 	var _products2 = _interopRequireDefault(_products);
 	
@@ -49185,7 +49348,7 @@
 	};
 
 /***/ }),
-/* 107 */
+/* 113 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/products/products.html';
@@ -49194,14 +49357,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 108 */
+/* 114 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 109 */,
-/* 110 */
+/* 115 */,
+/* 116 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49260,15 +49423,15 @@
 	}();
 
 /***/ }),
-/* 111 */
+/* 117 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	__webpack_require__(112);
+	__webpack_require__(118);
 	module.exports = 'ngSanitize';
 
 
 /***/ }),
-/* 112 */
+/* 118 */
 /***/ (function(module, exports) {
 
 	/**
@@ -50013,7 +50176,7 @@
 
 
 /***/ }),
-/* 113 */
+/* 119 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
