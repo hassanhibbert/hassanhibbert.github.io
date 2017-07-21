@@ -63,9 +63,9 @@
 	
 	var _common = __webpack_require__(6);
 	
-	var _components = __webpack_require__(26);
+	var _components = __webpack_require__(28);
 	
-	__webpack_require__(119);
+	__webpack_require__(121);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -40356,18 +40356,30 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _app = __webpack_require__(10);
+	var _angularUiNotification = __webpack_require__(10);
 	
-	var _appNav = __webpack_require__(12);
+	var _angularUiNotification2 = _interopRequireDefault(_angularUiNotification);
 	
-	var _appSidebar = __webpack_require__(19);
+	var _app = __webpack_require__(12);
 	
-	__webpack_require__(24);
+	var _appNav = __webpack_require__(14);
+	
+	var _appSidebar = __webpack_require__(21);
+	
+	__webpack_require__(26);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var app = exports.app = angular.module('common.app', [_angularUiRouter2.default, _appNav.appNav, _appSidebar.appSidebar]).component('app', _app.appComponent).config(["$stateProvider", "$urlRouterProvider", function ($stateProvider, $urlRouterProvider) {
+	var app = exports.app = angular.module('common.app', [_angularUiRouter2.default, _appNav.appNav, _appSidebar.appSidebar, _angularUiNotification2.default]).component('app', _app.appComponent).config(["$stateProvider", "$urlRouterProvider", "NotificationProvider", function ($stateProvider, $urlRouterProvider, NotificationProvider) {
 	  'ngInject';
+	
+	  NotificationProvider.setOptions({
+	    delay: 7000,
+	    positionX: 'right',
+	    positionY: 'bottom',
+	    verticalSpacing: 20,
+	    horizontalSpacing: 20
+	  });
 	  //console.log('app')
 	  //     $urlRouterProvider.rule(function ($injector, $location) {
 	  //       var path = $location.path();
@@ -40379,7 +40391,6 @@
 	  //         return path;
 	  //       }
 	  //     });
-	
 	  $stateProvider.state('app', {
 	    redirectTo: 'members-area',
 	    url: '/app',
@@ -40394,6 +40405,283 @@
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
+	/**
+	 * Created by alex_crack on 20.11.15.
+	 */
+	__webpack_require__(11);
+	module.exports = 'ui-notification';
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports) {
+
+	/**
+	 * angular-ui-notification - Angular.js service providing simple notifications using Bootstrap 3 styles with css transitions for animating
+	 * @author Alex_Crack
+	 * @version v0.3.6
+	 * @link https://github.com/alexcrack/angular-ui-notification
+	 * @license MIT
+	 */
+	angular.module('ui-notification',[]);
+	
+	angular.module('ui-notification').provider('Notification', function() {
+	
+	    this.options = {
+	        delay: 5000,
+	        startTop: 10,
+	        startRight: 10,
+	        verticalSpacing: 10,
+	        horizontalSpacing: 10,
+	        positionX: 'right',
+	        positionY: 'top',
+	        replaceMessage: false,
+	        templateUrl: 'angular-ui-notification.html',
+	        onClose: undefined,
+	        closeOnClick: true,
+	        maxCount: 0, // 0 - Infinite
+	        container: 'body',
+	        priority: 10
+	    };
+	
+	    this.setOptions = function(options) {
+	        if (!angular.isObject(options)) throw new Error("Options should be an object!");
+	        this.options = angular.extend({}, this.options, options);
+	    };
+	
+	    this.$get = ["$timeout", "$http", "$compile", "$templateCache", "$rootScope", "$injector", "$sce", "$q", "$window", function($timeout, $http, $compile, $templateCache, $rootScope, $injector, $sce, $q, $window) {
+	        var options = this.options;
+	
+	        var startTop = options.startTop;
+	        var startRight = options.startRight;
+	        var verticalSpacing = options.verticalSpacing;
+	        var horizontalSpacing = options.horizontalSpacing;
+	        var delay = options.delay;
+	
+	        var messageElements = [];
+	        var isResizeBound = false;
+	
+	        var notify = function(args, t){
+	            var deferred = $q.defer();
+	
+	            if (typeof args !== 'object' || args === null) {
+	                args = {message:args};
+	            }
+	
+	            args.scope = args.scope ? args.scope : $rootScope;
+	            args.template = args.templateUrl ? args.templateUrl : options.templateUrl;
+	            args.delay = !angular.isUndefined(args.delay) ? args.delay : delay;
+	            args.type = t || args.type || options.type ||  '';
+	            args.positionY = args.positionY ? args.positionY : options.positionY;
+	            args.positionX = args.positionX ? args.positionX : options.positionX;
+	            args.replaceMessage = args.replaceMessage ? args.replaceMessage : options.replaceMessage;
+	            args.onClose = args.onClose ? args.onClose : options.onClose;
+	            args.closeOnClick = (args.closeOnClick !== null && args.closeOnClick !== undefined) ? args.closeOnClick : options.closeOnClick;
+	            args.container = args.container ? args.container : options.container;
+	            args.priority = args.priority ? args.priority : options.priority;
+	            
+	            var template=$templateCache.get(args.template);
+	
+	            if(template){
+	                processNotificationTemplate(template);
+	            }else{
+	                // load it via $http only if it isn't default template and template isn't exist in template cache
+	                // cache:true means cache it for later access.
+	                $http.get(args.template,{cache: true})
+	                  .then(function(response){
+	                    processNotificationTemplate(response.data);
+	                  })
+	                  .catch(function(data){
+	                    throw new Error('Template ('+args.template+') could not be loaded. ' + data);
+	                  });                
+	            }    
+	            
+	            
+	             function processNotificationTemplate(template) {
+	
+	                var scope = args.scope.$new();
+	                scope.message = $sce.trustAsHtml(args.message);
+	                scope.title = $sce.trustAsHtml(args.title);
+	                scope.t = args.type.substr(0,1);
+	                scope.delay = args.delay;
+	                scope.onClose = args.onClose;
+	
+	                var priorityCompareTop = function(a, b) {
+	                    return a._priority - b._priority;
+	                };
+	
+	                var priorityCompareBtm = function(a, b) {
+	                    return b._priority - a._priority;
+	                };
+	
+	                var reposite = function() {
+	                    var j = 0;
+	                    var k = 0;
+	                    var lastTop = startTop;
+	                    var lastRight = startRight;
+	                    var lastPosition = [];
+	
+	                    if( args.positionY === 'top' ) {
+	                        messageElements.sort( priorityCompareTop );
+	                    } else if( args.positionY === 'bottom' ) {
+	                        messageElements.sort( priorityCompareBtm );
+	                    }
+	
+	                    for(var i = messageElements.length - 1; i >= 0; i --) {
+	                        var element  = messageElements[i];
+	                        if (args.replaceMessage && i < messageElements.length - 1) {
+	                            element.addClass('killed');
+	                            continue;
+	                        }
+	                        var elHeight = parseInt(element[0].offsetHeight);
+	                        var elWidth  = parseInt(element[0].offsetWidth);
+	                        var position = lastPosition[element._positionY+element._positionX];
+	
+	                        if ((top + elHeight) > window.innerHeight) {
+	                            position = startTop;
+	                            k ++;
+	                            j = 0;
+	                        }
+	
+	                        var top = (lastTop = position ? (j === 0 ? position : position + verticalSpacing) : startTop);
+	                        var right = lastRight + (k * (horizontalSpacing + elWidth));
+	
+	                        element.css(element._positionY, top + 'px');
+	                        if (element._positionX == 'center') {
+	                            element.css('left', parseInt(window.innerWidth / 2 - elWidth / 2) + 'px');
+	                        } else {
+	                            element.css(element._positionX, right + 'px');
+	                        }
+	
+	                        lastPosition[element._positionY+element._positionX] = top + elHeight;
+	
+	                        if (options.maxCount > 0 && messageElements.length > options.maxCount && i === 0) {
+	                            element.scope().kill(true);
+	                        }
+	
+	                        j ++;
+	                    }
+	                };
+	
+	                var templateElement = $compile(template)(scope);
+	                templateElement._positionY = args.positionY;
+	                templateElement._positionX = args.positionX;
+	                templateElement._priority = args.priority;
+	                templateElement.addClass(args.type);
+	
+	                var closeEvent = function(e) {
+	                    e = e.originalEvent || e;
+	                    if (e.type === 'click' || (e.propertyName === 'opacity' && e.elapsedTime >= 1)){
+	                        if (scope.onClose) {
+	                            scope.$apply(scope.onClose(templateElement));
+	                        }
+	
+	                        templateElement.remove();
+	                        messageElements.splice(messageElements.indexOf(templateElement), 1);
+	                        scope.$destroy();
+	                        reposite();
+	                    }
+	                };
+	
+	                if (args.closeOnClick) {
+	                    templateElement.addClass('clickable');
+	                    templateElement.bind('click', closeEvent);
+	                }
+	
+	                templateElement.bind('webkitTransitionEnd oTransitionEnd otransitionend transitionend msTransitionEnd', closeEvent);
+	
+	                if (angular.isNumber(args.delay)) {
+	                    $timeout(function() {
+	                        templateElement.addClass('killed');
+	                    }, args.delay);
+	                }
+	
+	                setCssTransitions('none');
+	
+	                angular.element(document.querySelector(args.container)).append(templateElement);
+	                var offset = -(parseInt(templateElement[0].offsetHeight) + 50);
+	                templateElement.css(templateElement._positionY, offset + "px");
+	                messageElements.push(templateElement);
+	
+	                if(args.positionX == 'center'){
+	                    var elWidth = parseInt(templateElement[0].offsetWidth);
+	                    templateElement.css('left', parseInt(window.innerWidth / 2 - elWidth / 2) + 'px');
+	                }
+	
+	                $timeout(function(){
+	                    setCssTransitions('');
+	                });
+	
+	                function setCssTransitions(value){
+	                    ['-webkit-transition', '-o-transition', 'transition'].forEach(function(prefix){
+	                        templateElement.css(prefix, value);
+	                    });
+	                }
+	
+	                scope._templateElement = templateElement;
+	
+	                scope.kill = function(isHard) {
+	                    if (isHard) {
+	                        if (scope.onClose) {
+	                            scope.$apply(scope.onClose(scope._templateElement));
+	                        }
+	
+	                        messageElements.splice(messageElements.indexOf(scope._templateElement), 1);
+	                        scope._templateElement.remove();
+	                        scope.$destroy();
+	                        $timeout(reposite);
+	                    } else {
+	                        scope._templateElement.addClass('killed');
+	                    }
+	                };
+	
+	                $timeout(reposite);
+	
+	                if (!isResizeBound) {
+	                    angular.element($window).bind('resize', function(e) {
+	                        $timeout(reposite);
+	                    });
+	                    isResizeBound = true;
+	                }
+	
+	                deferred.resolve(scope);
+	
+	            }
+	
+	            return deferred.promise;
+	        };
+	
+	        notify.primary = function(args) {
+	            return this(args, 'primary');
+	        };
+	        notify.error = function(args) {
+	            return this(args, 'error');
+	        };
+	        notify.success = function(args) {
+	            return this(args, 'success');
+	        };
+	        notify.info = function(args) {
+	            return this(args, 'info');
+	        };
+	        notify.warning = function(args) {
+	            return this(args, 'warning');
+	        };
+	
+	        notify.clearAll = function() {
+	            angular.forEach(messageElements, function(element) {
+	                element.addClass('killed');
+	            });
+	        };
+	
+	        return notify;
+	    }];
+	});
+	
+	angular.module("ui-notification").run(["$templateCache", function($templateCache) {$templateCache.put("angular-ui-notification.html","<div class=\"ui-notification\"><h3 ng-show=\"title\" ng-bind-html=\"title\"></h3><div class=\"message\" ng-bind-html=\"message\"></div></div>");}]);
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
@@ -40403,7 +40691,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _app = __webpack_require__(11);
+	var _app = __webpack_require__(13);
 	
 	var _app2 = _interopRequireDefault(_app);
 	
@@ -40441,7 +40729,7 @@
 	};
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/common/app.html';
@@ -40450,7 +40738,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40460,14 +40748,14 @@
 	});
 	exports.appNav = undefined;
 	
-	var _appNav = __webpack_require__(13);
+	var _appNav = __webpack_require__(15);
 	
-	__webpack_require__(15);
+	__webpack_require__(17);
 	
 	var appNav = exports.appNav = angular.module('common.app-nav', []).component('appNav', _appNav.navComponent).name;
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40477,7 +40765,7 @@
 	});
 	exports.navComponent = undefined;
 	
-	var _appNav = __webpack_require__(14);
+	var _appNav = __webpack_require__(16);
 	
 	var _appNav2 = _interopRequireDefault(_appNav);
 	
@@ -40492,7 +40780,7 @@
 	};
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/common/app-nav/app-nav.html';
@@ -40501,16 +40789,16 @@
 	module.exports = path;
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 16 */,
-/* 17 */,
 /* 18 */,
-/* 19 */
+/* 19 */,
+/* 20 */,
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40520,14 +40808,14 @@
 	});
 	exports.appSidebar = undefined;
 	
-	var _appSidebar = __webpack_require__(20);
+	var _appSidebar = __webpack_require__(22);
 	
-	__webpack_require__(22);
+	__webpack_require__(24);
 	
 	var appSidebar = exports.appSidebar = angular.module('common.app-sidebar', []).component('appSidebar', _appSidebar.sidebarComponent).name;
 
 /***/ }),
-/* 20 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40537,7 +40825,7 @@
 	});
 	exports.sidebarComponent = undefined;
 	
-	var _appSidebar = __webpack_require__(21);
+	var _appSidebar = __webpack_require__(23);
 	
 	var _appSidebar2 = _interopRequireDefault(_appSidebar);
 	
@@ -40577,7 +40865,7 @@
 	};
 
 /***/ }),
-/* 21 */
+/* 23 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/common/app-sidebar/app-sidebar.html';
@@ -40586,13 +40874,6 @@
 	module.exports = path;
 
 /***/ }),
-/* 22 */
-/***/ (function(module, exports) {
-
-	// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 23 */,
 /* 24 */
 /***/ (function(module, exports) {
 
@@ -40601,6 +40882,13 @@
 /***/ }),
 /* 25 */,
 /* 26 */
+/***/ (function(module, exports) {
+
+	// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 27 */,
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40610,18 +40898,18 @@
 	});
 	exports.components = undefined;
 	
-	var _auth = __webpack_require__(27);
+	var _auth = __webpack_require__(29);
 	
-	var _contact = __webpack_require__(63);
+	var _contact = __webpack_require__(65);
 	
-	var _membersArea = __webpack_require__(91);
+	var _membersArea = __webpack_require__(93);
 	
-	var _product = __webpack_require__(104);
+	var _product = __webpack_require__(106);
 	
 	var components = exports.components = angular.module('components', [_auth.auth, _contact.contact, _membersArea.membersArea, _product.product]).name;
 
 /***/ }),
-/* 27 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40631,11 +40919,11 @@
 	});
 	exports.auth = exports.app = undefined;
 	
-	var _firebase = __webpack_require__(28);
+	var _firebase = __webpack_require__(30);
 	
 	var _firebase2 = _interopRequireDefault(_firebase);
 	
-	var _angularfire = __webpack_require__(37);
+	var _angularfire = __webpack_require__(39);
 	
 	var _angularfire2 = _interopRequireDefault(_angularfire);
 	
@@ -40643,23 +40931,23 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _auth = __webpack_require__(39);
+	var _auth = __webpack_require__(41);
 	
-	var _login = __webpack_require__(40);
+	var _login = __webpack_require__(42);
 	
-	var _register = __webpack_require__(43);
+	var _register = __webpack_require__(45);
 	
-	var _authForm = __webpack_require__(46);
+	var _authForm = __webpack_require__(48);
 	
-	var _navBar = __webpack_require__(49);
+	var _navBar = __webpack_require__(51);
 	
-	var _compareTo = __webpack_require__(54);
+	var _compareTo = __webpack_require__(56);
 	
-	var _accountInfo = __webpack_require__(55);
+	var _accountInfo = __webpack_require__(57);
 	
-	var _resetPassword = __webpack_require__(58);
+	var _resetPassword = __webpack_require__(60);
 	
-	__webpack_require__(61);
+	__webpack_require__(63);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -40728,7 +41016,7 @@
 	.directive('compareTo', _compareTo.compareTo).service('AuthService', _auth.AuthService).name;
 
 /***/ }),
-/* 28 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*! @license Firebase v3.9.0
@@ -40740,22 +41028,22 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	var firebase = __webpack_require__(29);
-	__webpack_require__(33);
+	var firebase = __webpack_require__(31);
+	__webpack_require__(35);
 	var Storage, XMLHttpRequest;
 	
-	__webpack_require__(34);
-	__webpack_require__(35);
+	__webpack_require__(36);
+	__webpack_require__(37);
 	var AsyncStorage;
 	
-	__webpack_require__(36);
+	__webpack_require__(38);
 	exports.default = firebase;
 	module.exports = exports['default'];
 	//# sourceMappingURL=firebase.js.map
 
 
 /***/ }),
-/* 29 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {/*! @license Firebase v3.9.0
@@ -40765,10 +41053,10 @@
 	var firebase=function(e){function t(r){if(n[r])return n[r].exports;var i=n[r]={i:r,l:!1,exports:{}};return e[r].call(i.exports,i,i.exports,t),i.l=!0,i.exports}var n={};return t.m=e,t.c=n,t.i=function(e){return e},t.d=function(e,n,r){t.o(e,n)||Object.defineProperty(e,n,{configurable:!1,enumerable:!0,get:r})},t.n=function(e){var n=e&&e.__esModule?function(){return e.default}:function(){return e};return t.d(n,"a",n),n},t.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},t.p="",t(t.s=11)}([function(e,t,n){"use strict";(function(e){Object.defineProperty(t,"__esModule",{value:!0});var r=void 0;if(void 0!==e)r=e;else if("undefined"!=typeof self)r=self;else try{r=Function("return this")()}catch(e){throw new Error("polyfill failed because global object is unavailable in this environment")}var i=r.Promise||n(8);t.local={Promise:i,GoogPromise:i}}).call(t,n(1))},function(e,t){var n;n=function(){return this}();try{n=n||Function("return this")()||(0,eval)("this")}catch(e){"object"==typeof window&&(n=window)}e.exports=n},function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0});var r=n(5),i=(0,r.createFirebaseNamespace)();t.default=i,e.exports=t.default},function(e,t,n){"use strict";function r(e){return i(void 0,e)}function i(e,t){if(!(t instanceof Object))return t;switch(t.constructor){case Date:return new Date(t.getTime());case Object:void 0===e&&(e={});break;case Array:e=[];break;default:return t}for(var n in t)t.hasOwnProperty(n)&&(e[n]=i(e[n],t[n]));return e}function o(e,t,n){e[t]=n}Object.defineProperty(t,"__esModule",{value:!0}),t.deepCopy=r,t.deepExtend=i,t.patchProperty=o},function(e,t,n){"use strict";function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function i(e){var t=a;return a=e,t}Object.defineProperty(t,"__esModule",{value:!0});var o=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}();t.patchCapture=i;var a=Error.captureStackTrace,c=function e(t,n){if(r(this,e),this.code=t,this.message=n,a)a(this,s.prototype.create);else{var i=Error.apply(this,arguments);this.name="FirebaseError",Object.defineProperty(this,"stack",{get:function(){return i.stack}})}};c.prototype=Object.create(Error.prototype),c.prototype.constructor=c,c.prototype.name="FirebaseError";var s=t.ErrorFactory=function(){function e(t,n,i){r(this,e),this.service=t,this.serviceName=n,this.errors=i,this.pattern=/\{\$([^}]+)}/g}return o(e,[{key:"create",value:function(e,t){void 0===t&&(t={});var n=this.errors[e],r=this.service+"/"+e,i=void 0;i=void 0===n?"Error":n.replace(this.pattern,function(e,n){var r=t[n];return void 0!==r?r.toString():"<"+n+"?>"}),i=this.serviceName+": "+i+" ("+r+").";var o=new c(r,i);for(var a in t)t.hasOwnProperty(a)&&"_"!==a.slice(-1)&&(o[a]=t[a]);return o}}]),e}()},function(e,t,n){"use strict";function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function i(){function e(e){e=e||d;var t=r[e];return void 0===t&&o("no-app",{name:e}),t}function t(e,t){Object.keys(a).forEach(function(r){var i=n(e,r);null!==i&&h[i]&&h[i](t,e)})}function n(e,t){if("serverAuth"===t)return null;var n=t,r=e.options;return"auth"===t&&(r.serviceAccount||r.credential)&&(n="serverAuth","serverAuth"in a||o("sa-not-supported")),n}var r={},a={},h={},v={__esModule:!0,initializeApp:function(e,n){void 0===n?n=d:"string"==typeof n&&""!==n||o("bad-app-name",{name:n+""}),void 0!==r[n]&&o("duplicate-app",{name:n});var i=new p(e,n,v);return r[n]=i,t(i,"create"),void 0!=i.INTERNAL&&void 0!=i.INTERNAL.getToken||(0,c.deepExtend)(i,{INTERNAL:{getUid:function(){return null},getToken:function(){return l.resolve(null)},addAuthTokenListener:function(){},removeAuthTokenListener:function(){}}}),i},app:e,apps:null,Promise:l,SDK_VERSION:"3.9.0",INTERNAL:{registerService:function(t,n,r,i,s){a[t]&&o("duplicate-service",{name:t}),a[t]=s?n:function(e,t){return n(e,t,d)},i&&(h[t]=i);var u=void 0;return u=function(n){return void 0===n&&(n=e()),"function"!=typeof n[t]&&o("invalid-app-argument",{name:t}),n[t]()},void 0!==r&&(0,c.deepExtend)(u,r),v[t]=u,u},createFirebaseNamespace:i,extendNamespace:function(e){(0,c.deepExtend)(v,e)},createSubscribe:s.createSubscribe,ErrorFactory:u.ErrorFactory,removeApp:function(e){t(r[e],"delete"),delete r[e]},factories:a,useAsService:n,Promise:f.local.GoogPromise,deepExtend:c.deepExtend}};return(0,c.patchProperty)(v,"default",v),Object.defineProperty(v,"apps",{get:function(){return Object.keys(r).map(function(e){return r[e]})}}),(0,c.patchProperty)(e,"App",p),v}function o(e,t){throw v.create(e,t)}Object.defineProperty(t,"__esModule",{value:!0});var a=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}();t.createFirebaseNamespace=i;var c=n(3),s=n(6),u=n(4),f=n(0),l=f.local.Promise,d="[DEFAULT]",p=function(){function e(t,n,i){var o=this;r(this,e),this.firebase_=i,this.isDeleted_=!1,this.services_={},this.name_=n,this.options_=(0,c.deepCopy)(t);var a="credential"in this.options_,s="serviceAccount"in this.options_;if(a||s){var u=s?"serviceAccount":"credential";"undefined"!=typeof console&&console.log("The '"+u+"' property specified in the first argument to initializeApp() is deprecated and will be removed in the next major version. You should instead use the 'firebase-admin' package. See https://firebase.google.com/docs/admin/setup for details on how to get started.")}Object.keys(i.INTERNAL.factories).forEach(function(e){var t=i.INTERNAL.useAsService(o,e);if(null!==t){var n=o.getService.bind(o,t);(0,c.patchProperty)(o,e,n)}})}return a(e,[{key:"delete",value:function(){var e=this;return new l(function(t){e.checkDestroyed_(),t()}).then(function(){e.firebase_.INTERNAL.removeApp(e.name_);var t=[];return Object.keys(e.services_).forEach(function(n){Object.keys(e.services_[n]).forEach(function(r){t.push(e.services_[n][r])})}),l.all(t.map(function(e){return e.INTERNAL.delete()}))}).then(function(){e.isDeleted_=!0,e.services_={}})}},{key:"getService",value:function(e,t){this.checkDestroyed_(),void 0===this.services_[e]&&(this.services_[e]={});var n=t||d;if(void 0===this.services_[e][n]){var r=this.firebase_.INTERNAL.factories[e](this,this.extendApp.bind(this),t);return this.services_[e][n]=r,r}return this.services_[e][n]}},{key:"extendApp",value:function(e){(0,c.deepExtend)(this,e)}},{key:"checkDestroyed_",value:function(){this.isDeleted_&&o("app-deleted",{name:this.name_})}},{key:"name",get:function(){return this.checkDestroyed_(),this.name_}},{key:"options",get:function(){return this.checkDestroyed_(),this.options_}}]),e}();p.prototype.name&&p.prototype.options||p.prototype.delete||console.log("dc");var h={"no-app":"No Firebase App '{$name}' has been created - call Firebase App.initializeApp()","bad-app-name":"Illegal App name: '{$name}","duplicate-app":"Firebase App named '{$name}' already exists","app-deleted":"Firebase App named '{$name}' already deleted","duplicate-service":"Firebase service named '{$name}' already registered","sa-not-supported":"Initializing the Firebase SDK with a service account is only allowed in a Node.js environment. On client devices, you should instead initialize the SDK with an api key and auth domain","invalid-app-argument":"firebase.{$name}() takes either no argument or a Firebase App instance."},v=new u.ErrorFactory("app","Firebase",h)},function(e,t,n){"use strict";function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function i(e,t){var n=new d(e,t);return n.subscribe.bind(n)}function o(e,t){return function(){for(var n=arguments.length,r=Array(n),i=0;i<n;i++)r[i]=arguments[i];l.resolve(!0).then(function(){e.apply(void 0,r)}).catch(function(e){t&&t(e)})}}function a(e,t){if("object"!==(void 0===e?"undefined":s(e))||null===e)return!1;var n=!0,r=!1,i=void 0;try{for(var o,a=t[Symbol.iterator]();!(n=(o=a.next()).done);n=!0){var c=o.value;if(c in e&&"function"==typeof e[c])return!0}}catch(e){r=!0,i=e}finally{try{!n&&a.return&&a.return()}finally{if(r)throw i}}return!1}function c(){}Object.defineProperty(t,"__esModule",{value:!0});var s="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},u=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}();t.createSubscribe=i,t.async=o;var f=n(0),l=f.local.Promise,d=function(){function e(t,n){var i=this;r(this,e),this.observers=[],this.unsubscribes=[],this.observerCount=0,this.task=l.resolve(),this.finalized=!1,this.onNoObservers=n,this.task.then(function(){t(i)}).catch(function(e){i.error(e)})}return u(e,[{key:"next",value:function(e){this.forEachObserver(function(t){t.next(e)})}},{key:"error",value:function(e){this.forEachObserver(function(t){t.error(e)}),this.close(e)}},{key:"complete",value:function(){this.forEachObserver(function(e){e.complete()}),this.close()}},{key:"subscribe",value:function(e,t,n){var r=this,i=void 0;if(void 0===e&&void 0===t&&void 0===n)throw new Error("Missing Observer.");i=a(e,["next","error","complete"])?e:{next:e,error:t,complete:n},void 0===i.next&&(i.next=c),void 0===i.error&&(i.error=c),void 0===i.complete&&(i.complete=c);var o=this.unsubscribeOne.bind(this,this.observers.length);return this.finalized&&this.task.then(function(){try{r.finalError?i.error(r.finalError):i.complete()}catch(e){}}),this.observers.push(i),o}},{key:"unsubscribeOne",value:function(e){void 0!==this.observers&&void 0!==this.observers[e]&&(delete this.observers[e],this.observerCount-=1,0===this.observerCount&&void 0!==this.onNoObservers&&this.onNoObservers(this))}},{key:"forEachObserver",value:function(e){if(!this.finalized)for(var t=0;t<this.observers.length;t++)this.sendOne(t,e)}},{key:"sendOne",value:function(e,t){var n=this;this.task.then(function(){if(void 0!==n.observers&&void 0!==n.observers[e])try{t(n.observers[e])}catch(e){"undefined"!=typeof console&&console.error&&console.error(e)}})}},{key:"close",value:function(e){var t=this;this.finalized||(this.finalized=!0,void 0!==e&&(this.finalError=e),this.task.then(function(){t.observers=void 0,t.onNoObservers=void 0}))}}]),e}()},function(e,t){function n(){throw new Error("setTimeout has not been defined")}function r(){throw new Error("clearTimeout has not been defined")}function i(e){if(f===setTimeout)return setTimeout(e,0);if((f===n||!f)&&setTimeout)return f=setTimeout,setTimeout(e,0);try{return f(e,0)}catch(t){try{return f.call(null,e,0)}catch(t){return f.call(this,e,0)}}}function o(e){if(l===clearTimeout)return clearTimeout(e);if((l===r||!l)&&clearTimeout)return l=clearTimeout,clearTimeout(e);try{return l(e)}catch(t){try{return l.call(null,e)}catch(t){return l.call(this,e)}}}function a(){v&&p&&(v=!1,p.length?h=p.concat(h):m=-1,h.length&&c())}function c(){if(!v){var e=i(a);v=!0;for(var t=h.length;t;){for(p=h,h=[];++m<t;)p&&p[m].run();m=-1,t=h.length}p=null,v=!1,o(e)}}function s(e,t){this.fun=e,this.array=t}function u(){}var f,l,d=e.exports={};!function(){try{f="function"==typeof setTimeout?setTimeout:n}catch(e){f=n}try{l="function"==typeof clearTimeout?clearTimeout:r}catch(e){l=r}}();var p,h=[],v=!1,m=-1;d.nextTick=function(e){var t=new Array(arguments.length-1);if(arguments.length>1)for(var n=1;n<arguments.length;n++)t[n-1]=arguments[n];h.push(new s(e,t)),1!==h.length||v||i(c)},s.prototype.run=function(){this.fun.apply(null,this.array)},d.title="browser",d.browser=!0,d.env={},d.argv=[],d.version="",d.versions={},d.on=u,d.addListener=u,d.once=u,d.off=u,d.removeListener=u,d.removeAllListeners=u,d.emit=u,d.binding=function(e){throw new Error("process.binding is not supported")},d.cwd=function(){return"/"},d.chdir=function(e){throw new Error("process.chdir is not supported")},d.umask=function(){return 0}},function(e,t,n){(function(t){!function(n){function r(){}function i(e,t){return function(){e.apply(t,arguments)}}function o(e){if("object"!=typeof this)throw new TypeError("Promises must be constructed via new");if("function"!=typeof e)throw new TypeError("not a function");this._state=0,this._handled=!1,this._value=void 0,this._deferreds=[],l(e,this)}function a(e,t){for(;3===e._state;)e=e._value;if(0===e._state)return void e._deferreds.push(t);e._handled=!0,o._immediateFn(function(){var n=1===e._state?t.onFulfilled:t.onRejected;if(null===n)return void(1===e._state?c:s)(t.promise,e._value);var r;try{r=n(e._value)}catch(e){return void s(t.promise,e)}c(t.promise,r)})}function c(e,t){try{if(t===e)throw new TypeError("A promise cannot be resolved with itself.");if(t&&("object"==typeof t||"function"==typeof t)){var n=t.then;if(t instanceof o)return e._state=3,e._value=t,void u(e);if("function"==typeof n)return void l(i(n,t),e)}e._state=1,e._value=t,u(e)}catch(t){s(e,t)}}function s(e,t){e._state=2,e._value=t,u(e)}function u(e){2===e._state&&0===e._deferreds.length&&o._immediateFn(function(){e._handled||o._unhandledRejectionFn(e._value)});for(var t=0,n=e._deferreds.length;t<n;t++)a(e,e._deferreds[t]);e._deferreds=null}function f(e,t,n){this.onFulfilled="function"==typeof e?e:null,this.onRejected="function"==typeof t?t:null,this.promise=n}function l(e,t){var n=!1;try{e(function(e){n||(n=!0,c(t,e))},function(e){n||(n=!0,s(t,e))})}catch(e){if(n)return;n=!0,s(t,e)}}var d=setTimeout;o.prototype.catch=function(e){return this.then(null,e)},o.prototype.then=function(e,t){var n=new this.constructor(r);return a(this,new f(e,t,n)),n},o.all=function(e){var t=Array.prototype.slice.call(e);return new o(function(e,n){function r(o,a){try{if(a&&("object"==typeof a||"function"==typeof a)){var c=a.then;if("function"==typeof c)return void c.call(a,function(e){r(o,e)},n)}t[o]=a,0==--i&&e(t)}catch(e){n(e)}}if(0===t.length)return e([]);for(var i=t.length,o=0;o<t.length;o++)r(o,t[o])})},o.resolve=function(e){return e&&"object"==typeof e&&e.constructor===o?e:new o(function(t){t(e)})},o.reject=function(e){return new o(function(t,n){n(e)})},o.race=function(e){return new o(function(t,n){for(var r=0,i=e.length;r<i;r++)e[r].then(t,n)})},o._immediateFn="function"==typeof t&&function(e){t(e)}||function(e){d(e,0)},o._unhandledRejectionFn=function(e){"undefined"!=typeof console&&console&&console.warn("Possible Unhandled Promise Rejection:",e)},o._setImmediateFn=function(e){o._immediateFn=e},o._setUnhandledRejectionFn=function(e){o._unhandledRejectionFn=e},void 0!==e&&e.exports?e.exports=o:n.Promise||(n.Promise=o)}(this)}).call(t,n(10).setImmediate)},function(e,t,n){(function(e,t){!function(e,n){"use strict";function r(e){"function"!=typeof e&&(e=new Function(""+e));for(var t=new Array(arguments.length-1),n=0;n<t.length;n++)t[n]=arguments[n+1];var r={callback:e,args:t};return u[s]=r,c(s),s++}function i(e){delete u[e]}function o(e){var t=e.callback,r=e.args;switch(r.length){case 0:t();break;case 1:t(r[0]);break;case 2:t(r[0],r[1]);break;case 3:t(r[0],r[1],r[2]);break;default:t.apply(n,r)}}function a(e){if(f)setTimeout(a,0,e);else{var t=u[e];if(t){f=!0;try{o(t)}finally{i(e),f=!1}}}}if(!e.setImmediate){var c,s=1,u={},f=!1,l=e.document,d=Object.getPrototypeOf&&Object.getPrototypeOf(e);d=d&&d.setTimeout?d:e,"[object process]"==={}.toString.call(e.process)?function(){c=function(e){t.nextTick(function(){a(e)})}}():function(){if(e.postMessage&&!e.importScripts){var t=!0,n=e.onmessage;return e.onmessage=function(){t=!1},e.postMessage("","*"),e.onmessage=n,t}}()?function(){var t="setImmediate$"+Math.random()+"$",n=function(n){n.source===e&&"string"==typeof n.data&&0===n.data.indexOf(t)&&a(+n.data.slice(t.length))};e.addEventListener?e.addEventListener("message",n,!1):e.attachEvent("onmessage",n),c=function(n){e.postMessage(t+n,"*")}}():e.MessageChannel?function(){var e=new MessageChannel;e.port1.onmessage=function(e){a(e.data)},c=function(t){e.port2.postMessage(t)}}():l&&"onreadystatechange"in l.createElement("script")?function(){var e=l.documentElement;c=function(t){var n=l.createElement("script");n.onreadystatechange=function(){a(t),n.onreadystatechange=null,e.removeChild(n),n=null},e.appendChild(n)}}():function(){c=function(e){setTimeout(a,0,e)}}(),d.setImmediate=r,d.clearImmediate=i}}("undefined"==typeof self?void 0===e?this:e:self)}).call(t,n(1),n(7))},function(e,t,n){function r(e,t){this._id=e,this._clearFn=t}var i=Function.prototype.apply;t.setTimeout=function(){return new r(i.call(setTimeout,window,arguments),clearTimeout)},t.setInterval=function(){return new r(i.call(setInterval,window,arguments),clearInterval)},t.clearTimeout=t.clearInterval=function(e){e&&e.close()},r.prototype.unref=r.prototype.ref=function(){},r.prototype.close=function(){this._clearFn.call(window,this._id)},t.enroll=function(e,t){clearTimeout(e._idleTimeoutId),e._idleTimeout=t},t.unenroll=function(e){clearTimeout(e._idleTimeoutId),e._idleTimeout=-1},t._unrefActive=t.active=function(e){clearTimeout(e._idleTimeoutId);var t=e._idleTimeout;t>=0&&(e._idleTimeoutId=setTimeout(function(){e._onTimeout&&e._onTimeout()},t))},n(9),t.setImmediate=setImmediate,t.clearImmediate=clearImmediate},function(e,t,n){e.exports=n(2)}]);module.exports=firebase;
 	//# sourceMappingURL=app.js.map
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(30).setImmediate, __webpack_require__(30).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(32).setImmediate, __webpack_require__(32).clearImmediate))
 
 /***/ }),
-/* 30 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var apply = Function.prototype.apply;
@@ -40821,13 +41109,13 @@
 	};
 	
 	// setimmediate attaches itself to the global object
-	__webpack_require__(31);
+	__webpack_require__(33);
 	exports.setImmediate = setImmediate;
 	exports.clearImmediate = clearImmediate;
 
 
 /***/ }),
-/* 31 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -41017,10 +41305,10 @@
 	    attachTo.clearImmediate = clearImmediate;
 	}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(32)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(34)))
 
 /***/ }),
-/* 32 */
+/* 34 */
 /***/ (function(module, exports) {
 
 	// shim for using process in browser
@@ -41210,14 +41498,14 @@
 
 
 /***/ }),
-/* 33 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/*! @license Firebase v3.9.0
 	Build: rev-cc77c9e
 	Terms: https://firebase.google.com/terms/ */
 	
-	var firebase = __webpack_require__(29);
+	var firebase = __webpack_require__(31);
 	(function(){
 	(function(){var h,aa=aa||{},l=this,ba=function(){},ca=function(a){var b=typeof a;if("object"==b)if(a){if(a instanceof Array)return"array";if(a instanceof Object)return b;var c=Object.prototype.toString.call(a);if("[object Window]"==c)return"object";if("[object Array]"==c||"number"==typeof a.length&&"undefined"!=typeof a.splice&&"undefined"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable("splice"))return"array";if("[object Function]"==c||"undefined"!=typeof a.call&&"undefined"!=typeof a.propertyIsEnumerable&&
 	!a.propertyIsEnumerable("call"))return"function"}else return"null";else if("function"==b&&"undefined"==typeof a.call)return"object";return b},da=function(a){return null===a},ea=function(a){return"array"==ca(a)},fa=function(a){var b=ca(a);return"array"==b||"object"==b&&"number"==typeof a.length},m=function(a){return"string"==typeof a},ga=function(a){return"number"==typeof a},p=function(a){return"function"==ca(a)},ha=function(a){var b=typeof a;return"object"==b&&null!=a||"function"==b},ia=function(a,
@@ -41472,7 +41760,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ }),
-/* 34 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/*! @license Firebase v3.9.0
@@ -41502,7 +41790,7 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 	THE SOFTWARE. */
 	
-	var firebase = __webpack_require__(29);
+	var firebase = __webpack_require__(31);
 	(function(){
 	(function() {var g,aa=this;function n(a){return void 0!==a}function ba(){}function ca(a){a.Vb=function(){return a.Ye?a.Ye:a.Ye=new a}}
 	function da(a){var b=typeof a;if("object"==b)if(a){if(a instanceof Array)return"array";if(a instanceof Object)return b;var c=Object.prototype.toString.call(a);if("[object Window]"==c)return"object";if("[object Array]"==c||"number"==typeof a.length&&"undefined"!=typeof a.splice&&"undefined"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable("splice"))return"array";if("[object Function]"==c||"undefined"!=typeof a.call&&"undefined"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable("call"))return"function"}else return"null";
@@ -41742,14 +42030,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ }),
-/* 35 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/*! @license Firebase v3.9.0
 	Build: rev-cc77c9e
 	Terms: https://firebase.google.com/terms/ */
 	
-	var firebase = __webpack_require__(29);
+	var firebase = __webpack_require__(31);
 	(function(){
 	(function(){for(var h,aa="function"==typeof Object.defineProperties?Object.defineProperty:function(a,b,c){a!=Array.prototype&&a!=Object.prototype&&(a[b]=c.value)},l="undefined"!=typeof window&&window===this?this:"undefined"!=typeof global&&null!=global?global:this,n=["Number","MIN_SAFE_INTEGER"],ba=0;ba<n.length-1;ba++){var ca=n[ba];ca in l||(l[ca]={});l=l[ca]}var da=n[n.length-1];-9007199254740991!=l[da]&&aa(l,da,{configurable:!0,writable:!0,value:-9007199254740991});
 	var p=this,q=function(a){return void 0!==a},ea=function(a){var b=typeof a;if("object"==b)if(a){if(a instanceof Array)return"array";if(a instanceof Object)return b;var c=Object.prototype.toString.call(a);if("[object Window]"==c)return"object";if("[object Array]"==c||"number"==typeof a.length&&"undefined"!=typeof a.splice&&"undefined"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable("splice"))return"array";if("[object Function]"==c||"undefined"!=typeof a.call&&"undefined"!=typeof a.propertyIsEnumerable&&
@@ -41806,14 +42094,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ }),
-/* 36 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/*! @license Firebase v3.9.0
 	Build: rev-cc77c9e
 	Terms: https://firebase.google.com/terms/ */
 	
-	var firebase = __webpack_require__(29);
+	var firebase = __webpack_require__(31);
 	(function(){
 	(function(){var f=function(a,b){function c(){}c.prototype=b.prototype;a.u=b.prototype;a.prototype=new c;for(var d in b)if(Object.defineProperties){var e=Object.getOwnPropertyDescriptor(b,d);e&&Object.defineProperty(a,d,e)}else a[d]=b[d]},g=this,h=function(a){var b=typeof a;if("object"==b)if(a){if(a instanceof Array)return"array";if(a instanceof Object)return b;var c=Object.prototype.toString.call(a);if("[object Window]"==c)return"object";if("[object Array]"==c||"number"==typeof a.length&&"undefined"!=typeof a.splice&&
 	"undefined"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable("splice"))return"array";if("[object Function]"==c||"undefined"!=typeof a.call&&"undefined"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable("call"))return"function"}else return"null";else if("function"==b&&"undefined"==typeof a.call)return"object";return b},k=function(a,b){function c(){}c.prototype=b.prototype;a.u=b.prototype;a.prototype=new c;a.v=function(a,c,n){for(var d=Array(arguments.length-2),e=2;e<arguments.length;e++)d[e-
@@ -41854,22 +42142,22 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ }),
-/* 37 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// Make sure dependencies are loaded on the window
 	__webpack_require__(1);
-	__webpack_require__(28);
+	__webpack_require__(30);
 	
 	// Load the Angular module which uses window.angular and window.Firebase
-	__webpack_require__(38);
+	__webpack_require__(40);
 	
 	// Export the module name from the Angular module
 	module.exports = 'firebase';
 
 
 /***/ }),
-/* 38 */
+/* 40 */
 /***/ (function(module, exports) {
 
 	/*!
@@ -44356,7 +44644,7 @@
 
 
 /***/ }),
-/* 39 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44368,7 +44656,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _firebase = __webpack_require__(28);
+	var _firebase = __webpack_require__(30);
 	
 	var _firebase2 = _interopRequireDefault(_firebase);
 	
@@ -44439,6 +44727,11 @@
 	      return userObject.$save();
 	    }
 	  }, {
+	    key: 'resetPassword',
+	    value: function resetPassword(email) {
+	      return this.auth.$sendPasswordResetEmail(email);
+	    }
+	  }, {
 	    key: 'logout',
 	    value: function logout() {
 	      return this.auth.$signOut().then(this.clearAuthData);
@@ -44464,7 +44757,7 @@
 	}();
 
 /***/ }),
-/* 40 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44478,7 +44771,7 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _login = __webpack_require__(41);
+	var _login = __webpack_require__(43);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -44506,7 +44799,7 @@
 	}]).name;
 
 /***/ }),
-/* 41 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44518,7 +44811,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _login = __webpack_require__(42);
+	var _login = __webpack_require__(44);
 	
 	var _login2 = _interopRequireDefault(_login);
 	
@@ -44582,7 +44875,7 @@
 	};
 
 /***/ }),
-/* 42 */
+/* 44 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/login/login.html';
@@ -44591,7 +44884,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 43 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44605,7 +44898,7 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _register = __webpack_require__(44);
+	var _register = __webpack_require__(46);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -44635,7 +44928,7 @@
 	}]).name;
 
 /***/ }),
-/* 44 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44647,11 +44940,11 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _register = __webpack_require__(45);
+	var _register = __webpack_require__(47);
 	
 	var _register2 = _interopRequireDefault(_register);
 	
-	var _firebase = __webpack_require__(28);
+	var _firebase = __webpack_require__(30);
 	
 	var _firebase2 = _interopRequireDefault(_firebase);
 	
@@ -44719,7 +45012,7 @@
 	};
 
 /***/ }),
-/* 45 */
+/* 47 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/register/register.html';
@@ -44728,7 +45021,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 46 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44738,12 +45031,12 @@
 	});
 	exports.authForm = undefined;
 	
-	var _authForm = __webpack_require__(47);
+	var _authForm = __webpack_require__(49);
 	
 	var authForm = exports.authForm = angular.module('components.auth.auth-form', []).component('authForm', _authForm.formComponent).name;
 
 /***/ }),
-/* 47 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44755,7 +45048,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _authForm = __webpack_require__(48);
+	var _authForm = __webpack_require__(50);
 	
 	var _authForm2 = _interopRequireDefault(_authForm);
 	
@@ -44802,7 +45095,7 @@
 	};
 
 /***/ }),
-/* 48 */
+/* 50 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/auth-form/auth-form.html';
@@ -44811,7 +45104,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 49 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44821,14 +45114,14 @@
 	});
 	exports.navBar = undefined;
 	
-	var _navBar = __webpack_require__(50);
+	var _navBar = __webpack_require__(52);
 	
-	__webpack_require__(52);
+	__webpack_require__(54);
 	
 	var navBar = exports.navBar = angular.module('common.nav-bar', []).component('navBar', _navBar.navBarComponent).name;
 
 /***/ }),
-/* 50 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44840,7 +45133,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _navBar = __webpack_require__(51);
+	var _navBar = __webpack_require__(53);
 	
 	var _navBar2 = _interopRequireDefault(_navBar);
 	
@@ -44906,7 +45199,7 @@
 	};
 
 /***/ }),
-/* 51 */
+/* 53 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/common/nav-bar/nav-bar.html';
@@ -44915,14 +45208,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 52 */
+/* 54 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 53 */,
-/* 54 */
+/* 55 */,
+/* 56 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -44950,7 +45243,7 @@
 	};
 
 /***/ }),
-/* 55 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44964,7 +45257,7 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _accountInfo = __webpack_require__(56);
+	var _accountInfo = __webpack_require__(58);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -44978,7 +45271,7 @@
 	}]).name;
 
 /***/ }),
-/* 56 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44990,7 +45283,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _accountInfo = __webpack_require__(57);
+	var _accountInfo = __webpack_require__(59);
 	
 	var _accountInfo2 = _interopRequireDefault(_accountInfo);
 	
@@ -45017,16 +45310,16 @@
 	};
 
 /***/ }),
-/* 57 */
+/* 59 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/account-info/account-info.html';
-	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Thank You!</h1>\n  <p>Thank you for your purchase! We have send you an email containing your login information to access your purchased items.</p>\n  <a class=\"btn btn-primary\" ui-sref=\"auth.login\">Go to login</a>\n</div>\n";
+	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Thank You!</h1>\n  <p>Thank you for your purchase! We have sent you an email containing your login information to access your purchased items.</p>\n  <a class=\"btn btn-primary\" ui-sref=\"auth.login\">Go to login</a>\n</div>\n";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
 /***/ }),
-/* 58 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45040,7 +45333,7 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _resetPassword = __webpack_require__(59);
+	var _resetPassword = __webpack_require__(61);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -45054,7 +45347,7 @@
 	}]).name;
 
 /***/ }),
-/* 59 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45066,7 +45359,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _resetPassword = __webpack_require__(60);
+	var _resetPassword = __webpack_require__(62);
 	
 	var _resetPassword2 = _interopRequireDefault(_resetPassword);
 	
@@ -45077,10 +45370,15 @@
 	var resetPasswordComponent = exports.resetPasswordComponent = {
 	  templateUrl: _resetPassword2.default,
 	  controller: function () {
-	    function ResetPasswordomponent() {
+	    ResetPasswordomponent.$inject = ["AuthService", "$state", "Notification"];
+	    function ResetPasswordomponent(AuthService, $state, Notification) {
 	      'ngInject';
 	
 	      _classCallCheck(this, ResetPasswordomponent);
+	
+	      this.authService = AuthService;
+	      this.$state = $state;
+	      this.notification = Notification;
 	    }
 	
 	    _createClass(ResetPasswordomponent, [{
@@ -45091,7 +45389,14 @@
 	    }, {
 	      key: 'submitForm',
 	      value: function submitForm() {
-	        console.log('submit', this.email);
+	        var _this = this;
+	
+	        this.authService.resetPassword(this.email).then(function () {
+	          _this.$state.go('auth.login');
+	          _this.notification.success({ title: 'Success', message: 'Password reset email was sent.' });
+	        }, function (reason) {
+	          _this.error = reason.message;
+	        });
 	      }
 	    }]);
 	
@@ -45100,23 +45405,23 @@
 	};
 
 /***/ }),
-/* 60 */
+/* 62 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/auth/reset-password/reset-password.html';
-	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Reset Password</h1>\n  <p>Please enter the email you used when creating your account. We will send you a password reset email.</p>\n  <form name=\"resetForm\" novalidate ng-submit=\"$ctrl.submitForm();\">\n    <label>\n      <input\n          type=\"email\"\n          name=\"email\"\n          required=\"required\"\n          placeholder=\"Enter your email\"\n          ng-model=\"$ctrl.email\">\n    </label>\n    <button class=\"btn btn-primary\" ng-disabled=\"resetForm.$invalid\">Submit</button>\n  </form>\n</div>\n\n<div class=\"auth__info\">\n  <a href=\"\" ui-sref=\"auth.login\">\n    Back to login page\n  </a>\n</div>\n";
+	var html = "<nav-bar></nav-bar>\n<div class=\"auth\">\n  <h1>Reset Password</h1>\n  <p>Please enter the email you used when creating your account. We will send you a password reset email.</p>\n  <form name=\"resetForm\" novalidate ng-submit=\"$ctrl.submitForm();\">\n    <label>\n      <input\n          type=\"email\"\n          name=\"email\"\n          required=\"required\"\n          placeholder=\"Enter your email\"\n          ng-model=\"$ctrl.email\">\n    </label>\n    <button class=\"btn btn-primary\" ng-disabled=\"resetForm.$invalid\">Submit</button>\n  </form>\n  <div ng-if=\"$ctrl.error\">\n    {{ $ctrl.error }}\n  </div>\n</div>\n\n<div class=\"auth__info\">\n  <a href=\"\" ui-sref=\"auth.login\">\n    Back to login page\n  </a>\n</div>\n";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
 /***/ }),
-/* 61 */
+/* 63 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 62 */,
-/* 63 */
+/* 64 */,
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45126,26 +45431,26 @@
 	});
 	exports.contact = undefined;
 	
-	var _contact = __webpack_require__(64);
+	var _contact = __webpack_require__(66);
 	
-	var _lengthCheck = __webpack_require__(65);
+	var _lengthCheck = __webpack_require__(67);
 	
-	var _contacts = __webpack_require__(66);
+	var _contacts = __webpack_require__(68);
 	
-	var _contact2 = __webpack_require__(72);
+	var _contact2 = __webpack_require__(74);
 	
-	var _contactNew = __webpack_require__(77);
+	var _contactNew = __webpack_require__(79);
 	
-	var _contactDetail = __webpack_require__(80);
+	var _contactDetail = __webpack_require__(82);
 	
-	var _contactEdit = __webpack_require__(85);
+	var _contactEdit = __webpack_require__(87);
 	
-	var _contactTag = __webpack_require__(88);
+	var _contactTag = __webpack_require__(90);
 	
 	var contact = exports.contact = angular.module('components.contact', [_contacts.contacts, _contact2.contactSingle, _contactNew.contactNew, _contactDetail.contactDetail, _contactEdit.contactEdit, _contactTag.contactTag]).service('ContactService', _contact.ContactService).directive('lengthCheck', _lengthCheck.lengthCheck).name;
 
 /***/ }),
-/* 64 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45157,7 +45462,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _firebase = __webpack_require__(28);
+	var _firebase = __webpack_require__(30);
 	
 	var _firebase2 = _interopRequireDefault(_firebase);
 	
@@ -45209,7 +45514,7 @@
 	}();
 
 /***/ }),
-/* 65 */
+/* 67 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -45241,7 +45546,7 @@
 	}
 
 /***/ }),
-/* 66 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45255,11 +45560,11 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _contacts = __webpack_require__(67);
+	var _contacts = __webpack_require__(69);
 	
-	var _contacts2 = __webpack_require__(69);
+	var _contacts2 = __webpack_require__(71);
 	
-	__webpack_require__(70);
+	__webpack_require__(72);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -45291,7 +45596,7 @@
 	}]).name;
 
 /***/ }),
-/* 67 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45303,7 +45608,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contacts = __webpack_require__(68);
+	var _contacts = __webpack_require__(70);
 	
 	var _contacts2 = _interopRequireDefault(_contacts);
 	
@@ -45347,7 +45652,7 @@
 	};
 
 /***/ }),
-/* 68 */
+/* 70 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contacts/contacts.html';
@@ -45356,7 +45661,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 69 */
+/* 71 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -45374,14 +45679,14 @@
 	}
 
 /***/ }),
-/* 70 */
+/* 72 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 71 */,
-/* 72 */
+/* 73 */,
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45391,14 +45696,14 @@
 	});
 	exports.contactSingle = undefined;
 	
-	var _contact = __webpack_require__(73);
+	var _contact = __webpack_require__(75);
 	
-	__webpack_require__(75);
+	__webpack_require__(77);
 	
 	var contactSingle = exports.contactSingle = angular.module('components.contact.contact', []).component('contact', _contact.contactComponent).name;
 
 /***/ }),
-/* 73 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45410,7 +45715,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contact = __webpack_require__(74);
+	var _contact = __webpack_require__(76);
 	
 	var _contact2 = _interopRequireDefault(_contact);
 	
@@ -45447,7 +45752,7 @@
 	};
 
 /***/ }),
-/* 74 */
+/* 76 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact/contact.html';
@@ -45456,14 +45761,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 75 */
+/* 77 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 76 */,
-/* 77 */
+/* 78 */,
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45477,7 +45782,7 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _contactNew = __webpack_require__(78);
+	var _contactNew = __webpack_require__(80);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -45492,7 +45797,7 @@
 	}]).name;
 
 /***/ }),
-/* 78 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45504,7 +45809,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contactNew = __webpack_require__(79);
+	var _contactNew = __webpack_require__(81);
 	
 	var _contactNew2 = _interopRequireDefault(_contactNew);
 	
@@ -45560,7 +45865,7 @@
 	};
 
 /***/ }),
-/* 79 */
+/* 81 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact-new/contact-new.html';
@@ -45569,7 +45874,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 80 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45579,14 +45884,14 @@
 	});
 	exports.contactDetail = undefined;
 	
-	var _contactDetail = __webpack_require__(81);
+	var _contactDetail = __webpack_require__(83);
 	
-	__webpack_require__(83);
+	__webpack_require__(85);
 	
 	var contactDetail = exports.contactDetail = angular.module('components.contact.contact-detail', []).component('contactDetail', _contactDetail.contactDetailComponent).name;
 
 /***/ }),
-/* 81 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45598,7 +45903,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contactDetail = __webpack_require__(82);
+	var _contactDetail = __webpack_require__(84);
 	
 	var _contactDetail2 = _interopRequireDefault(_contactDetail);
 	
@@ -45666,7 +45971,7 @@
 	};
 
 /***/ }),
-/* 82 */
+/* 84 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact-detail/contact-detail.html';
@@ -45675,14 +45980,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 83 */
+/* 85 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 84 */,
-/* 85 */
+/* 86 */,
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45696,7 +46001,7 @@
 	
 	var _angularUiRouter2 = _interopRequireDefault(_angularUiRouter);
 	
-	var _contactEdit = __webpack_require__(86);
+	var _contactEdit = __webpack_require__(88);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -45719,7 +46024,7 @@
 	}]).name;
 
 /***/ }),
-/* 86 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45731,7 +46036,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contactEdit = __webpack_require__(87);
+	var _contactEdit = __webpack_require__(89);
 	
 	var _contactEdit2 = _interopRequireDefault(_contactEdit);
 	
@@ -45788,7 +46093,7 @@
 	};
 
 /***/ }),
-/* 87 */
+/* 89 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact-edit/contact-edit.html';
@@ -45797,7 +46102,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 88 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45807,12 +46112,12 @@
 	});
 	exports.contactTag = undefined;
 	
-	var _contactTag = __webpack_require__(89);
+	var _contactTag = __webpack_require__(91);
 	
 	var contactTag = exports.contactTag = angular.module('components.contact.contact-tag', []).component('contactTag', _contactTag.contactTagComponent).name;
 
 /***/ }),
-/* 89 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45824,7 +46129,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _contactTag = __webpack_require__(90);
+	var _contactTag = __webpack_require__(92);
 	
 	var _contactTag2 = _interopRequireDefault(_contactTag);
 	
@@ -45873,7 +46178,7 @@
 	};
 
 /***/ }),
-/* 90 */
+/* 92 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/contact/contact-tag/contact-tag.html';
@@ -45882,7 +46187,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 91 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45892,21 +46197,20 @@
 	});
 	exports.membersArea = undefined;
 	
-	var _membersArea = __webpack_require__(92);
+	var _membersArea = __webpack_require__(94);
 	
-	var _membersArea2 = __webpack_require__(97);
+	var _membersArea2 = __webpack_require__(99);
 	
-	var _membersAreaProgram = __webpack_require__(98);
+	var _membersAreaProgram = __webpack_require__(100);
 	
-	__webpack_require__(103);
+	__webpack_require__(105);
 	
-	var membersArea = exports.membersArea = angular.module('components.members-area', ["com.2fdevs.videogular", "com.2fdevs.videogular.plugins.controls",
-	//"com.2fdevs.videogular.plugins.overlayplay",
+	var membersArea = exports.membersArea = angular.module('components.members-area', ["com.2fdevs.videogular", "com.2fdevs.videogular.plugins.controls", "com.2fdevs.videogular.plugins.overlayplay",
 	//"com.2fdevs.videogular.plugins.poster",
 	_membersArea.membersAreaPage, _membersAreaProgram.membersAreaProgramPage]).service('MembersAreaService', _membersArea2.MembersAreaService).name;
 
 /***/ }),
-/* 92 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45916,9 +46220,9 @@
 	});
 	exports.membersAreaPage = undefined;
 	
-	var _membersArea = __webpack_require__(93);
+	var _membersArea = __webpack_require__(95);
 	
-	__webpack_require__(95);
+	__webpack_require__(97);
 	
 	var membersAreaPage = exports.membersAreaPage = angular.module('components.members-area.members-area', []).component('membersArea', _membersArea.membersAreaComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -45957,7 +46261,7 @@
 	}]).name;
 
 /***/ }),
-/* 93 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45969,7 +46273,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _membersArea = __webpack_require__(94);
+	var _membersArea = __webpack_require__(96);
 	
 	var _membersArea2 = _interopRequireDefault(_membersArea);
 	
@@ -46008,7 +46312,7 @@
 	};
 
 /***/ }),
-/* 94 */
+/* 96 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/members-area/members-area/members-area.html';
@@ -46017,14 +46321,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 95 */
+/* 97 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 96 */,
-/* 97 */
+/* 98 */,
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46036,7 +46340,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _firebase = __webpack_require__(28);
+	var _firebase = __webpack_require__(30);
 	
 	var _firebase2 = _interopRequireDefault(_firebase);
 	
@@ -46058,6 +46362,7 @@
 	    this.ref = _firebase2.default.database().ref('users');
 	    this.perchasesRef = _firebase2.default.database().ref('purchases');
 	    this.productsRf = _firebase2.default.database().ref('products');
+	    this.coursesRef = _firebase2.default.database().ref('courses');
 	  }
 	
 	  _createClass(MembersAreaService, [{
@@ -46065,6 +46370,16 @@
 	    value: function $onInit() {
 	      // console.log(this.ref.child(this.uid));
 	      //this.getProgramData()
+	    }
+	  }, {
+	    key: 'getCourseSections',
+	    value: function getCourseSections(courseId) {
+	      return this.$firebaseArray(this.coursesRef.child(courseId).child('course_sections'));
+	    }
+	  }, {
+	    key: 'getCourse',
+	    value: function getCourse(courseId) {
+	      return this.$firebaseObject(this.coursesRef.child(courseId));
 	    }
 	  }, {
 	    key: 'getPurchasedProducts',
@@ -46089,7 +46404,7 @@
 	}();
 
 /***/ }),
-/* 98 */
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46099,9 +46414,9 @@
 	});
 	exports.membersAreaProgramPage = undefined;
 	
-	var _membersAreaProgram = __webpack_require__(99);
+	var _membersAreaProgram = __webpack_require__(101);
 	
-	__webpack_require__(101);
+	__webpack_require__(103);
 	
 	var membersAreaProgramPage = exports.membersAreaProgramPage = angular.module('components.members-area.members-area-program', []).component('membersAreaProgram', _membersAreaProgram.membersAreaProgramComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -46134,13 +46449,23 @@
 	          //console.log({updatedPrograms});
 	          return updatedPrograms;
 	        });
+	      }],
+	      course: ["MembersAreaService", "purchasedData", "$transition$", "$q", function course(MembersAreaService, purchasedData, $transition$, $q) {
+	        'ngInject';
+	
+	        var courseId = $transition$.params().id;
+	        var purchasedIds = purchasedData.map(function (item) {
+	          return item.id;
+	        });
+	
+	        return purchasedIds.indexOf(courseId) >= 0 ? MembersAreaService.getCourse(courseId).$loaded() : $q.when(null);
 	      }]
 	    }
 	  });
 	}]).name;
 
 /***/ }),
-/* 99 */
+/* 101 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46152,7 +46477,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _membersAreaProgram = __webpack_require__(100);
+	var _membersAreaProgram = __webpack_require__(102);
 	
 	var _membersAreaProgram2 = _interopRequireDefault(_membersAreaProgram);
 	
@@ -46164,12 +46489,13 @@
 	  bindings: {
 	    user: '<',
 	    purchasedData: '<',
-	    programs: '<'
+	    programs: '<',
+	    course: '<'
 	  },
 	  templateUrl: _membersAreaProgram2.default,
 	  controller: function () {
-	    MembersAreaProgramComponent.$inject = ["AuthService", "$state", "$sce"];
-	    function MembersAreaProgramComponent(AuthService, $state, $sce) {
+	    MembersAreaProgramComponent.$inject = ["AuthService", "$state", "$sce", "$timeout"];
+	    function MembersAreaProgramComponent(AuthService, $state, $sce, $timeout) {
 	      'ngInject';
 	
 	      _classCallCheck(this, MembersAreaProgramComponent);
@@ -46177,28 +46503,129 @@
 	      this.authService = AuthService;
 	      this.$state = $state;
 	      this.$sce = $sce;
+	      this.$timeout = $timeout;
 	    }
 	
 	    _createClass(MembersAreaProgramComponent, [{
 	      key: '$onInit',
 	      value: function $onInit() {
-	        console.log('programs', this.programs);
-	        console.log('allowed courses', this.purchasedData);
+	        var _this = this;
 	
-	        this.config = {
-	          sources: [{ src: this.$sce.trustAsResourceUrl("https://s3.us-east-2.amazonaws.com/coach-srenee/Self-Image+_+Attitude+Program+/videos/Video+1+Introduction+to+Self-Image.mp4.mp4"), type: "video/mp4" }, { src: this.$sce.trustAsResourceUrl("https://s3.us-east-2.amazonaws.com/coach-srenee/Self-Image+_+Attitude+Program+/videos/Video+1+Introduction+to+Self-Image.webmhd.webm"), type: "video/webm" }, { src: this.$sce.trustAsResourceUrl("https://s3.us-east-2.amazonaws.com/coach-srenee/Self-Image+_+Attitude+Program+/videos/Video+1+Introduction+to+Self-Image.oggtheora.ogv"), type: "video/ogg" }],
-	          tracks: [{
-	            src: "http://www.videogular.com/assets/subs/pale-blue-dot.vtt",
-	            kind: "subtitles",
-	            srclang: "en",
-	            label: "English",
-	            default: ""
-	          }]
-	          // theme: "bower_components/videogular-themes-default/videogular.css",
-	          // plugins: {
-	          //   poster: "http://www.videogular.com/assets/images/videogular.png"
-	          // }
+	        var storageKey = '[SRENEE_' + this.course.$id + ']';
+	        this.currentVideoTitle = '';
+	        this.state = null;
+	        this.API = null;
+	        this.currentVideo = localStorage.getItem(storageKey) ? Number(localStorage.getItem(storageKey)) : 0;
+	
+	        console.log('this.currentVideo', this.currentVideo);
+	        this.onPlayerReady = function (API) {
+	          _this.API = API;
 	        };
+	        this.setVideo = function (index, title) {
+	          localStorage.setItem(storageKey, index);
+	          //console.log(index, flattenedFiles)
+	          _this.currentVideoTitle = title;
+	          console.log('local set', index);
+	          //return
+	          _this.API.stop();
+	          _this.currentVideo = index;
+	          _this.config.sources = _this.videos[index].sources;
+	          _this.$timeout(_this.API.play.bind(_this.API), 100);
+	        };
+	        this.onCompleteVideo = function () {
+	          _this.isComplete = true;
+	          _this.currentVideo += 1;
+	          if (_this.currentVideo >= _this.videos.length) _this.currentVideo = 0;
+	          _this.setVideo(_this.currentVideo);
+	          console.log('what you do', _this.currentVideo);
+	        };
+	        this.videoCounter = 0;
+	        this.updateVideoCount = function () {
+	          return _this.videoCounter++;
+	        };
+	        var getTransformedModuleList = function getTransformedModuleList() {
+	          //this.$sce.trustAsResourceUrl("")
+	        };
+	
+	        var sections = this.course.course_sections.map(function (section) {
+	          return section.modules;
+	        });
+	        var flattenedModules = [].concat.apply([], sections);
+	        this.moduleList = flattenedModules;
+	
+	        var videos = flattenedModules.map(function (module) {
+	          return module.files;
+	        });
+	        var flattenedFiles = [].concat.apply([], videos);
+	        this.currentVideoTitle = flattenedFiles[this.currentVideo].name;
+	        var transformedSources = flattenedFiles.map(function (file) {
+	          var mime = {
+	            ogv: 'video/ogg',
+	            mp3: 'audio/mpeg',
+	            mp4: 'video/mp4',
+	            webm: 'video/webm'
+	          };
+	          return Object.keys(file).reduce(function (source, type, index) {
+	            if (file[type].indexOf('https') >= 0) {
+	              //console.log({file: file.name, index})
+	              source.sources.push({
+	                src: _this.$sce.trustAsResourceUrl(file[type]),
+	                type: mime[type]
+	              });
+	            }
+	            return source;
+	          }, { sources: [] });
+	        });
+	
+	        console.log(flattenedFiles);
+	        this.videos = transformedSources;
+	        // this.videos = [
+	        //   {
+	        //     sources: [
+	        //       { src: '', type: 'video/mp4' },
+	        //       { src: '', type: 'video/webm' },
+	        //       { src: '', type: 'video/ogg' },
+	        //       { src: '', type: 'audio/mpeg'}
+	        //     ]
+	        //   }
+	        // ];
+	        this.config = {
+	          preload: 'none',
+	          autoHide: false,
+	          autoHideTime: 3000,
+	          autoPlay: false,
+	          sources: this.videos[this.currentVideo].sources
+	        };
+	
+	        //console.log('programs', this.programs)
+	        ///console.log('allowed courses', this.purchasedData);
+	        console.log('Course: ', this.course);
+	        // this.config = {
+	        //   sources: [
+	        //     {src: this.$sce.trustAsResourceUrl(
+	        //       "https://s3.us-east-2.amazonaws.com/coach-srenee/Self-Image+_+Attitude+Program+/videos/Video+1+Introduction+to+Self-Image.mp4.mp4"
+	        //     ), type: "video/mp4"},
+	        //     {src: this.$sce.trustAsResourceUrl(
+	        //       "https://s3.us-east-2.amazonaws.com/coach-srenee/Self-Image+_+Attitude+Program+/videos/Video+1+Introduction+to+Self-Image.webmhd.webm"
+	        //     ), type: "video/webm"},
+	        //     {src: this.$sce.trustAsResourceUrl(
+	        //       "https://s3.us-east-2.amazonaws.com/coach-srenee/Self-Image+_+Attitude+Program+/videos/Video+1+Introduction+to+Self-Image.oggtheora.ogv"
+	        //     ), type: "video/ogg"}
+	        //   ],
+	        //   tracks: [
+	        //     {
+	        //       src: "http://www.videogular.com/assets/subs/pale-blue-dot.vtt",
+	        //       kind: "subtitles",
+	        //       srclang: "en",
+	        //       label: "English",
+	        //       default: ""
+	        //     }
+	        //   ],
+	        // theme: "bower_components/videogular-themes-default/videogular.css",
+	        // plugins: {
+	        //   poster: "http://www.videogular.com/assets/images/videogular.png"
+	        //}
+	        //};
 	      }
 	    }]);
 	
@@ -46207,23 +46634,23 @@
 	};
 
 /***/ }),
-/* 100 */
+/* 102 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/members-area/members-area-program/members-area-program.html';
-	var html = "<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\"><a class=\"bread-crumb\" ui-sref=\"members-area\">Members Area</a> / Program Modules</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div class=\"container\">\r\n        <div class=\"flex\">\r\n          <div class=\"module-list-container\">\r\n            <p>Module List</p>\r\n          </div>\r\n          <div class=\"videogular-container\">\r\n            <videogular vg-theme=\"$ctrl.config.theme\">\r\n              <vg-media vg-src=\"$ctrl.config.sources\"\r\n                        vg-tracks=\"$ctrl.config.tracks\">\r\n              </vg-media>\r\n\r\n              <vg-controls>\r\n                <vg-play-pause-button></vg-play-pause-button>\r\n                <vg-time-display>{{ currentTime | date:'mm:ss' }}</vg-time-display>\r\n                <vg-scrub-bar>\r\n                  <vg-scrub-bar-current-time></vg-scrub-bar-current-time>\r\n                </vg-scrub-bar>\r\n                <vg-time-display>{{ timeLeft | date:'mm:ss' }}</vg-time-display>\r\n                <vg-volume>\r\n                  <vg-mute-button></vg-mute-button>\r\n                  <vg-volume-bar></vg-volume-bar>\r\n                </vg-volume>\r\n                <vg-fullscreen-button></vg-fullscreen-button>\r\n              </vg-controls>\r\n\r\n              <vg-overlay-play></vg-overlay-play>\r\n              <vg-poster vg-url='controller.config.plugins.poster'></vg-poster>\r\n            </videogular>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
+	var html = "<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\"><a class=\"bread-crumb\" ui-sref=\"members-area\">Members Area</a> / Program Modules</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div class=\"container\">\r\n        <div class=\"flex video-container\">\r\n          <div class=\"module-list-container\">\r\n            <div>\r\n              <h3>Modules</h3>\r\n              <hr>\r\n            </div>\r\n            <!-- ng repeat -->\r\n            <div class=\"tab\" ng-repeat=\"module in $ctrl.moduleList\" ng-init=\"moduleIndex = 0\">\r\n              <input id=\"tab-{{$index}}\" type=\"checkbox\" name=\"tabs\" checked>\r\n              <label class=\"truncate\" for=\"tab-{{$index}}\">{{::module.name}}</label>\r\n              <div class=\"tab-content\">\r\n\r\n                <!--<div ng-if=\"!module.videos\">-->\r\n                  <!--<div class=\"button-container\" ng-repeat=\"aud in module.audio\">-->\r\n                    <!--<button-->\r\n                        <!--class=\"flex-align-center\"-->\r\n                        <!--ng-init=\"audioCount = $ctrl.updateVideoCount()\"-->\r\n                        <!--ng-click=\"$ctrl.setVideo(audioCount, aud.name)\">-->\r\n                      <!--<i class=\"material-icons\">play_circle_outline</i>-->\r\n                      <!--<span>{{::aud.name}}</span>-->\r\n                    <!--</button>-->\r\n                  <!--</div>-->\r\n\r\n                <!--</div>-->\r\n                  <div class=\"button-container\" ng-repeat=\"file in module.files\">\r\n                    <button\r\n                        class=\"flex-align-center\"\r\n                        ng-init=\"fileCount = $ctrl.updateVideoCount()\"\r\n                        ng-click=\"$ctrl.setVideo(fileCount, file.name)\">\r\n                      <i class=\"material-icons\">play_circle_outline</i>\r\n                      <span>{{::file.name}}</span>\r\n                    </button>\r\n                  </div>\r\n\r\n              </div>\r\n            </div>\r\n\r\n\r\n          </div>\r\n          <div class=\"videogular-container\">\r\n            <div>\r\n              <h3 ng-bind=\"$ctrl.currentVideoTitle\"></h3>\r\n              <hr>\r\n            </div>\r\n            <videogular\r\n                vg-theme=\"$ctrl.config.theme\"\r\n                vg-player-ready=\"$ctrl.onPlayerReady($API)\"\r\n                vg-complete=\"controller.onCompleteVideo()\">\r\n              <vg-media\r\n                  vg-src=\"$ctrl.config.sources\"\r\n                  vg-tracks=\"$ctrl.config.tracks\">\r\n              </vg-media>\r\n\r\n              <vg-controls>\r\n                <vg-play-pause-button></vg-play-pause-button>\r\n                <vg-time-display>{{ currentTime | date:'mm:ss' }}</vg-time-display>\r\n                <vg-scrub-bar>\r\n                  <vg-scrub-bar-current-time></vg-scrub-bar-current-time>\r\n                </vg-scrub-bar>\r\n                <vg-time-display>{{ timeLeft | date:'mm:ss' }}</vg-time-display>\r\n                <vg-volume>\r\n                  <vg-mute-button></vg-mute-button>\r\n                  <vg-volume-bar></vg-volume-bar>\r\n                </vg-volume>\r\n                <vg-fullscreen-button></vg-fullscreen-button>\r\n              </vg-controls>\r\n\r\n              <vg-overlay-play></vg-overlay-play>\r\n              <vg-poster vg-url='controller.config.plugins.poster'></vg-poster>\r\n            </videogular>\r\n          </div>\r\n\r\n        </div>\r\n        <div>\r\n          <hr>\r\n          <h3>Bonus Content</h3>\r\n          <!--<hr>-->\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
 /***/ }),
-/* 101 */
+/* 103 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 102 */,
-/* 103 */
+/* 104 */,
+/* 105 */
 /***/ (function(module, exports) {
 
 	/**
@@ -49066,9 +49493,74 @@
 	    }
 	  };
 	}]);
+	/**
+	 * @license videogular v1.4.4 http://videogular.com
+	 * Two Fucking Developers http://twofuckingdevelopers.com
+	 * License: MIT
+	 */
+	/**
+	 * @ngdoc directive
+	 * @name com.2fdevs.videogular.plugins.overlayplay.directive:vgOverlayPlay
+	 * @restrict E
+	 * @description
+	 * Shows a big play button centered when player is paused or stopped.
+	 *
+	 * <pre>
+	 * <videogular vg-theme="config.theme.url" vg-autoplay="config.autoPlay">
+	 *    <vg-media vg-src="sources"></vg-media>
+	 *
+	 *    <vg-overlay-play></vg-overlay-play>
+	 * </videogular>
+	 * </pre>
+	 *
+	 */
+	"use strict";
+	angular.module("com.2fdevs.videogular.plugins.overlayplay", []).run(["$templateCache", function ($templateCache) {
+	  $templateCache.put("vg-templates/vg-overlay-play", '<div class="overlayPlayContainer" ng-click="onClickOverlayPlay()">\
+	          <div class="iconButton" ng-class="overlayPlayIcon"></div>\
+	        </div>');
+	}]).directive("vgOverlayPlay", ["VG_STATES", function (VG_STATES) {
+	  return {
+	    restrict: "E",
+	    require: "^videogular",
+	    scope: {},
+	    templateUrl: function templateUrl(elem, attrs) {
+	      return attrs.vgTemplate || 'vg-templates/vg-overlay-play';
+	    },
+	    link: function link(scope, elem, attr, API) {
+	      scope.onChangeState = function onChangeState(newState) {
+	        switch (newState) {
+	          case VG_STATES.PLAY:
+	            scope.overlayPlayIcon = {};
+	            break;
+	
+	          case VG_STATES.PAUSE:
+	            scope.overlayPlayIcon = { play: true };
+	            break;
+	
+	          case VG_STATES.STOP:
+	            scope.overlayPlayIcon = { play: true };
+	            break;
+	        }
+	      };
+	
+	      scope.onClickOverlayPlay = function onClickOverlayPlay(event) {
+	        API.playPause();
+	      };
+	
+	      scope.overlayPlayIcon = { play: true };
+	
+	      scope.$watch(function () {
+	        return API.currentState;
+	      }, function (newVal, oldVal) {
+	        scope.onChangeState(newVal);
+	      });
+	    }
+	  };
+	}]);
 
 /***/ }),
-/* 104 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49078,15 +49570,15 @@
 	});
 	exports.product = undefined;
 	
-	var _product = __webpack_require__(105);
+	var _product = __webpack_require__(107);
 	
-	var _products = __webpack_require__(111);
+	var _products = __webpack_require__(113);
 	
-	var _product2 = __webpack_require__(116);
+	var _product2 = __webpack_require__(118);
 	
-	var _navBar = __webpack_require__(49);
+	var _navBar = __webpack_require__(51);
 	
-	var _angularSanitize = __webpack_require__(117);
+	var _angularSanitize = __webpack_require__(119);
 	
 	var _angularSanitize2 = _interopRequireDefault(_angularSanitize);
 	
@@ -49095,7 +49587,7 @@
 	var product = exports.product = angular.module('components.product', [_product.productSingle, _products.products, _navBar.navBar, _angularSanitize2.default]).service('ProductService', _product2.ProductService).name;
 
 /***/ }),
-/* 105 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49105,9 +49597,9 @@
 	});
 	exports.productSingle = undefined;
 	
-	var _product = __webpack_require__(106);
+	var _product = __webpack_require__(108);
 	
-	__webpack_require__(109);
+	__webpack_require__(111);
 	
 	var productSingle = exports.productSingle = angular.module('components.product.product', []).component('product', _product.productComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -49124,7 +49616,7 @@
 	}]).name;
 
 /***/ }),
-/* 106 */
+/* 108 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49136,15 +49628,15 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _product = __webpack_require__(107);
+	var _product = __webpack_require__(109);
 	
 	var _product2 = _interopRequireDefault(_product);
 	
-	var _firebase = __webpack_require__(28);
+	var _firebase = __webpack_require__(30);
 	
 	var _firebase2 = _interopRequireDefault(_firebase);
 	
-	var _productDetails = __webpack_require__(108);
+	var _productDetails = __webpack_require__(110);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -49184,6 +49676,7 @@
 	        this.sideBar = this.$sce.trustAsHtml(_productDetails.productDetails[this.id][1]);
 	
 	        //console.log(this.authService.register)
+	
 	        Snipcart.subscribe('order.completed', function (order) {
 	          var nameSplit = order.billingAddress.name.split(' ');
 	          var firstName = nameSplit[0];
@@ -49205,24 +49698,32 @@
 	              return _this.authService.getUser().updateProfile({ displayName: firstName });
 	            }).then(updatePurchases).then(function () {
 	              _this.authService.logout().then(function () {
-	                _this.$state.go('auth.account-info');
+	                Snipcart.subscribe('cart.closed', function () {
+	                  _this.$state.go('auth.account-info');
+	                });
 	              });
 	            });
 	          };
 	
 	          _firebase2.default.auth().fetchProvidersForEmail(order.email).then(function (status) {
 	            var emailAvailable = status.length;
+	            //Snipcart.subscribe('cart.closed', () => {
 	            if (emailAvailable) {
 	              if (_this.authService.isAuthenticated()) {
 	                updatePurchases().then(function () {
-	                  return _this.$state.go('app', {}, { reload: true });
+	                  Snipcart.subscribe('cart.closed', function () {
+	                    _this.$state.go('app', {}, { reload: true });
+	                  });
 	                });
 	              } else {
-	                _this.$state.go('auth.login', { orderItems: order.items });
+	                Snipcart.subscribe('cart.closed', function () {
+	                  _this.$state.go('auth.login', { orderItems: order.items });
+	                });
 	              }
 	            } else {
 	              return newUserPath();
 	            }
+	            //});
 	          }).catch(function (error) {
 	            console.error('error:register', error);
 	          });
@@ -49242,7 +49743,7 @@
 	};
 
 /***/ }),
-/* 107 */
+/* 109 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/product/product.html';
@@ -49251,7 +49752,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 108 */
+/* 110 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -49265,14 +49766,14 @@
 	};
 
 /***/ }),
-/* 109 */
+/* 111 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 110 */,
-/* 111 */
+/* 112 */,
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49282,9 +49783,9 @@
 	});
 	exports.products = undefined;
 	
-	var _products = __webpack_require__(112);
+	var _products = __webpack_require__(114);
 	
-	__webpack_require__(114);
+	__webpack_require__(116);
 	
 	var products = exports.products = angular.module('components.product.products', []).component('products', _products.productsComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -49303,7 +49804,7 @@
 	}]).name;
 
 /***/ }),
-/* 112 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49315,7 +49816,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _products = __webpack_require__(113);
+	var _products = __webpack_require__(115);
 	
 	var _products2 = _interopRequireDefault(_products);
 	
@@ -49350,7 +49851,7 @@
 	};
 
 /***/ }),
-/* 113 */
+/* 115 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/products/products.html';
@@ -49359,14 +49860,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 114 */
+/* 116 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 115 */,
-/* 116 */
+/* 117 */,
+/* 118 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49378,7 +49879,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _firebase = __webpack_require__(28);
+	var _firebase = __webpack_require__(30);
 	
 	var _firebase2 = _interopRequireDefault(_firebase);
 	
@@ -49425,15 +49926,15 @@
 	}();
 
 /***/ }),
-/* 117 */
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	__webpack_require__(118);
+	__webpack_require__(120);
 	module.exports = 'ngSanitize';
 
 
 /***/ }),
-/* 118 */
+/* 120 */
 /***/ (function(module, exports) {
 
 	/**
@@ -50178,7 +50679,7 @@
 
 
 /***/ }),
-/* 119 */
+/* 121 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin

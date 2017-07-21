@@ -245,15 +245,21 @@
   background: #000; }
 
 .membership-area .module-list-container {
-  width: 300px;
-  margin-right: 30px; }
+  width: 350px;
+  margin-right: 30px;
+  max-height: 450px;
+  overflow-y: scroll; }
 
 .membership-area a.bread-crumb {
   font-size: 1em;
   color: #470f6f; }
 
 .membership-area .container {
-  padding: 30px 40px; }
+  padding: 30px; }
+
+.membership-area .video-container {
+  overflow: hidden;
+  margin-bottom: 25px; }
 
 .membership-area .course-panel {
   background: #efefef;
@@ -1201,7 +1207,177 @@ videogular, [videogular] {
     height: 409.5px; } }
 
 .videogular-container {
-  height: 450px; }
+  height: 450px;
+  overflow: hidden; }
+
+/**
+ * angular-ui-notification - Angular.js service providing simple notifications using Bootstrap 3 styles with css transitions for animating
+ * @author Alex_Crack
+ * @version v0.3.6
+ * @link https://github.com/alexcrack/angular-ui-notification
+ * @license MIT
+ */
+.ui-notification {
+  position: fixed;
+  z-index: 9999;
+  width: 300px;
+  -webkit-transition: all ease .5s;
+  -o-transition: all ease .5s;
+  transition: all ease .5s;
+  color: #fff;
+  border-radius: 0;
+  background: #337ab7;
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3); }
+
+.ui-notification.clickable {
+  cursor: pointer; }
+
+.ui-notification.clickable:hover {
+  opacity: .7; }
+
+.ui-notification.killed {
+  -webkit-transition: opacity ease 1s;
+  -o-transition: opacity ease 1s;
+  transition: opacity ease 1s;
+  opacity: 0; }
+
+.ui-notification > h3 {
+  font-size: 14px;
+  font-weight: bold;
+  display: block;
+  margin: 10px 10px 0 10px;
+  padding: 0 0 5px 0;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
+
+.ui-notification a {
+  color: #fff; }
+
+.ui-notification a:hover {
+  text-decoration: underline; }
+
+.ui-notification > .message {
+  margin: 10px 10px 10px 10px; }
+
+.ui-notification.warning {
+  color: #fff;
+  background: #f0ad4e; }
+
+.ui-notification.error {
+  color: #fff;
+  background: #d9534f; }
+
+.ui-notification.success {
+  color: #fff;
+  background: #5cb85c; }
+
+.ui-notification.info {
+  color: #fff;
+  background: #5bc0de; }
+
+/* Acordeon styles */
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; }
+
+.tab {
+  position: relative;
+  margin-bottom: 1px;
+  width: 100%;
+  color: #fff;
+  overflow: hidden; }
+
+input {
+  position: absolute;
+  opacity: 0;
+  z-index: -1; }
+
+label {
+  position: relative;
+  display: block;
+  padding: 0 0 0 1em;
+  background: #5c476b;
+  font-weight: bold;
+  line-height: 16px;
+  cursor: pointer;
+  padding: 12px 30px 12px 13px;
+  font-size: 12px; }
+
+.blue label {
+  background: #2980b9; }
+
+.tab-content {
+  max-height: 0;
+  overflow: hidden;
+  background: #eaeaea;
+  -webkit-transition: max-height .35s;
+  -o-transition: max-height .35s;
+  transition: max-height .35s; }
+  .tab-content button {
+    background: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    border: 0;
+    padding: 10px 25px;
+    color: #5c476b;
+    width: 100%;
+    -webkit-transition: background .35s;
+    -o-transition: background .35s;
+    transition: background .35s;
+    outline: none;
+    text-align: left; }
+    .tab-content button span {
+      padding-left: 5px; }
+    .tab-content button:hover {
+      background: #cecece; }
+
+.blue .tab-content {
+  background: #3498db; }
+
+.tab-content p {
+  margin: 1em; }
+
+/* :checked */
+input:checked ~ .tab-content {
+  max-height: 20em; }
+
+/* Icon */
+label::after {
+  position: absolute;
+  right: 0;
+  top: 0;
+  display: block;
+  width: 3em;
+  height: 3em;
+  line-height: 3;
+  text-align: center;
+  -webkit-transition: all .35s;
+  -o-transition: all .35s;
+  transition: all .35s; }
+
+input[type=checkbox] + label::after {
+  content: "+"; }
+
+input[type=radio] + label::after {
+  content: "\25BC"; }
+
+input[type=checkbox]:checked + label::after {
+  transform: rotate(315deg); }
+
+input[type=radio]:checked + label::after {
+  transform: rotateX(180deg); }
+
+videogular vg-controls, [videogular] vg-controls {
+  bottom: 50px; }
+
+videogular vg-overlay-play, [videogular] vg-overlay-play {
+  top: -25px; }
+
+.ui-notification {
+  border-radius: 5px;
+  padding: 5px 10px;
+  line-height: 20px; }
 
 .snip-layout .snip-btn--highlight {
   background-color: #470f6f;
