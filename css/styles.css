@@ -241,6 +241,15 @@
     margin: 10px 15px; }
   .contact button {
     float: right; }
+.membership-area .workbook {
+  text-align: center;
+  border: 1px solid #d6d6d6;
+  padding: 30px;
+  border-radius: 8px; }
+
+.membership-area .download-list {
+  padding: 11px 0px; }
+
 .membership-area video {
   background: #000; }
 
@@ -1354,6 +1363,59 @@ videogular, [videogular] {
 .ui-notification.info {
   color: #fff;
   background: #5bc0de; }
+
+.modal-overlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  top: 0;
+  left: 0;
+  z-index: 9998; }
+
+.modal-section {
+  padding-bottom: 20px; }
+
+.modal-title {
+  font-family: 'ITC Lubalin Graph W01', serif;
+  color: #e05d00;
+  font-size: 19px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  text-align: center;
+  padding-bottom: 15px; }
+
+.modal-container {
+  padding: 25px;
+  background: #fff;
+  position: fixed;
+  z-index: 9999;
+  min-width: 350px;
+  max-width: 600px;
+  margin: 0 auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 17px #464646;
+  box-sizing: border-box;
+  max-height: 500px;
+  min-height: 400px; }
+
+.modal-close {
+  font-size: 21px;
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  cursor: pointer; }
+
+.modal-inner {
+  padding-top: 10px; }
+
+.modal-hide {
+  display: none; }
+
+.modal-show {
+  display: block; }
 
 videogular vg-controls, [videogular] vg-controls {
   bottom: 50px; }

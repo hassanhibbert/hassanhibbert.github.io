@@ -65,7 +65,7 @@
 	
 	var _components = __webpack_require__(28);
 	
-	__webpack_require__(121);
+	__webpack_require__(127);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -40904,7 +40904,7 @@
 	
 	var _membersArea = __webpack_require__(93);
 	
-	var _product = __webpack_require__(106);
+	var _product = __webpack_require__(112);
 	
 	var components = exports.components = angular.module('components', [_auth.auth, _contact.contact, _membersArea.membersArea, _product.product]).name;
 
@@ -46203,11 +46203,17 @@
 	
 	var _membersAreaProgram = __webpack_require__(100);
 	
-	__webpack_require__(105);
+	var _modal = __webpack_require__(105);
+	
+	var _modal2 = _interopRequireDefault(_modal);
+	
+	__webpack_require__(111);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var membersArea = exports.membersArea = angular.module('components.members-area', ["com.2fdevs.videogular", "com.2fdevs.videogular.plugins.controls", "com.2fdevs.videogular.plugins.overlayplay",
 	//"com.2fdevs.videogular.plugins.poster",
-	_membersArea.membersAreaPage, _membersAreaProgram.membersAreaProgramPage]).service('MembersAreaService', _membersArea2.MembersAreaService).name;
+	_membersArea.membersAreaPage, _membersAreaProgram.membersAreaProgramPage, _modal2.default]).service('MembersAreaService', _membersArea2.MembersAreaService).name;
 
 /***/ }),
 /* 94 */
@@ -46316,7 +46322,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/members-area/members-area/members-area.html';
-	var html = "<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\">Members Area / Dashboard</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div class=\"container\">\r\n        <div class=\"flex\">\r\n          <p class=\"\">Welcome&nbsp;<strong> {{::$ctrl.user.firstName}}</strong>!</p>\r\n        </div>\r\n        <hr>\r\n\r\n        <h2>Available Programs</h2>\r\n        <div ng-repeat=\"program in $ctrl.programs\" class=\"course-panel flex flex-around\">\r\n          <div class=\"course-panel-left\">\r\n            <div class=\"course-panel-title\">{{::program.name}}</div>\r\n            <div class=\"course-panel-description\">{{::program.description}}</div>\r\n          </div>\r\n          <a class=\"btn btn-primary flex-align-center flex-center\" href=\"#/app/members-area/{{::program.$id}}\">Start Program</a>\r\n        </div>\r\n\r\n        <!--<div class=\"course-panel flex flex-around\">-->\r\n          <!--<div class=\"course-panel-left\">-->\r\n            <!--<div class=\"course-panel-title\">Self-Image &amp; Attitude Development Program</div>-->\r\n            <!--<div class=\"course-panel-description\">In this course, self-esteem and branding expert and coach S. Renee takes a deep dive with you and shows you how to release yourself from the past.</div>-->\r\n          <!--</div>-->\r\n          <!--<button class=\"btn btn-primary\">Start Program</button>-->\r\n        <!--</div>-->\r\n\r\n        <!--<hr>-->\r\n        <h2>Bonus Material</h2>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
+	var html = "<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\">Members Area / Dashboard</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div class=\"container\">\r\n        <div class=\"flex\">\r\n          <p class=\"\">Welcome&nbsp;<strong> {{::$ctrl.user.firstName}}</strong>!</p>\r\n        </div>\r\n        <hr>\r\n\r\n        <h2>Available Programs</h2>\r\n        <div ng-repeat=\"program in $ctrl.programs\" class=\"course-panel flex flex-around\">\r\n          <div class=\"course-panel-left\">\r\n            <div class=\"course-panel-title\">{{::program.name}}</div>\r\n            <div class=\"course-panel-description\">{{::program.description}}</div>\r\n          </div>\r\n          <a class=\"btn btn-primary flex-align-center flex-center\" href=\"#/app/members-area/{{::program.$id}}\">Start Program</a>\r\n          <!--<a class=\"btn btn-primary flex-align-center flex-center\">Download Workbook</a>-->\r\n        </div>\r\n\r\n        <!--<div class=\"course-panel flex flex-around\">-->\r\n          <!--<div class=\"course-panel-left\">-->\r\n            <!--<div class=\"course-panel-title\">Self-Image &amp; Attitude Development Program</div>-->\r\n            <!--<div class=\"course-panel-description\">In this course, self-esteem and branding expert and coach S. Renee takes a deep dive with you and shows you how to release yourself from the past.</div>-->\r\n          <!--</div>-->\r\n          <!--<button class=\"btn btn-primary\">Start Program</button>-->\r\n        <!--</div>-->\r\n\r\n        <!--<hr>-->\r\n        <!--<h2>Bonus Material</h2>-->\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
@@ -46370,6 +46376,16 @@
 	    value: function $onInit() {
 	      // console.log(this.ref.child(this.uid));
 	      //this.getProgramData()
+	
+	    }
+	  }, {
+	    key: 'updateMemberStatus',
+	    value: function updateMemberStatus(status, courseId) {
+	      var ref = _firebase2.default.database().ref('users');
+	      var userId = this.authService.getUser().uid;
+	      var userObject = this.$firebaseObject(ref.child(userId));
+	      userObject[courseId] = status;
+	      return userObject.$save().$loaded();
 	    }
 	  }, {
 	    key: 'getCourseSections',
@@ -46494,8 +46510,8 @@
 	  },
 	  templateUrl: _membersAreaProgram2.default,
 	  controller: function () {
-	    MembersAreaProgramComponent.$inject = ["AuthService", "$state", "$sce", "$timeout"];
-	    function MembersAreaProgramComponent(AuthService, $state, $sce, $timeout) {
+	    MembersAreaProgramComponent.$inject = ["AuthService", "$state", "$sce", "$timeout", "MembersAreaService"];
+	    function MembersAreaProgramComponent(AuthService, $state, $sce, $timeout, MembersAreaService) {
 	      'ngInject';
 	
 	      _classCallCheck(this, MembersAreaProgramComponent);
@@ -46504,12 +46520,24 @@
 	      this.$state = $state;
 	      this.$sce = $sce;
 	      this.$timeout = $timeout;
+	      this.MembersAreaService = MembersAreaService;
 	    }
 	
 	    _createClass(MembersAreaProgramComponent, [{
 	      key: '$onInit',
 	      value: function $onInit() {
 	        var _this = this;
+	
+	        this.workbook = this.course.course_assets.filter(function (item) {
+	          return item.name.toLowerCase().indexOf('workbook') >= 0;
+	        });
+	        console.log(this.user);
+	        //if (this.user[this.course.$id]) {
+	        //console.log('teetetee',!!this.user[this.course.$id])
+	        this.workbookViewed = !!this.user[this.course.$id];
+	        // }
+	
+	        console.log(this.workbook);
 	
 	        var storageKey = '[SRENEE_' + this.course.$id + ']';
 	        this.currentVideoTitle = '';
@@ -46627,6 +46655,13 @@
 	        //}
 	        //};
 	      }
+	    }, {
+	      key: 'clickDownload',
+	      value: function clickDownload() {
+	        //console.log('clicked')
+	        this.workbookViewed = true;
+	        this.MembersAreaService.updateMemberStatus(true, this.course.$id);
+	      }
 	    }]);
 	
 	    return MembersAreaProgramComponent;
@@ -46638,7 +46673,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/members-area/members-area-program/members-area-program.html';
-	var html = "<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\"><a class=\"bread-crumb\" ui-sref=\"members-area\">Members Area</a> / Program Modules</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div class=\"container\">\r\n        <div class=\"flex video-container\">\r\n          <div class=\"module-list-container\">\r\n            <div>\r\n              <h3>Modules</h3>\r\n              <hr>\r\n            </div>\r\n            <!-- ng repeat -->\r\n            <div class=\"accordion-wrap\">\r\n              <div class=\"tab\" ng-repeat=\"module in $ctrl.moduleList\" ng-init=\"moduleIndex = 0\">\r\n                <input id=\"tab-{{$index}}\" type=\"checkbox\" name=\"tabs\" checked>\r\n                <label class=\"truncate\" for=\"tab-{{$index}}\">{{::module.name}}</label>\r\n                <div class=\"tab-content\">\r\n                  <div class=\"button-container\" ng-repeat=\"file in module.files\">\r\n                    <button\r\n                        class=\"flex-align-center\"\r\n                        ng-init=\"fileCount = $ctrl.updateVideoCount()\"\r\n                        ng-click=\"$ctrl.setVideo(fileCount, file.name)\">\r\n                      <i class=\"material-icons\">play_circle_outline</i>\r\n                      <span>{{::file.name}}</span>\r\n                    </button>\r\n                  </div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n\r\n\r\n\r\n          </div>\r\n          <div class=\"videogular-container\">\r\n            <div>\r\n              <h3 ng-bind=\"$ctrl.currentVideoTitle\"></h3>\r\n              <hr>\r\n            </div>\r\n            <videogular\r\n                vg-theme=\"$ctrl.config.theme\"\r\n                vg-player-ready=\"$ctrl.onPlayerReady($API)\"\r\n                vg-complete=\"controller.onCompleteVideo()\">\r\n              <vg-media\r\n                  vg-src=\"$ctrl.config.sources\"\r\n                  vg-tracks=\"$ctrl.config.tracks\">\r\n              </vg-media>\r\n\r\n              <vg-controls>\r\n                <vg-play-pause-button></vg-play-pause-button>\r\n                <vg-time-display>{{ currentTime | date:'mm:ss' }}</vg-time-display>\r\n                <vg-scrub-bar>\r\n                  <vg-scrub-bar-current-time></vg-scrub-bar-current-time>\r\n                </vg-scrub-bar>\r\n                <vg-time-display>{{ timeLeft | date:'mm:ss' }}</vg-time-display>\r\n                <vg-volume>\r\n                  <vg-mute-button></vg-mute-button>\r\n                  <vg-volume-bar></vg-volume-bar>\r\n                </vg-volume>\r\n                <vg-fullscreen-button></vg-fullscreen-button>\r\n              </vg-controls>\r\n\r\n              <vg-overlay-play></vg-overlay-play>\r\n              <vg-poster vg-url='controller.config.plugins.poster'></vg-poster>\r\n            </videogular>\r\n          </div>\r\n\r\n        </div>\r\n        <div>\r\n          <hr>\r\n          <h3>Bonus Content</h3>\r\n          <!--<hr>-->\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
+	var html = "<!--<modal modal-id=\"workshop\">-->\r\n  <!--<div class=\"flex-align-center flex-center\">-->\r\n    <!--<p>Please download the workbook for this program before your begin</p>-->\r\n    <!--<a href=\"\" class=\"btn btn-primary\">DOWNLOAD</a>-->\r\n  <!--</div>-->\r\n<!--</modal>-->\r\n<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\"><a class=\"bread-crumb\" ui-sref=\"members-area\">Members Area</a> / Program Modules</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div class=\"container\">\r\n        <div ng-hide=\"$ctrl.workbookViewed\" class=\"flex-center flex-align-center\">\r\n          <div class=\"workbook\">\r\n            <h2>Download Program Workbook</h2>\r\n            <p>Please download the workbook for this program before your begin.</p>\r\n            <a href=\"{{::$ctrl.workbook[0].url}}\" target=\"_blank\" ng-click=\"$ctrl.clickDownload()\" class=\"btn btn-primary\">DOWNLOAD</a>\r\n          </div>\r\n        </div>\r\n      </div>\r\n      <div class=\"container\">\r\n        <div ng-hide=\"!$ctrl.workbookViewed\" class=\"flex video-container\">\r\n          <div class=\"module-list-container\">\r\n            <div>\r\n              <h3>Modules</h3>\r\n              <hr>\r\n            </div>\r\n            <!-- ng repeat -->\r\n            <div class=\"accordion-wrap\">\r\n              <div class=\"tab\" ng-repeat=\"module in $ctrl.moduleList\" ng-init=\"moduleIndex = 0\">\r\n                <input id=\"tab-{{$index}}\" type=\"checkbox\" name=\"tabs\" checked>\r\n                <label class=\"truncate\" for=\"tab-{{$index}}\">{{::module.name}}</label>\r\n                <div class=\"tab-content\">\r\n                  <div class=\"button-container\" ng-repeat=\"file in module.files\">\r\n                    <button\r\n                        class=\"flex-align-center\"\r\n                        ng-init=\"fileCount = $ctrl.updateVideoCount()\"\r\n                        ng-click=\"$ctrl.setVideo(fileCount, file.name)\">\r\n                      <i class=\"material-icons\">play_circle_outline</i>\r\n                      <span>{{::file.name}}</span>\r\n                    </button>\r\n                  </div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n\r\n\r\n\r\n          </div>\r\n          <div class=\"videogular-container\">\r\n            <div>\r\n              <h3 ng-bind=\"$ctrl.currentVideoTitle\"></h3>\r\n              <hr>\r\n            </div>\r\n            <videogular\r\n                vg-theme=\"$ctrl.config.theme\"\r\n                vg-player-ready=\"$ctrl.onPlayerReady($API)\"\r\n                vg-complete=\"controller.onCompleteVideo()\">\r\n              <vg-media\r\n                  vg-src=\"$ctrl.config.sources\"\r\n                  vg-tracks=\"$ctrl.config.tracks\">\r\n              </vg-media>\r\n\r\n              <vg-controls>\r\n                <vg-play-pause-button></vg-play-pause-button>\r\n                <vg-time-display>{{ currentTime | date:'mm:ss' }}</vg-time-display>\r\n                <vg-scrub-bar>\r\n                  <vg-scrub-bar-current-time></vg-scrub-bar-current-time>\r\n                </vg-scrub-bar>\r\n                <vg-time-display>{{ timeLeft | date:'mm:ss' }}</vg-time-display>\r\n                <vg-volume>\r\n                  <vg-mute-button></vg-mute-button>\r\n                  <vg-volume-bar></vg-volume-bar>\r\n                </vg-volume>\r\n                <vg-fullscreen-button></vg-fullscreen-button>\r\n              </vg-controls>\r\n\r\n              <vg-overlay-play></vg-overlay-play>\r\n              <vg-poster vg-url='controller.config.plugins.poster'></vg-poster>\r\n            </videogular>\r\n          </div>\r\n\r\n        </div>\r\n        <div ng-hide=\"!$ctrl.workbookViewed\">\r\n          <hr>\r\n          <h3>Downloads & Bonus Materials</h3>\r\n          <!--<hr>-->\r\n          <div class=\"download-list\" ng-repeat=\"asset in $ctrl.course.course_assets\">\r\n            <span>[{{::asset.type}}]</span>&nbsp;&nbsp;<a class=\"download-item\" href=\"{{::asset.url}}\">{{::asset.name}}</a>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
@@ -46651,6 +46686,315 @@
 /***/ }),
 /* 104 */,
 /* 105 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _angular = __webpack_require__(1);
+	
+	var _angular2 = _interopRequireDefault(_angular);
+	
+	var _modalMain = __webpack_require__(106);
+	
+	var _modalMain2 = _interopRequireDefault(_modalMain);
+	
+	var _modalTrigger = __webpack_require__(108);
+	
+	var _modalTrigger2 = _interopRequireDefault(_modalTrigger);
+	
+	var _modalClose = __webpack_require__(109);
+	
+	var _modalClose2 = _interopRequireDefault(_modalClose);
+	
+	var _modal = __webpack_require__(110);
+	
+	var _modal2 = _interopRequireDefault(_modal);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var modalModule = _angular2.default.module('modal', [_modalClose2.default, _modalMain2.default, _modalTrigger2.default, _modal2.default]).name;
+	
+	exports.default = modalModule;
+
+/***/ }),
+/* 106 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _modalMain = __webpack_require__(107);
+	
+	var _modalMain2 = _interopRequireDefault(_modalMain);
+	
+	var _angular = __webpack_require__(1);
+	
+	var _angular2 = _interopRequireDefault(_angular);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var modalMain = function modalMain() {
+	  var directive = {
+	    restrict: 'E',
+	    transclude: true,
+	    template: _modalMain2.default,
+	    scope: {
+	      modalId: '@',
+	      modalStyle: '='
+	    }
+	  };
+	  return directive;
+	};
+	
+	var modalCloseModule = _angular2.default.module('modal.main', []).directive('modal', modalMain).name;
+	
+	exports.default = modalCloseModule;
+
+/***/ }),
+/* 107 */
+/***/ (function(module, exports) {
+
+	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/modal/modal-main/modal-main.html';
+	var html = "<div class=\"modal modal-hide modal-{{modalId}}\">\n  <div class=\"modal-overlay\"></div>\n  <div class=\"modal-container\" ng-style=\"modalStyle\">\n    <div class=\"modal-close\"><i class=\"fa fa-times\"></i></div>\n    <div class=\"modal-inner\" ng-transclude></div>\n  </div>\n</div>\n";
+	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
+	module.exports = path;
+
+/***/ }),
+/* 108 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _angular = __webpack_require__(1);
+	
+	var _angular2 = _interopRequireDefault(_angular);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var modalTrigger = function modalTrigger($rootScope, modalService) {
+	  'ngInject';
+	
+	  // Modal object will store html references to dom elements
+	
+	  var modal = { mainElement: null, overlay: null, closeButton: null };
+	
+	  var directive = {
+	    restrict: 'AE',
+	    scope: {
+	      modalName: '@modalTrigger',
+	      onModalAction: '&',
+	      modalData: '<'
+	    },
+	
+	    link: function link($scope, element) {
+	
+	      var modalEventListener = $rootScope.$on(modalService.EVENT, onModalTriggerEvent);
+	      element.on('click', openModal);
+	      $scope.$on('$destroy', deregisterEvents);
+	      $rootScope.$on('$destroy', modalEventListener);
+	
+	      function onModalTriggerEvent(event, data) {
+	        event.preventDefault();
+	        if (data.action == 'close' && isModalOpen()) {
+	          closeModal(event);
+	        } else if (data.action == 'open' && !isModalOpen() && data.modalName) {
+	          $scope.modalName = data.modalName;
+	          openModal(event);
+	        }
+	      }
+	
+	      function openModal(event) {
+	        event.preventDefault();
+	        $scope.$apply(function () {
+	
+	          // Assign elements
+	          modal.mainElement = getModalElement($scope.modalName);
+	          //modal.overlay = angular.element(modal.mainElement.querySelector('.modal-overlay'));
+	          modal.closeButton = _angular2.default.element(modal.mainElement.querySelector('.modal-close'));
+	
+	          // Add listeners
+	          modal.closeButton.on('click', closeModal);
+	          //modal.overlay.on('click', closeModal);
+	
+	          // Show modal
+	          _angular2.default.element(modal.mainElement).addClass('modal-show');
+	
+	          modalService.updateStatus({
+	            open: true,
+	            modalName: $scope.modalName,
+	            data: $scope.modalData
+	          });
+	
+	          // $scope.onModalAction();
+	        });
+	      }
+	
+	      function closeModal(event) {
+	        event.preventDefault();
+	        //$scope.$apply(() => {
+	        // Remove event listeners
+	        modal.closeButton.off('click', closeModal);
+	        //modal.overlay.off('click', closeModal);
+	
+	        // Hide modal
+	        _angular2.default.element(modal.mainElement).removeClass('modal-show');
+	
+	        modalService.updateStatus({
+	          open: false
+	        });
+	        //});
+	      }
+	
+	      function getModalElement(modalName) {
+	        var prefix = '.modal-';
+	        var className = prefix + modalName;
+	        var modalElement = document.querySelector(className);
+	        return modalElement;
+	      }
+	
+	      function isModalOpen() {
+	        return modal.mainElement && _angular2.default.element(modal.mainElement).hasClass('modal-show');
+	      }
+	
+	      // deregister event listeners
+	      function deregisterEvents() {
+	        element.off('click', openModal);
+	      }
+	    }
+	  };
+	
+	  return directive;
+	};
+	modalTrigger.$inject = ["$rootScope", "modalService"];
+	
+	var modalTriggerModule = _angular2.default.module('modal.trigger', []).directive('modalTrigger', modalTrigger).name;
+	
+	exports.default = modalTriggerModule;
+
+/***/ }),
+/* 109 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _angular = __webpack_require__(1);
+	
+	var _angular2 = _interopRequireDefault(_angular);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var modalClose = function modalClose(modalService) {
+	  'ngInject';
+	
+	  var directive = {
+	    restrict: 'A',
+	    scope: {},
+	    link: function link($scope, element) {
+	      var clickHandler = function clickHandler(event) {
+	        event.preventDefault();
+	        modalService.close();
+	      };
+	
+	      var deregisterEvents = function deregisterEvents() {
+	        element.off('click', clickHandler);
+	      };
+	
+	      element.on('click', clickHandler);
+	      $scope.$on('$destroy', deregisterEvents);
+	    }
+	  };
+	
+	  return directive;
+	};
+	modalClose.$inject = ["modalService"];
+	
+	var modalCloseModule = _angular2.default.module('modal.close', []).directive('modalClose', modalClose).name;
+	
+	exports.default = modalCloseModule;
+
+/***/ }),
+/* 110 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _angular = __webpack_require__(1);
+	
+	var _angular2 = _interopRequireDefault(_angular);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var modalService = function modalService($rootScope) {
+	  'ngInject';
+	
+	  var MODAL_TRIGGER = 'modal-trigger';
+	  var status = {};
+	  var listeners = {};
+	  var service = { open: open, close: close, updateStatus: updateStatus, on: on, EVENT: MODAL_TRIGGER };
+	
+	  return service;
+	
+	  ///////////
+	
+	  function on(event, callback, context) {
+	    if (!listeners.hasOwnProperty(event)) listeners[event] = [];
+	    if (listeners[event]) {
+	      callback = context ? callback.bind(context) : callback;
+	      listeners[event].push(callback);
+	    }
+	  }
+	
+	  function updateStatus(modalStatus) {
+	    _angular2.default.merge(status, modalStatus);
+	
+	    // Publish events
+	    if (listeners.hasOwnProperty(modalStatus.modalName)) {
+	      listeners[modalStatus.modalName].forEach(function (listener) {
+	        listener(status);
+	      });
+	    }
+	  }
+	
+	  function open(modalName) {
+	    $rootScope.$broadcast(MODAL_TRIGGER, {
+	      action: 'open',
+	      modalName: modalName
+	    });
+	  }
+	
+	  function close() {
+	    $rootScope.$broadcast(MODAL_TRIGGER, {
+	      action: 'close'
+	    });
+	  }
+	};
+	modalService.$inject = ["$rootScope"];
+	
+	var modalServiceModule = _angular2.default.module('modal.service', []).factory('modalService', modalService).name;
+	
+	exports.default = modalServiceModule;
+
+/***/ }),
+/* 111 */
 /***/ (function(module, exports) {
 
 	/**
@@ -49560,7 +49904,7 @@
 	}]);
 
 /***/ }),
-/* 106 */
+/* 112 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49570,15 +49914,15 @@
 	});
 	exports.product = undefined;
 	
-	var _product = __webpack_require__(107);
+	var _product = __webpack_require__(113);
 	
-	var _products = __webpack_require__(113);
+	var _products = __webpack_require__(119);
 	
-	var _product2 = __webpack_require__(118);
+	var _product2 = __webpack_require__(124);
 	
 	var _navBar = __webpack_require__(51);
 	
-	var _angularSanitize = __webpack_require__(119);
+	var _angularSanitize = __webpack_require__(125);
 	
 	var _angularSanitize2 = _interopRequireDefault(_angularSanitize);
 	
@@ -49587,7 +49931,7 @@
 	var product = exports.product = angular.module('components.product', [_product.productSingle, _products.products, _navBar.navBar, _angularSanitize2.default]).service('ProductService', _product2.ProductService).name;
 
 /***/ }),
-/* 107 */
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49597,9 +49941,9 @@
 	});
 	exports.productSingle = undefined;
 	
-	var _product = __webpack_require__(108);
+	var _product = __webpack_require__(114);
 	
-	__webpack_require__(111);
+	__webpack_require__(117);
 	
 	var productSingle = exports.productSingle = angular.module('components.product.product', []).component('product', _product.productComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -49616,7 +49960,7 @@
 	}]).name;
 
 /***/ }),
-/* 108 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49628,7 +49972,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _product = __webpack_require__(109);
+	var _product = __webpack_require__(115);
 	
 	var _product2 = _interopRequireDefault(_product);
 	
@@ -49636,7 +49980,7 @@
 	
 	var _firebase2 = _interopRequireDefault(_firebase);
 	
-	var _productDetails = __webpack_require__(110);
+	var _productDetails = __webpack_require__(116);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -49648,8 +49992,8 @@
 	  },
 	  templateUrl: _product2.default,
 	  controller: function () {
-	    ProductController.$inject = ["AuthService", "$firebaseArray", "$q", "$state", "$sce"];
-	    function ProductController(AuthService, $firebaseArray, $q, $state, $sce) {
+	    ProductController.$inject = ["AuthService", "$firebaseArray", "$q", "$state", "$sce", "$http"];
+	    function ProductController(AuthService, $firebaseArray, $q, $state, $sce, $http) {
 	      'ngInject';
 	
 	      _classCallCheck(this, ProductController);
@@ -49659,6 +50003,7 @@
 	      this.$q = $q;
 	      this.$state = $state;
 	      this.$sce = $sce;
+	      this.$http = $http;
 	    }
 	
 	    _createClass(ProductController, [{
@@ -49697,6 +50042,16 @@
 	            }).then(function () {
 	              return _this.authService.getUser().updateProfile({ displayName: firstName });
 	            }).then(updatePurchases).then(function () {
+	              // return this.$http.post('https://coachsrenee.com/mailchimp-api/connector.php', {
+	              //   status: 'subscribed',
+	              //   email_address: order.email,
+	              //   merge_fields: {
+	              //     FNAME: firstName,
+	              //     LNAME: lastName
+	              //   }
+	              // });
+	              return _this.$q.when({});
+	            }).then(function () {
 	              _this.authService.logout().then(function () {
 	                Snipcart.subscribe('cart.closed', function () {
 	                  _this.$state.go('auth.account-info');
@@ -49743,7 +50098,7 @@
 	};
 
 /***/ }),
-/* 109 */
+/* 115 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/product/product.html';
@@ -49752,7 +50107,7 @@
 	module.exports = path;
 
 /***/ }),
-/* 110 */
+/* 116 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -49761,19 +50116,19 @@
 	  value: true
 	});
 	var productDetails = exports.productDetails = {
-	  'CSR-0001': ['\n    <h2 class="details-header">There Is More Inside Self-Image & Attitude Development Program</h2>\n    <p>\n      Your self perception is a predictor of the job you\u2019ll land, the quality of the relationships you\u2019ll\n      attract and the opportunities you\u2019ll take advantage of. If you want to break through to the next\n      level, you must discover the truth of who you are and the power that lies within you.\n      In this course, self-esteem and branding expert and coach S. Renee takes a deep dive with you\n      and shows you how to release yourself from the past, recover your personal power and rebuild\n      yourself from within.\n    </p>\n\n    <p>\n      S. Renee has been on her own journey of self-mastery since age 13. As a professional, she has\n      been helping others find their path to a positive self-image for the last 12 years. In this program,\n      delivers to you the spiritual principals and personal tools that will truly sustain and elevate your\n      self-awareness and self-esteem.\n    </p>\n\n    <p>Get ready for the shift and new life that awaits you. This program is Christian based.</p>\n\n    <h3>There Is More Inside Self-Image & Attitude Development Program</h3>\n    <h4>$197.00 USD</h4>\n\n    <p>\n      There Is More Inside Self-Image & Attitude Development Program is a tested and proven\n      system of change. Self-Esteem and Branding Coach S. Renee takes a deep dive with you and\n      shows you how to release yourself from the past, recover your personal power and rebuild\n      yourself from within. This program includes over $2000.00 of valuable products and services,\n      including 12 months of access to S. Renee via private Facebook community. It\u2019s a huge\n      discount today.\n    </p>\n\n    <p class="list-header"><strong>7-Module Professional Advancement Online Course ($450 value)</strong></p>\n    \n    <ul class="list-style">\n      <li>There Is More Inside Audio Book</li>\n      <li>There Is More Inside PDF</li>\n    </ul>\n\n    <p class="list-header"><strong>Bonus #1: Audio Downloads ($199.96 value)</strong></p>\n    \n    <ul class="list-style">\n      <li> Behind the Brand: The Spiritual Practices of S. Renee</li>\n      <li>Shake Your Fear Become Empowered</li>\n      <li>The Most Important Building Block to Self-Esteem</li>\n      <li>When to Hold On Or Let Go of Your Relationship</li>\n    </ul>\n\n    <p class="list-header"><strong>Bonus #2: An Interactive Small Group Coaching Session ($999.00 value)</strong></p>\n    <p>This powerful small-group LIVE virtual session enables you to ask questions and be coached by S. Renee.</p>\n    <p class="list-header"><strong>Bonus #3: Private Advancement Community with S. Renee and fellow students for an\n      entire YEAR! ($1200 value).</strong></p>\n    <p>That\'s over $2000 of value... But you can get in right now for just one payment of <strong>$197</strong>!</p>\n\n    <p>100% SATISFACTION GUARANTEE: If you don\'t love it for any reason whatsoever, let us know\n    within 30 days and you\'ll receive a full refund.</p>\n\n    <p class="list-header"><strong>Program Testimonials:</strong></p>\n\n    <p>This program has been tested by over 200 people. Ninety-eight percent experienced a change in their lives.</p>\n    <ul class="list-style">\n      <li>\u201CThis is the catalyst for moving you beyond your personal plateau.\u201D</li>   \n      <li>\u201CForced me to face myself so that I could see the real me.\u201D</li>     \n      <li>\u201CRejuvenating imparting of knowledge about the power within.\u201D</li>\n      <li>\u201CThis felt like a cold splash of water in my face.\u201D</li>\n      <li>\u201CI applied the information immediately and started apply for job that, I once thought, were out\n      of reach.</li>\n      <li>\u201CThis put me back on the right track.\u201D</li>\n      <li>\u201CWonderful energy, provoking exercises. Turned the earth over, the hard packed earth...\u201D</li>\n    </ul>\n<!--\nVideo 1: Introduction to Self-Image\nVideo 2 Wilt Thou Be Made Whole?\nVideo 3: The Rock\nVideo 4: That\u2019s Not My Stuff\nVideo 5: Poison of Unforgiveness\nAudio 1: Time Wizard\nVideo 6: Where Did I Come From?\nAudio 2: Mirror, Mirror\nVideo 7: You Have It!\nVideo 8:Do You Believe In What You\u2019re Hoping For?\nVideo 9:Come Out of the Box\nVideo 10: What is Attitude?\nVideo 11: It\u2019s Not What You Think It Is\nVideo 12: Mountain Be Moved\nVideo 13: Check Your Operating System Your Spirit Will Carry You!\n\nWorkbook\n\nThere Is More Inside Audio Book (8 audios)\n\nThere Is More Inside (PDF)\n\nBonus 1:\n\nAudio Downloads\n\nBehind the Brand: The Spiritual Practices of S. Renee\n\nShake Your Fear Become Empowered\n\nThe Most Important Building Block to Self-Esteem\n\nWhen to Let Go Or Hold On to a Relationship\n\nBonus #2: An Interactive Small Group Coaching Session ($999.00)\n\nThis powerful small-group LIVE virtual session enables you to ask questions and be coached by\n\nS. Renee.\n\nSend your questions to questions@srenee.com\n\nBonus #3: Private Advancement Community with S. Renee and fellow students for an\n\nentire YEAR! ($1200 value).\n\nThat\'s over $2000 of value... But you can get in right now for just one payment of $197!\n\nLink to Facebook Group - Make your request to join the group by clicking this link: There Is\n\nMore Inside...YOU! -->\n<hr>\n<div class="sidebar-center"> \n    <h4>Self-Image & Attitude Development Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-center"\n\t\t\t\t\t\tdata-item-id="CSR-0001"\n\t\t\t\t\t\tdata-item-name="There Is More Inside Self-Image & Attitude Development Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="7-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n\t\t\t\t</div>\n  ', '\n<div class="sidebar-center">\n<h2 class="sidebar-header">ONLINE PROGRAM</h2>\n    <h4>Self-Image & Attitude Development Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-full-width"\n\t\t\t\t\t\tdata-item-id="CSR-0001"\n\t\t\t\t\t\tdata-item-name="There Is More Inside Self-Image & Attitude Development Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="7-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n</div>\n\n  '],
-	  'CSR-0002': ['\n  <h2 class="details-header">UnBottle Your Business Brand With S. Renee</h2>\n\n<p>Business success starts with a brand\u2014a message that people will engage, connect and\nrespond to. When you brand yourself properly people come to know, like and trust you. In this\ncourse, S. Renee gives you an insider look at how to take the wisdom from your wounds to\nlaunch a speaking business, earn more bucks by living your brand, boost your confidence when\ncommunicating with your customers, and master overcoming moments of uncertainty.</p>\n\n<p class="list-header"><strong>S. Renee reveals her daily spiritual and business practices on how to:</strong></p>\n\n<ul class="list-style"> \n<li>craft your marketing mission, message and story</li>\n\n<li>differentiate yourself in the marketplace</li>\n\n<li>connect with customers</li>\n\n<li>be confident in moments of uncertainty</li>\n\n<li>create buzz for business</li>\n</ul>\n\n<p class="list-header"><strong>Special Testimonial Video: &nbsp;</strong><a href="https://www.youtube.com/watch?v=SQ39edfz8xo">https://www.youtube.com/watch?v=SQ39edfz8xo</a></p><br>\n<h3>UnBottle Your Business Brand with S. Renee Online Program</h3>\n\n<h4>$197.00 USD</h4>\n\n<p>\nS. Renee gives you an insider look at how to take the wisdom from your wounds to launch a\nspeaking business, earn more bucks by living your brand, boost your confidence when\ncommunicating with your customers, and master overcoming your moments of uncertainty.</p>\n<p>\nUnBottle Your Business Brand With S. Renee Online Course includes over $2000.00 of valuable\nproducts and services, including 12 months of access to S. Renee via private Facebook community. It\u2019s a huge discount today.\n</p>\n\n<p class="list-header"><strong>13-Module Professional Advancement Online Course ($597 value)</strong></p>\n\n<p class="list-header"><strong>Bridge to Your Brand E-Book</strong></p>\n\n<p class="list-header"><strong>Bonus #1: Downloads ($199.95 value)</strong>\n\n<ul class="list-style"> \n<li>How to Find Your Passion</li>\n\n<li>Behind the Brand: The Spiritual Practices of S. Renee</li>\n\n<li>Shake Your Fear Become Empowered</li>\n\n<li>The Most Important Building Block to Self-Esteem</li>\n\n<li>When to Hold On Or Let Go of Your Relationship</li>\n\n<p class="list-header"><strong>Bonus #2: Interactive Small Group Coaching Session ($999.97 value)</strong></p>\n\n<p>This powerful small-group LIVE virtual session enables you to ask questions and be coached byS. Renee.</p>\n\n<p class="list-header"><strong>Bonus #3: Private Advancement Community with S. Renee and fellow students for an entire YEAR! ($1200 value).</strong></p>\n\n<p>That\'s over $2000 of value... But you can get in right now for just one payment of <strong>$197</strong>!</p>\n<p>\n100% SATISFACTION GUARANTEE: If you don\'t love it for any reason whatsoever, let us know\nwithin 30 days and you\'ll receive a full refund.</p>\n<hr>\n<div class="sidebar-center"> \n <h4>UnBottle Your Business Brand With S. Renee Online Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green"\n\t\t\t\t\t\tdata-item-id="CSR-0002"\n\t\t\t\t\t\tdata-item-name="UnBottle Your Business Brand with S. Renee Online Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="13-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n\t\t\t\t</div>\n  ', '\n  <div class="sidebar-center">\n<h2 class="sidebar-header">ONLINE PROGRAM</h2>\n    <h4>UnBottle Your Business Brand With S. Renee Online Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-full-width"\n\t\t\t\t\t\tdata-item-id="CSR-0002"\n\t\t\t\t\t\tdata-item-name="UnBottle Your Business Brand with S. Renee Online Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="13-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n</div>\n  ']
+	  'CSR-0001': ['\n    <h2 class="details-header">There Is More Inside Self-Image & Attitude Development Program</h2>\n    <p>\n      Your self perception is a predictor of the job you\u2019ll land, the quality of the relationships you\u2019ll\n      attract and the opportunities you\u2019ll take advantage of. If you want to break through to the next\n      level, you must discover the truth of who you are and the power that lies within you.\n      In this course, self-esteem and branding expert and coach S. Renee takes a deep dive with you\n      and shows you how to release yourself from the past, recover your personal power and rebuild\n      yourself from within.\n    </p>\n\n    <p>\n      S. Renee has been on her own journey of self-mastery since age 13. As a professional, she has\n      been helping others find their path to a positive self-image for the last 12 years. In this program,\n      delivers to you the spiritual principals and personal tools that will truly sustain and elevate your\n      self-awareness and self-esteem.\n    </p>\n\n    <p>Get ready for the shift and new life that awaits you. This program is Christian based.</p>\n\n    <!--h3>There Is More Inside Self-Image & Attitude Development Program</h3>\n    <h4>$197.00 USD</h4-->\n\n    <p>\n      There Is More Inside Self-Image & Attitude Development Program is a tested and proven\n      system of change. Self-Esteem and Branding Coach S. Renee takes a deep dive with you and\n      shows you how to release yourself from the past, recover your personal power and rebuild\n      yourself from within. This program includes over $2000.00 of valuable products and services,\n      including 12 months of access to S. Renee via private Facebook community. It\u2019s a huge\n      discount today.\n    </p>\n\n    <p class="list-header"><strong>7-Module Professional Advancement Online Course ($450 value)</strong></p>\n    \n    <ul class="list-style">\n      <li>There Is More Inside Audio Book</li>\n      <li>There Is More Inside PDF</li>\n    </ul>\n\n    <p class="list-header"><strong>Bonus #1: Audio Downloads ($199.96 value)</strong></p>\n    \n    <ul class="list-style">\n      <li> Behind the Brand: The Spiritual Practices of S. Renee</li>\n      <li>Shake Your Fear Become Empowered</li>\n      <li>The Most Important Building Block to Self-Esteem</li>\n      <li>When to Hold On Or Let Go of Your Relationship</li>\n    </ul>\n\n    <p class="list-header"><strong>Bonus #2: An Interactive Small Group Coaching Session ($999.00 value)</strong></p>\n    <p>This powerful small-group LIVE virtual session enables you to ask questions and be coached by S. Renee.</p>\n    <p class="list-header"><strong>Bonus #3: Private Advancement Community with S. Renee and fellow students for an\n      entire YEAR! ($1200 value).</strong></p>\n    <p>That\'s over $2000 of value... But you can get in right now for just one payment of <strong>$197</strong>!</p>\n\n    <p>100% SATISFACTION GUARANTEE: If you don\'t love it for any reason whatsoever, let us know\n    within 30 days and you\'ll receive a full refund.</p>\n\n    <p class="list-header"><strong>Program Testimonials:</strong></p>\n\n    <p>This program has been tested by over 200 people. Ninety-eight percent experienced a change in their lives.</p>\n    <ul class="list-style">\n      <li>\u201CThis is the catalyst for moving you beyond your personal plateau.\u201D</li>   \n      <li>\u201CForced me to face myself so that I could see the real me.\u201D</li>     \n      <li>\u201CRejuvenating imparting of knowledge about the power within.\u201D</li>\n      <li>\u201CThis felt like a cold splash of water in my face.\u201D</li>\n      <li>\u201CI applied the information immediately and started apply for job that, I once thought, were out\n      of reach.</li>\n      <li>\u201CThis put me back on the right track.\u201D</li>\n      <li>\u201CWonderful energy, provoking exercises. Turned the earth over, the hard packed earth...\u201D</li>\n    </ul>\n<!--\nVideo 1: Introduction to Self-Image\nVideo 2 Wilt Thou Be Made Whole?\nVideo 3: The Rock\nVideo 4: That\u2019s Not My Stuff\nVideo 5: Poison of Unforgiveness\nAudio 1: Time Wizard\nVideo 6: Where Did I Come From?\nAudio 2: Mirror, Mirror\nVideo 7: You Have It!\nVideo 8:Do You Believe In What You\u2019re Hoping For?\nVideo 9:Come Out of the Box\nVideo 10: What is Attitude?\nVideo 11: It\u2019s Not What You Think It Is\nVideo 12: Mountain Be Moved\nVideo 13: Check Your Operating System Your Spirit Will Carry You!\n\nWorkbook\n\nThere Is More Inside Audio Book (8 audios)\n\nThere Is More Inside (PDF)\n\nBonus 1:\n\nAudio Downloads\n\nBehind the Brand: The Spiritual Practices of S. Renee\n\nShake Your Fear Become Empowered\n\nThe Most Important Building Block to Self-Esteem\n\nWhen to Let Go Or Hold On to a Relationship\n\nBonus #2: An Interactive Small Group Coaching Session ($999.00)\n\nThis powerful small-group LIVE virtual session enables you to ask questions and be coached by\n\nS. Renee.\n\nSend your questions to questions@srenee.com\n\nBonus #3: Private Advancement Community with S. Renee and fellow students for an\n\nentire YEAR! ($1200 value).\n\nThat\'s over $2000 of value... But you can get in right now for just one payment of $197!\n\nLink to Facebook Group - Make your request to join the group by clicking this link: There Is\n\nMore Inside...YOU! -->\n<hr>\n<div class="sidebar-center"> \n    <h4>Self-Image & Attitude Development Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-center"\n\t\t\t\t\t\tdata-item-id="CSR-0001"\n\t\t\t\t\t\tdata-item-name="There Is More Inside Self-Image & Attitude Development Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="7-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n\t\t\t\t</div>\n  ', '\n<div class="sidebar-center">\n<h2 class="sidebar-header">ONLINE PROGRAM</h2>\n    <h4>Self-Image & Attitude Development Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-full-width"\n\t\t\t\t\t\tdata-item-id="CSR-0001"\n\t\t\t\t\t\tdata-item-name="There Is More Inside Self-Image & Attitude Development Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="7-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n</div>\n\n  '],
+	  'CSR-0002': ['\n  <h2 class="details-header">UnBottle Your Business Brand With S. Renee</h2>\n\n<p>Business success starts with a brand\u2014a message that people will engage, connect and\nrespond to. When you brand yourself properly people come to know, like and trust you. In this\ncourse, S. Renee gives you an insider look at how to take the wisdom from your wounds to\nlaunch a speaking business, earn more bucks by living your brand, boost your confidence when\ncommunicating with your customers, and master overcoming moments of uncertainty.</p>\n\n<p class="list-header"><strong>S. Renee reveals her daily spiritual and business practices on how to:</strong></p>\n\n<ul class="list-style"> \n<li>craft your marketing mission, message and story</li>\n\n<li>differentiate yourself in the marketplace</li>\n\n<li>connect with customers</li>\n\n<li>be confident in moments of uncertainty</li>\n\n<li>create buzz for business</li>\n</ul>\n\n<p class="list-header"><strong>Special Testimonial Video: &nbsp;</strong><a href="https://www.youtube.com/watch?v=SQ39edfz8xo">https://www.youtube.com/watch?v=SQ39edfz8xo</a></p><br>\n<!--h3>UnBottle Your Business Brand with S. Renee Online Program</h3>\n\n<h4>$197.00 USD</h4-->\n\n<p>\nS. Renee gives you an insider look at how to take the wisdom from your wounds to launch a\nspeaking business, earn more bucks by living your brand, boost your confidence when\ncommunicating with your customers, and master overcoming your moments of uncertainty.</p>\n<p>\nUnBottle Your Business Brand With S. Renee Online Course includes over $2000.00 of valuable\nproducts and services, including 12 months of access to S. Renee via private Facebook community. It\u2019s a huge discount today.\n</p>\n\n<p class="list-header"><strong>13-Module Professional Advancement Online Course ($597 value)</strong></p>\n\n<p class="list-header"><strong>Bridge to Your Brand E-Book</strong></p>\n\n<p class="list-header"><strong>Bonus #1: Downloads ($199.95 value)</strong>\n\n<ul class="list-style"> \n<li>How to Find Your Passion</li>\n\n<li>Behind the Brand: The Spiritual Practices of S. Renee</li>\n\n<li>Shake Your Fear Become Empowered</li>\n\n<li>The Most Important Building Block to Self-Esteem</li>\n\n<li>When to Hold On Or Let Go of Your Relationship</li>\n\n<p class="list-header"><strong>Bonus #2: Interactive Small Group Coaching Session ($999.97 value)</strong></p>\n\n<p>This powerful small-group LIVE virtual session enables you to ask questions and be coached byS. Renee.</p>\n\n<p class="list-header"><strong>Bonus #3: Private Advancement Community with S. Renee and fellow students for an entire YEAR! ($1200 value).</strong></p>\n\n<p>That\'s over $2000 of value... But you can get in right now for just one payment of <strong>$197</strong>!</p>\n<p>\n100% SATISFACTION GUARANTEE: If you don\'t love it for any reason whatsoever, let us know\nwithin 30 days and you\'ll receive a full refund.</p>\n<hr>\n<div class="sidebar-center"> \n <h4>UnBottle Your Business Brand With S. Renee Online Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green"\n\t\t\t\t\t\tdata-item-id="CSR-0002"\n\t\t\t\t\t\tdata-item-name="UnBottle Your Business Brand with S. Renee Online Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="13-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n\t\t\t\t</div>\n  ', '\n  <div class="sidebar-center">\n<h2 class="sidebar-header">ONLINE PROGRAM</h2>\n    <h4>UnBottle Your Business Brand With S. Renee Online Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-full-width"\n\t\t\t\t\t\tdata-item-id="CSR-0002"\n\t\t\t\t\t\tdata-item-name="UnBottle Your Business Brand with S. Renee Online Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="13-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n</div>\n  ']
 	};
 
 /***/ }),
-/* 111 */
+/* 117 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 112 */,
-/* 113 */
+/* 118 */,
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49783,9 +50138,9 @@
 	});
 	exports.products = undefined;
 	
-	var _products = __webpack_require__(114);
+	var _products = __webpack_require__(120);
 	
-	__webpack_require__(116);
+	__webpack_require__(122);
 	
 	var products = exports.products = angular.module('components.product.products', []).component('products', _products.productsComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -49804,7 +50159,7 @@
 	}]).name;
 
 /***/ }),
-/* 114 */
+/* 120 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49816,7 +50171,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _products = __webpack_require__(115);
+	var _products = __webpack_require__(121);
 	
 	var _products2 = _interopRequireDefault(_products);
 	
@@ -49851,7 +50206,7 @@
 	};
 
 /***/ }),
-/* 115 */
+/* 121 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/products/products.html';
@@ -49860,14 +50215,14 @@
 	module.exports = path;
 
 /***/ }),
-/* 116 */
+/* 122 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 117 */,
-/* 118 */
+/* 123 */,
+/* 124 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49926,15 +50281,15 @@
 	}();
 
 /***/ }),
-/* 119 */
+/* 125 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	__webpack_require__(120);
+	__webpack_require__(126);
 	module.exports = 'ngSanitize';
 
 
 /***/ }),
-/* 120 */
+/* 126 */
 /***/ (function(module, exports) {
 
 	/**
@@ -50679,7 +51034,7 @@
 
 
 /***/ }),
-/* 121 */
+/* 127 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
