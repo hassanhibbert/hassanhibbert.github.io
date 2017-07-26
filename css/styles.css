@@ -484,6 +484,30 @@ footer {
 .site-content {
   flex: 1; }
 
+.hero-container {
+  max-height: 380px;
+  overflow: hidden;
+  background: #d4d4d4 url(/373409c0b7768bc9f8f958515e3cc133.jpg) no-repeat center center;
+  background-size: cover;
+  font-family: 'Average', serif;
+  margin-bottom: 20px;
+  image-rendering: -webkit-optimize-contrast;
+  color: #ac63c6; }
+  .hero-container .separator {
+    height: 9px;
+    background: url(/2925baeb6c68f6c8f942c61256a7cb14.png) no-repeat center center;
+    margin: 20px auto; }
+  .hero-container .hero-title {
+    font-size: 55px;
+    text-align: right; }
+  .hero-container .hero-tagline {
+    font-size: 16px;
+    text-align: right; }
+  .hero-container .hero-text-wrapper {
+    padding: 122px 0;
+    max-width: 1140px;
+    margin: 0 auto; }
+
 @font-face {
   font-family: "Material Icons";
   font-style: normal;
@@ -606,6 +630,10 @@ a.btn-primary {
   transition: all .5s;
   border: 2px solid #470f6f;
   color: #470f6f; }
+
+a.btn-secondary {
+  color: #470f6f;
+  text-decoration: none; }
 
 .btn-secondary:visited {
   color: #470f6f; }

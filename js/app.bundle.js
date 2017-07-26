@@ -65,7 +65,7 @@
 	
 	var _components = __webpack_require__(28);
 	
-	__webpack_require__(127);
+	__webpack_require__(128);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -44665,14 +44665,15 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var AuthService = exports.AuthService = function () {
-	  AuthService.$inject = ["$firebaseAuth", "$firebaseArray", "$firebaseObject"];
-	  function AuthService($firebaseAuth, $firebaseArray, $firebaseObject) {
+	  AuthService.$inject = ["$firebaseAuth", "$firebaseArray", "$firebaseObject", "$q"];
+	  function AuthService($firebaseAuth, $firebaseArray, $firebaseObject, $q) {
 	    'ngInject';
 	
 	    var _this = this;
 	
 	    _classCallCheck(this, AuthService);
 	
+	    this.$q = $q;
 	    this.$firebaseArray = $firebaseArray;
 	    this.$firebaseObject = $firebaseObject;
 	    this.auth = $firebaseAuth(_firebase2.default.auth());
@@ -44709,8 +44710,12 @@
 	  }, {
 	    key: 'getUserObject',
 	    value: function getUserObject() {
-	      var ref = _firebase2.default.database().ref('users');
-	      return this.$firebaseObject(ref.child(this.authData.uid));
+	      if (this.getUser()) {
+	        var ref = _firebase2.default.database().ref('users');
+	        return this.$firebaseObject(ref.child(this.authData.uid));
+	      } else {
+	        return this.$q.when({});
+	      }
 	    }
 	  }, {
 	    key: 'createUserAccount',
@@ -44718,13 +44723,21 @@
 	      var firstName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
 	      var lastName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 	      var email = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+	      var orderDetails = arguments[3];
 	
-	      var ref = _firebase2.default.database().ref('users');
-	      var userObject = this.$firebaseObject(ref.child(this.authData.uid));
-	      userObject.firstName = firstName;
-	      userObject.lastName = lastName;
-	      userObject.email = email;
-	      return userObject.$save();
+	      var usersRef = _firebase2.default.database().ref('users');
+	      var newUserData = {
+	        displayName: orderDetails.billingAddress.name,
+	        email: orderDetails.email,
+	        billingAddress: orderDetails.billingAddress
+	      };
+	      return usersRef.child(this.authData.uid).set(newUserData);
+	      //let userObject = this.$firebaseObject(ref.child(this.authData.uid));
+	
+	      //userObject.firstName = firstName;
+	      //userObject.lastName = lastName;
+	      //userObject.email = email;
+	      //return userObject.$save();
 	    }
 	  }, {
 	    key: 'resetPassword',
@@ -44783,15 +44796,24 @@
 	    url: '/auth',
 	    template: '<div ui-view></div>'
 	  }).state('auth.login', {
-	    url: '/login',
+	    url: '/login/:pageId',
 	    component: 'login',
-	    params: { orderItems: false },
+	    params: {
+	      pageId: {
+	        value: null
+	      }
+	    },
 	    resolve: {
-	      cartOrderItems: ["$transition$", "$state", "ProductService", "$q", function cartOrderItems($transition$, $state, ProductService, $q) {
+	      pageId: ["$transition$", function pageId($transition$) {
 	        'ngInject';
 	
-	        var orderItems = $transition$.params().orderItems;
-	        return $q.when(orderItems);
+	        return $transition$.params().pageId;
+	      }],
+	      cartItem: ["$transition$", "ProductService", "$q", function cartItem($transition$, ProductService, $q) {
+	        'ngInject';
+	
+	        var productId = $transition$.params().pageId;
+	        return productId ? ProductService.get(productId) : $q.when(productId);
 	      }]
 	    }
 	  });
@@ -44822,7 +44844,8 @@
 	var loginComponent = exports.loginComponent = {
 	  templateUrl: _login2.default,
 	  bindings: {
-	    cartOrderItems: '<'
+	    cartItem: '<',
+	    pageId: '<'
 	  },
 	  controller: function () {
 	    LoginComponent.$inject = ["AuthService", "$state"];
@@ -44838,14 +44861,6 @@
 	    _createClass(LoginComponent, [{
 	      key: '$onInit',
 	      value: function $onInit() {
-	        if (this.cartOrderItems) {
-	          this.cartOrderItems.forEach(function (order) {
-	            Snipcart.api.items.add(order).then(function (item) {
-	              console.log(item);
-	            });
-	          });
-	        }
-	
 	        this.error = null;
 	        this.user = {
 	          email: '',
@@ -44857,13 +44872,18 @@
 	      value: function loginUser(event) {
 	        var _this = this;
 	
-	        return this.authService.login(event.user).then(function (user) {
-	          if (_this.cartOrderItems) {
+	        if (this.cartItem) {}
+	        return this.authService.login(event.user).then(function () {
+	          return _this.authService.getUserObject().$loaded();
+	        }).then(function (user) {
+	          if (user.billingAddress) Snipcart.api.cart.billingAddress(user.billingAddress);
+	          if (_this.cartItem) {
+	            Snipcart.api.items.add(_this.cartItem);
 	            Snipcart.api.modal.show();
+	            _this.$state.go('product', { id: _this.pageId });
+	          } else {
+	            _this.$state.go('app');
 	          }
-	          //console.log('event.user', event.user)
-	          //console.log('is email verified: ', user.emailVerified, user.email);
-	          _this.$state.go('app');
 	        }, function (reason) {
 	          _this.error = reason.message;
 	        });
@@ -46322,7 +46342,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/members-area/members-area/members-area.html';
-	var html = "<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\">Members Area / Dashboard</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div class=\"container\">\r\n        <div class=\"flex\">\r\n          <p class=\"\">Welcome&nbsp;<strong> {{::$ctrl.user.firstName}}</strong>!</p>\r\n        </div>\r\n        <hr>\r\n\r\n        <h2>Available Programs</h2>\r\n        <div ng-repeat=\"program in $ctrl.programs\" class=\"course-panel flex flex-around\">\r\n          <div class=\"course-panel-left\">\r\n            <div class=\"course-panel-title\">{{::program.name}}</div>\r\n            <div class=\"course-panel-description\">{{::program.description}}</div>\r\n          </div>\r\n          <a class=\"btn btn-primary flex-align-center flex-center\" href=\"#/app/members-area/{{::program.$id}}\">Start Program</a>\r\n          <!--<a class=\"btn btn-primary flex-align-center flex-center\">Download Workbook</a>-->\r\n        </div>\r\n\r\n        <!--<div class=\"course-panel flex flex-around\">-->\r\n          <!--<div class=\"course-panel-left\">-->\r\n            <!--<div class=\"course-panel-title\">Self-Image &amp; Attitude Development Program</div>-->\r\n            <!--<div class=\"course-panel-description\">In this course, self-esteem and branding expert and coach S. Renee takes a deep dive with you and shows you how to release yourself from the past.</div>-->\r\n          <!--</div>-->\r\n          <!--<button class=\"btn btn-primary\">Start Program</button>-->\r\n        <!--</div>-->\r\n\r\n        <!--<hr>-->\r\n        <!--<h2>Bonus Material</h2>-->\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
+	var html = "<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\">Members Area / Dashboard</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div class=\"container\">\r\n        <div class=\"flex\">\r\n          <p class=\"\">Welcome&nbsp;<strong> {{::$ctrl.user.displayName}}</strong>!</p>\r\n        </div>\r\n        <hr>\r\n\r\n        <h2>Available Programs</h2>\r\n        <div ng-repeat=\"program in $ctrl.programs\" class=\"course-panel flex flex-around\">\r\n          <div class=\"course-panel-left\">\r\n            <div class=\"course-panel-title\">{{::program.name}}</div>\r\n            <div class=\"course-panel-description\">{{::program.description}}</div>\r\n          </div>\r\n          <a class=\"btn btn-primary flex-align-center flex-center\" href=\"#/app/members-area/{{::program.$id}}\">Start Program</a>\r\n          <!--<a class=\"btn btn-primary flex-align-center flex-center\">Download Workbook</a>-->\r\n        </div>\r\n\r\n        <!--<div class=\"course-panel flex flex-around\">-->\r\n          <!--<div class=\"course-panel-left\">-->\r\n            <!--<div class=\"course-panel-title\">Self-Image &amp; Attitude Development Program</div>-->\r\n            <!--<div class=\"course-panel-description\">In this course, self-esteem and branding expert and coach S. Renee takes a deep dive with you and shows you how to release yourself from the past.</div>-->\r\n          <!--</div>-->\r\n          <!--<button class=\"btn btn-primary\">Start Program</button>-->\r\n        <!--</div>-->\r\n\r\n        <!--<hr>-->\r\n        <!--<h2>Bonus Material</h2>-->\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
@@ -46380,12 +46400,20 @@
 	    }
 	  }, {
 	    key: 'updateMemberStatus',
-	    value: function updateMemberStatus(status, courseId) {
-	      var ref = _firebase2.default.database().ref('users');
-	      var userId = this.authService.getUser().uid;
-	      var userObject = this.$firebaseObject(ref.child(userId));
-	      userObject[courseId] = status;
-	      return userObject.$save().$loaded();
+	    value: function updateMemberStatus(status, courseId, user) {
+	      var userRef = _firebase2.default.database().ref('users');
+	      var courseWorkbookViewedStatus = {};
+	      courseWorkbookViewedStatus[courseId] = status;
+	      return userRef.child(user.$id).update(courseWorkbookViewedStatus);
+	      // let userObject = this.$firebaseObject(ref.child(user.$id));
+	      // userObject.firstName = user.firstName;
+	      // userObject.lastName = user.lastName;
+	      // userObject.email = user.email;
+	      //userObject[courseId] = status;
+	      //console.log(userObject)
+	      //return
+	      //return userObject.$save();
+	      //return user.$save();
 	    }
 	  }, {
 	    key: 'getCourseSections',
@@ -46660,7 +46688,7 @@
 	      value: function clickDownload() {
 	        //console.log('clicked')
 	        this.workbookViewed = true;
-	        this.MembersAreaService.updateMemberStatus(true, this.course.$id);
+	        this.MembersAreaService.updateMemberStatus(true, this.course.$id, this.user);
 	      }
 	    }]);
 	
@@ -46673,7 +46701,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/members-area/members-area-program/members-area-program.html';
-	var html = "<!--<modal modal-id=\"workshop\">-->\r\n  <!--<div class=\"flex-align-center flex-center\">-->\r\n    <!--<p>Please download the workbook for this program before your begin</p>-->\r\n    <!--<a href=\"\" class=\"btn btn-primary\">DOWNLOAD</a>-->\r\n  <!--</div>-->\r\n<!--</modal>-->\r\n<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\"><a class=\"bread-crumb\" ui-sref=\"members-area\">Members Area</a> / Program Modules</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div class=\"container\">\r\n        <div ng-hide=\"$ctrl.workbookViewed\" class=\"flex-center flex-align-center\">\r\n          <div class=\"workbook\">\r\n            <h2>Download Program Workbook</h2>\r\n            <p>Please download the workbook for this program before your begin.</p>\r\n            <a href=\"{{::$ctrl.workbook[0].url}}\" target=\"_blank\" ng-click=\"$ctrl.clickDownload()\" class=\"btn btn-primary\">DOWNLOAD</a>\r\n          </div>\r\n        </div>\r\n      </div>\r\n      <div class=\"container\">\r\n        <div ng-hide=\"!$ctrl.workbookViewed\" class=\"flex video-container\">\r\n          <div class=\"module-list-container\">\r\n            <div>\r\n              <h3>Modules</h3>\r\n              <hr>\r\n            </div>\r\n            <!-- ng repeat -->\r\n            <div class=\"accordion-wrap\">\r\n              <div class=\"tab\" ng-repeat=\"module in $ctrl.moduleList\" ng-init=\"moduleIndex = 0\">\r\n                <input id=\"tab-{{$index}}\" type=\"checkbox\" name=\"tabs\" checked>\r\n                <label class=\"truncate\" for=\"tab-{{$index}}\">{{::module.name}}</label>\r\n                <div class=\"tab-content\">\r\n                  <div class=\"button-container\" ng-repeat=\"file in module.files\">\r\n                    <button\r\n                        class=\"flex-align-center\"\r\n                        ng-init=\"fileCount = $ctrl.updateVideoCount()\"\r\n                        ng-click=\"$ctrl.setVideo(fileCount, file.name)\">\r\n                      <i class=\"material-icons\">play_circle_outline</i>\r\n                      <span>{{::file.name}}</span>\r\n                    </button>\r\n                  </div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n\r\n\r\n\r\n          </div>\r\n          <div class=\"videogular-container\">\r\n            <div>\r\n              <h3 ng-bind=\"$ctrl.currentVideoTitle\"></h3>\r\n              <hr>\r\n            </div>\r\n            <videogular\r\n                vg-theme=\"$ctrl.config.theme\"\r\n                vg-player-ready=\"$ctrl.onPlayerReady($API)\"\r\n                vg-complete=\"controller.onCompleteVideo()\">\r\n              <vg-media\r\n                  vg-src=\"$ctrl.config.sources\"\r\n                  vg-tracks=\"$ctrl.config.tracks\">\r\n              </vg-media>\r\n\r\n              <vg-controls>\r\n                <vg-play-pause-button></vg-play-pause-button>\r\n                <vg-time-display>{{ currentTime | date:'mm:ss' }}</vg-time-display>\r\n                <vg-scrub-bar>\r\n                  <vg-scrub-bar-current-time></vg-scrub-bar-current-time>\r\n                </vg-scrub-bar>\r\n                <vg-time-display>{{ timeLeft | date:'mm:ss' }}</vg-time-display>\r\n                <vg-volume>\r\n                  <vg-mute-button></vg-mute-button>\r\n                  <vg-volume-bar></vg-volume-bar>\r\n                </vg-volume>\r\n                <vg-fullscreen-button></vg-fullscreen-button>\r\n              </vg-controls>\r\n\r\n              <vg-overlay-play></vg-overlay-play>\r\n              <vg-poster vg-url='controller.config.plugins.poster'></vg-poster>\r\n            </videogular>\r\n          </div>\r\n\r\n        </div>\r\n        <div ng-hide=\"!$ctrl.workbookViewed\">\r\n          <hr>\r\n          <h3>Downloads & Bonus Materials</h3>\r\n          <!--<hr>-->\r\n          <div class=\"download-list\" ng-repeat=\"asset in $ctrl.course.course_assets\">\r\n            <span>[{{::asset.type}}]</span>&nbsp;&nbsp;<a class=\"download-item\" href=\"{{::asset.url}}\">{{::asset.name}}</a>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
+	var html = "<!--<modal modal-id=\"workshop\">-->\r\n  <!--<div class=\"flex-align-center flex-center\">-->\r\n    <!--<p>Please download the workbook for this program before your begin</p>-->\r\n    <!--<a href=\"\" class=\"btn btn-primary\">DOWNLOAD</a>-->\r\n  <!--</div>-->\r\n<!--</modal>-->\r\n<div class=\"membership-area\">\r\n<div class=\"main-content\">\r\n  <h1 class=\"page-header\"><a class=\"bread-crumb\" ui-sref=\"members-area\">Members Area</a> / Program Modules</h1>\r\n  <div class=\"section group\">\r\n    <div class=\"col span_3_of_3 panel\">\r\n      <div ng-hide=\"$ctrl.workbookViewed\" class=\"container\">\r\n        <div  class=\"flex-center flex-align-center\">\r\n          <div class=\"workbook\">\r\n            <h2>Download Program Workbook</h2>\r\n            <p>Please download the workbook for this program before your begin.</p>\r\n            <a href=\"{{::$ctrl.workbook[0].url}}\" target=\"_blank\" ng-click=\"$ctrl.clickDownload()\" class=\"btn btn-primary\">DOWNLOAD</a>\r\n          </div>\r\n        </div>\r\n      </div>\r\n      <div ng-hide=\"!$ctrl.workbookViewed\" class=\"container\">\r\n        <div  class=\"flex video-container\">\r\n          <div class=\"module-list-container\">\r\n            <div>\r\n              <h3>Modules</h3>\r\n              <hr>\r\n            </div>\r\n            <!-- ng repeat -->\r\n            <div class=\"accordion-wrap\">\r\n              <div class=\"tab\" ng-repeat=\"module in $ctrl.moduleList\" ng-init=\"moduleIndex = 0\">\r\n                <input id=\"tab-{{$index}}\" type=\"checkbox\" name=\"tabs\" checked>\r\n                <label class=\"truncate\" for=\"tab-{{$index}}\">{{::module.name}}</label>\r\n                <div class=\"tab-content\">\r\n                  <div class=\"button-container\" ng-repeat=\"file in module.files\">\r\n                    <button\r\n                        class=\"flex-align-center\"\r\n                        ng-init=\"fileCount = $ctrl.updateVideoCount()\"\r\n                        ng-click=\"$ctrl.setVideo(fileCount, file.name)\">\r\n                      <i class=\"material-icons\">play_circle_outline</i>\r\n                      <span>{{::file.name}}</span>\r\n                    </button>\r\n                  </div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n\r\n\r\n\r\n          </div>\r\n          <div class=\"videogular-container\">\r\n            <div>\r\n              <h3 ng-bind=\"$ctrl.currentVideoTitle\"></h3>\r\n              <hr>\r\n            </div>\r\n            <videogular\r\n                vg-theme=\"$ctrl.config.theme\"\r\n                vg-player-ready=\"$ctrl.onPlayerReady($API)\"\r\n                vg-complete=\"controller.onCompleteVideo()\">\r\n              <vg-media\r\n                  vg-src=\"$ctrl.config.sources\"\r\n                  vg-tracks=\"$ctrl.config.tracks\">\r\n              </vg-media>\r\n\r\n              <vg-controls>\r\n                <vg-play-pause-button></vg-play-pause-button>\r\n                <vg-time-display>{{ currentTime | date:'mm:ss' }}</vg-time-display>\r\n                <vg-scrub-bar>\r\n                  <vg-scrub-bar-current-time></vg-scrub-bar-current-time>\r\n                </vg-scrub-bar>\r\n                <vg-time-display>{{ timeLeft | date:'mm:ss' }}</vg-time-display>\r\n                <vg-volume>\r\n                  <vg-mute-button></vg-mute-button>\r\n                  <vg-volume-bar></vg-volume-bar>\r\n                </vg-volume>\r\n                <vg-fullscreen-button></vg-fullscreen-button>\r\n              </vg-controls>\r\n\r\n              <vg-overlay-play></vg-overlay-play>\r\n              <vg-poster vg-url='controller.config.plugins.poster'></vg-poster>\r\n            </videogular>\r\n          </div>\r\n\r\n        </div>\r\n        <div ng-hide=\"!$ctrl.workbookViewed\">\r\n          <hr>\r\n          <h3>Downloads & Bonus Materials</h3>\r\n          <!--<hr>-->\r\n          <div class=\"download-list\" ng-repeat=\"asset in $ctrl.course.course_assets\">\r\n            <span>[{{::asset.type}}]</span>&nbsp;&nbsp;<a class=\"download-item\" href=\"{{::asset.url}}\">{{::asset.name}}</a>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
@@ -49916,13 +49944,13 @@
 	
 	var _product = __webpack_require__(113);
 	
-	var _products = __webpack_require__(119);
+	var _products = __webpack_require__(120);
 	
-	var _product2 = __webpack_require__(124);
+	var _product2 = __webpack_require__(125);
 	
 	var _navBar = __webpack_require__(51);
 	
-	var _angularSanitize = __webpack_require__(125);
+	var _angularSanitize = __webpack_require__(126);
 	
 	var _angularSanitize2 = _interopRequireDefault(_angularSanitize);
 	
@@ -49943,9 +49971,11 @@
 	
 	var _product = __webpack_require__(114);
 	
-	__webpack_require__(117);
+	var _bindProduct = __webpack_require__(117);
 	
-	var productSingle = exports.productSingle = angular.module('components.product.product', []).component('product', _product.productComponent).config(["$stateProvider", function ($stateProvider) {
+	__webpack_require__(118);
+	
+	var productSingle = exports.productSingle = angular.module('components.product.product', []).component('product', _product.productComponent).directive('bindProduct', _bindProduct.bindProduct).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
 	
 	  $stateProvider.state('product', {
@@ -50010,19 +50040,31 @@
 	      key: '$onDestroy',
 	      value: function $onDestroy() {
 	        //Snipcart.unsubscribe('order.completed');
+	        //console.log('destroy')
+	        Snipcart.unsubscribe('cart.closed');
 	      }
 	    }, {
 	      key: '$onInit',
 	      value: function $onInit() {
 	        var _this = this;
 	
+	        var ctrl = this;
+	        //console.log('this.authService.isAuthenticated()', this.authService.isAuthenticated())
 	        //this.id = 'CSR-0001';
-	        this.mainContent = this.$sce.trustAsHtml(_productDetails.productDetails[this.id][0]);
-	        this.sideBar = this.$sce.trustAsHtml(_productDetails.productDetails[this.id][1]);
+	        //this.mycontent = '<p>my price {{this.price}} yes</p>'
+	        this.authenticated = this.authService.isAuthenticated();
+	        //console.log('this.authService.isAuthenticated()', this.authService.isAuthenticated())
+	
+	        this.price = '$197.00';
+	        //this.mainContent = this.$sce.trustAsHtml(productDetails[this.id][0]);
+	        this.mainContent = _productDetails.productDetails[this.id][0];
+	        //this.sideBar = this.$sce.trustAsHtml(productDetails[this.id][1]);
+	        this.sideBar = _productDetails.productDetails[this.id][1];
 	
 	        //console.log(this.authService.register)
 	
 	        Snipcart.subscribe('order.completed', function (order) {
+	          //console.count('order.competed:listener');
 	          var nameSplit = order.billingAddress.name.split(' ');
 	          var firstName = nameSplit[0];
 	          var lastName = nameSplit[1];
@@ -50037,26 +50079,42 @@
 	          };
 	
 	          var newUserPath = function newUserPath() {
+	            //console.log('new user path');
+	            //console.log('paymentMethod: ',order.paymentMethod);
 	            return _this.authService.register({ email: order.email, password: 'MwYEHxD446AzSzuz' }).then(function () {
-	              return _this.authService.createUserAccount(firstName, lastName, order.email);
+	              return _this.authService.createUserAccount(firstName, lastName, order.email, order);
 	            }).then(function () {
 	              return _this.authService.getUser().updateProfile({ displayName: firstName });
 	            }).then(updatePurchases).then(function () {
-	              // return this.$http.post('https://coachsrenee.com/mailchimp-api/connector.php', {
-	              //   status: 'subscribed',
-	              //   email_address: order.email,
-	              //   merge_fields: {
-	              //     FNAME: firstName,
-	              //     LNAME: lastName
-	              //   }
-	              // });
-	              return _this.$q.when({});
+	              //let customerPaid = order.paymentMethod !== 'None';
+	              //let customerPromo = order.paymentMethod === 'None';
+	              var name = order.billingAddress.name.split(' ');
+	              var subscriber = {
+	                "email": order.email,
+	                "status": "subscribed",
+	                "firstname": name[0] || '',
+	                "lastname": name[1] || '',
+	                "group_paid": order.paymentMethod !== 'None',
+	                "group_promo": order.paymentMethod === 'None'
+	              };
+	
+	              return _this.$http.post('https://coachsrenee.com/mailchimp-api/addcontact.php', subscriber);
+	              //return this.$q.when({});
 	            }).then(function () {
+	              return _this.$http.post('https://coachsrenee.com/email-sender/accountdetails.php', {
+	                "email": order.email,
+	                "name": order.billingAddress.name
+	              });
+	            }).then(function () {
+	
 	              _this.authService.logout().then(function () {
 	                Snipcart.subscribe('cart.closed', function () {
+	                  console.count('cart.closed:newuserflow:listener');
 	                  _this.$state.go('auth.account-info');
 	                });
 	              });
+	            }).catch(function (error) {
+	              console.error(error);
 	            });
 	          };
 	
@@ -50065,15 +50123,23 @@
 	            //Snipcart.subscribe('cart.closed', () => {
 	            if (emailAvailable) {
 	              if (_this.authService.isAuthenticated()) {
+	                // console.log('im in here and authorized')
 	                updatePurchases().then(function () {
 	                  Snipcart.subscribe('cart.closed', function () {
-	                    _this.$state.go('app', {}, { reload: true });
+	                    ctrl.$state.go('app', {}, { reload: true });
 	                  });
 	                });
 	              } else {
-	                Snipcart.subscribe('cart.closed', function () {
-	                  _this.$state.go('auth.login', { orderItems: order.items });
-	                });
+	                // TODO this is where the user is already a customer but wants to buy another course
+	                // TODO redirect the user to sign then pass the order items from the cart to the login page
+	                // TODO user signs in...pass the order item information to the open cart api call so that the user
+	                // TODO can continue with their purchase
+	                //updatePurchases()
+	                //.then(() => {
+	                //Snipcart.subscribe('cart.closed', () => {
+	                // ctrl.$state.go('auth.login', {orderItems: order.items});
+	                // });
+	                // })
 	              }
 	            } else {
 	              return newUserPath();
@@ -50102,7 +50168,7 @@
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/product/product.html';
-	var html = "<nav-bar></nav-bar>\n<div class=\"main-content\">\n\n\t<h1 class=\"page-header\">Product Details</h1>\n\t<!-- product 1 start -->\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_2_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<!--<h2>Self-Image & Attitude Development Program</h2>-->\n\t\t\t\t<!--<p>Description Here</p>-->\n\t\t\t\t<div ng-bind-html=\"$ctrl.mainContent\"></div>\n\t\t\t\t<!--<div ng-include=\"'product-details-self-image.html'\"></div>-->\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\" ng-bind-html=\"$ctrl.sideBar\"></div>\n\t\t</div>\n\t</div>\n\t<!-- end -->\n</div>";
+	var html = "<nav-bar></nav-bar>\n<div class=\"main-content\">\n\n\t<h1 class=\"page-header\">Product Details</h1>\n\t<!-- product 1 start -->\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_2_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<!--<h2>Self-Image & Attitude Development Program</h2>-->\n\t\t\t\t<!--<p>Description Here</p>-->\n\t\t\t\t<!--<div ng-bind-html=\"$ctrl.mainContent\"></div>-->\n\t\t\t\t<div bind-product=\"$ctrl.mainContent\"></div>\n\t\t\t\t<!--<div ng-include=\"'product-details-self-image.html'\"></div>-->\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<!--<div class=\"panel-body\" ng-bind-html=\"$ctrl.sideBar\"></div>-->\n\t\t\t<div class=\"panel-body\" bind-product=\"$ctrl.sideBar\"></div>\n\t\t</div>\n\t</div>\n\t<!-- end -->\n</div>";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
@@ -50116,19 +50182,46 @@
 	  value: true
 	});
 	var productDetails = exports.productDetails = {
-	  'CSR-0001': ['\n    <h2 class="details-header">There Is More Inside Self-Image & Attitude Development Program</h2>\n    <p>\n      Your self perception is a predictor of the job you\u2019ll land, the quality of the relationships you\u2019ll\n      attract and the opportunities you\u2019ll take advantage of. If you want to break through to the next\n      level, you must discover the truth of who you are and the power that lies within you.\n      In this course, self-esteem and branding expert and coach S. Renee takes a deep dive with you\n      and shows you how to release yourself from the past, recover your personal power and rebuild\n      yourself from within.\n    </p>\n\n    <p>\n      S. Renee has been on her own journey of self-mastery since age 13. As a professional, she has\n      been helping others find their path to a positive self-image for the last 12 years. In this program,\n      delivers to you the spiritual principals and personal tools that will truly sustain and elevate your\n      self-awareness and self-esteem.\n    </p>\n\n    <p>Get ready for the shift and new life that awaits you. This program is Christian based.</p>\n\n    <!--h3>There Is More Inside Self-Image & Attitude Development Program</h3>\n    <h4>$197.00 USD</h4-->\n\n    <p>\n      There Is More Inside Self-Image & Attitude Development Program is a tested and proven\n      system of change. Self-Esteem and Branding Coach S. Renee takes a deep dive with you and\n      shows you how to release yourself from the past, recover your personal power and rebuild\n      yourself from within. This program includes over $2000.00 of valuable products and services,\n      including 12 months of access to S. Renee via private Facebook community. It\u2019s a huge\n      discount today.\n    </p>\n\n    <p class="list-header"><strong>7-Module Professional Advancement Online Course ($450 value)</strong></p>\n    \n    <ul class="list-style">\n      <li>There Is More Inside Audio Book</li>\n      <li>There Is More Inside PDF</li>\n    </ul>\n\n    <p class="list-header"><strong>Bonus #1: Audio Downloads ($199.96 value)</strong></p>\n    \n    <ul class="list-style">\n      <li> Behind the Brand: The Spiritual Practices of S. Renee</li>\n      <li>Shake Your Fear Become Empowered</li>\n      <li>The Most Important Building Block to Self-Esteem</li>\n      <li>When to Hold On Or Let Go of Your Relationship</li>\n    </ul>\n\n    <p class="list-header"><strong>Bonus #2: An Interactive Small Group Coaching Session ($999.00 value)</strong></p>\n    <p>This powerful small-group LIVE virtual session enables you to ask questions and be coached by S. Renee.</p>\n    <p class="list-header"><strong>Bonus #3: Private Advancement Community with S. Renee and fellow students for an\n      entire YEAR! ($1200 value).</strong></p>\n    <p>That\'s over $2000 of value... But you can get in right now for just one payment of <strong>$197</strong>!</p>\n\n    <p>100% SATISFACTION GUARANTEE: If you don\'t love it for any reason whatsoever, let us know\n    within 30 days and you\'ll receive a full refund.</p>\n\n    <p class="list-header"><strong>Program Testimonials:</strong></p>\n\n    <p>This program has been tested by over 200 people. Ninety-eight percent experienced a change in their lives.</p>\n    <ul class="list-style">\n      <li>\u201CThis is the catalyst for moving you beyond your personal plateau.\u201D</li>   \n      <li>\u201CForced me to face myself so that I could see the real me.\u201D</li>     \n      <li>\u201CRejuvenating imparting of knowledge about the power within.\u201D</li>\n      <li>\u201CThis felt like a cold splash of water in my face.\u201D</li>\n      <li>\u201CI applied the information immediately and started apply for job that, I once thought, were out\n      of reach.</li>\n      <li>\u201CThis put me back on the right track.\u201D</li>\n      <li>\u201CWonderful energy, provoking exercises. Turned the earth over, the hard packed earth...\u201D</li>\n    </ul>\n<!--\nVideo 1: Introduction to Self-Image\nVideo 2 Wilt Thou Be Made Whole?\nVideo 3: The Rock\nVideo 4: That\u2019s Not My Stuff\nVideo 5: Poison of Unforgiveness\nAudio 1: Time Wizard\nVideo 6: Where Did I Come From?\nAudio 2: Mirror, Mirror\nVideo 7: You Have It!\nVideo 8:Do You Believe In What You\u2019re Hoping For?\nVideo 9:Come Out of the Box\nVideo 10: What is Attitude?\nVideo 11: It\u2019s Not What You Think It Is\nVideo 12: Mountain Be Moved\nVideo 13: Check Your Operating System Your Spirit Will Carry You!\n\nWorkbook\n\nThere Is More Inside Audio Book (8 audios)\n\nThere Is More Inside (PDF)\n\nBonus 1:\n\nAudio Downloads\n\nBehind the Brand: The Spiritual Practices of S. Renee\n\nShake Your Fear Become Empowered\n\nThe Most Important Building Block to Self-Esteem\n\nWhen to Let Go Or Hold On to a Relationship\n\nBonus #2: An Interactive Small Group Coaching Session ($999.00)\n\nThis powerful small-group LIVE virtual session enables you to ask questions and be coached by\n\nS. Renee.\n\nSend your questions to questions@srenee.com\n\nBonus #3: Private Advancement Community with S. Renee and fellow students for an\n\nentire YEAR! ($1200 value).\n\nThat\'s over $2000 of value... But you can get in right now for just one payment of $197!\n\nLink to Facebook Group - Make your request to join the group by clicking this link: There Is\n\nMore Inside...YOU! -->\n<hr>\n<div class="sidebar-center"> \n    <h4>Self-Image & Attitude Development Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-center"\n\t\t\t\t\t\tdata-item-id="CSR-0001"\n\t\t\t\t\t\tdata-item-name="There Is More Inside Self-Image & Attitude Development Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="7-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n\t\t\t\t</div>\n  ', '\n<div class="sidebar-center">\n<h2 class="sidebar-header">ONLINE PROGRAM</h2>\n    <h4>Self-Image & Attitude Development Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-full-width"\n\t\t\t\t\t\tdata-item-id="CSR-0001"\n\t\t\t\t\t\tdata-item-name="There Is More Inside Self-Image & Attitude Development Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="7-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n</div>\n\n  '],
-	  'CSR-0002': ['\n  <h2 class="details-header">UnBottle Your Business Brand With S. Renee</h2>\n\n<p>Business success starts with a brand\u2014a message that people will engage, connect and\nrespond to. When you brand yourself properly people come to know, like and trust you. In this\ncourse, S. Renee gives you an insider look at how to take the wisdom from your wounds to\nlaunch a speaking business, earn more bucks by living your brand, boost your confidence when\ncommunicating with your customers, and master overcoming moments of uncertainty.</p>\n\n<p class="list-header"><strong>S. Renee reveals her daily spiritual and business practices on how to:</strong></p>\n\n<ul class="list-style"> \n<li>craft your marketing mission, message and story</li>\n\n<li>differentiate yourself in the marketplace</li>\n\n<li>connect with customers</li>\n\n<li>be confident in moments of uncertainty</li>\n\n<li>create buzz for business</li>\n</ul>\n\n<p class="list-header"><strong>Special Testimonial Video: &nbsp;</strong><a href="https://www.youtube.com/watch?v=SQ39edfz8xo">https://www.youtube.com/watch?v=SQ39edfz8xo</a></p><br>\n<!--h3>UnBottle Your Business Brand with S. Renee Online Program</h3>\n\n<h4>$197.00 USD</h4-->\n\n<p>\nS. Renee gives you an insider look at how to take the wisdom from your wounds to launch a\nspeaking business, earn more bucks by living your brand, boost your confidence when\ncommunicating with your customers, and master overcoming your moments of uncertainty.</p>\n<p>\nUnBottle Your Business Brand With S. Renee Online Course includes over $2000.00 of valuable\nproducts and services, including 12 months of access to S. Renee via private Facebook community. It\u2019s a huge discount today.\n</p>\n\n<p class="list-header"><strong>13-Module Professional Advancement Online Course ($597 value)</strong></p>\n\n<p class="list-header"><strong>Bridge to Your Brand E-Book</strong></p>\n\n<p class="list-header"><strong>Bonus #1: Downloads ($199.95 value)</strong>\n\n<ul class="list-style"> \n<li>How to Find Your Passion</li>\n\n<li>Behind the Brand: The Spiritual Practices of S. Renee</li>\n\n<li>Shake Your Fear Become Empowered</li>\n\n<li>The Most Important Building Block to Self-Esteem</li>\n\n<li>When to Hold On Or Let Go of Your Relationship</li>\n\n<p class="list-header"><strong>Bonus #2: Interactive Small Group Coaching Session ($999.97 value)</strong></p>\n\n<p>This powerful small-group LIVE virtual session enables you to ask questions and be coached byS. Renee.</p>\n\n<p class="list-header"><strong>Bonus #3: Private Advancement Community with S. Renee and fellow students for an entire YEAR! ($1200 value).</strong></p>\n\n<p>That\'s over $2000 of value... But you can get in right now for just one payment of <strong>$197</strong>!</p>\n<p>\n100% SATISFACTION GUARANTEE: If you don\'t love it for any reason whatsoever, let us know\nwithin 30 days and you\'ll receive a full refund.</p>\n<hr>\n<div class="sidebar-center"> \n <h4>UnBottle Your Business Brand With S. Renee Online Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green"\n\t\t\t\t\t\tdata-item-id="CSR-0002"\n\t\t\t\t\t\tdata-item-name="UnBottle Your Business Brand with S. Renee Online Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="13-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n\t\t\t\t</div>\n  ', '\n  <div class="sidebar-center">\n<h2 class="sidebar-header">ONLINE PROGRAM</h2>\n    <h4>UnBottle Your Business Brand With S. Renee Online Program</h4>\n<h2><span>$197.00</span></h2>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-full-width"\n\t\t\t\t\t\tdata-item-id="CSR-0002"\n\t\t\t\t\t\tdata-item-name="UnBottle Your Business Brand with S. Renee Online Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://hassanhibbert.github.io/data/products.json"\n\t\t\t\t\t\tdata-item-description="13-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n</div>\n  ']
+	  'CSR-0001': ['\n    <h2 class="details-header">There Is More Inside Self-Image & Attitude Development Program</h2>\n    <p>\n      Your self perception is a predictor of the job you\u2019ll land, the quality of the relationships you\u2019ll\n      attract and the opportunities you\u2019ll take advantage of. If you want to break through to the next\n      level, you must discover the truth of who you are and the power that lies within you.\n      In this course, self-esteem and branding expert and coach S. Renee takes a deep dive with you\n      and shows you how to release yourself from the past, recover your personal power and rebuild\n      yourself from within.\n    </p>\n\n    <p>\n      S. Renee has been on her own journey of self-mastery since age 13. As a professional speaker, author and coach, she has\n      been helping others find their path to a positive self-image since 2005. In this program, S. Renee \n      delivers to you the spiritual principals and personal tools that will truly sustain and elevate your\n      self-awareness and self-esteem.\n    </p>\n\n    <p>Get ready for the shift and new life that awaits you.</p>\n\n    <!--h3>There Is More Inside Self-Image & Attitude Development Program</h3>\n    <h4>$197.00 USD</h4-->\n\n    <p>\n      There Is More Inside Self-Image & Attitude Development Program is a tested and proven\n      system of change. This program includes over $2000.00 of valuable products and services,\n      including 12 months of access to S. Renee via private Facebook community. It\u2019s a huge\n      discount today.\n    </p>\n\n    <p class="list-header"><strong>7-Module Professional Advancement Online Course ($497 value), which includes</strong></p>\n    \n    <ul class="list-style">\n      <li>Self-Esteem & Attitude Development Workbook</li>\n      <li>There Is More Inside Audio Book</li>\n      <li>There Is More Inside Book PDF</li>\n    </ul>\n\n    <p class="list-header"><strong>Bonus #1: Audio Downloads ($199.96 value)</strong></p>\n    \n    <ul class="list-style">\n      <li> Behind the Brand: The Spiritual Practices of S. Renee</li>\n      <li>Shake Your Fear Become Empowered</li>\n      <li>The Most Important Building Block to Self-Esteem</li>\n      <li>When to Hold On Or Let Go of Your Relationship</li>\n    </ul>\n\n    <p class="list-header"><strong>Bonus #2: An Interactive Small Group Coaching Session ($999.00 value)</strong></p>\n    <p>This powerful small-group LIVE virtual session enables you to ask questions and be coached by S. Renee.</p>\n    \n    <p class="list-header"><strong>Bonus #3: Private Advancement Community with S. Renee and fellow students for an\n      entire YEAR! ($1200 value).</strong></p>\n    <p>That\'s over $2000 of value...but you can get in right now for just one payment of <strong>$197</strong>!</p>\n\n    <p>100% SATISFACTION GUARANTEE: If you don\'t love it for any reason whatsoever, let us know\n    within 30 days and you\'ll receive a full refund.</p>\n\n    <p class="list-header"><strong>Program Testimonials:</strong></p>\n\n    <p>This program has been tested by over 200 employees. Ninety-eight percent increased their confidence and moved their lives in a new direction.</p>\n    <ul class="list-style">\n      <li>\u201CThis is the catalyst for moving you beyond your personal plateau.\u201D</li>   \n      <li>\u201CForced me to face myself so that I could see the real me.\u201D</li>     \n      <li>\u201CRejuvenating imparting of knowledge about the power within.\u201D</li>\n      <li>\u201CThis felt like a cold splash of water in my face.\u201D</li>\n      <li>\u201CI applied the information immediately and started apply for job that, I once thought, were out\n      of reach.</li>\n      <li>\u201CThis put me back on the right track.\u201D</li>\n      <li>\u201CWonderful energy, provoking exercises. Turned the earth over, the hard packed earth...\u201D</li>\n    </ul>\n<hr>\n<div class="sidebar-center"> \n    <h4>Self-Image & Attitude Development Program</h4>\n<h2><span>$197.00</span></h2>\n\n<div ng-hide="{{this.authService.isAuthenticated()}}">\n  <p>Purchase below, or if you\'re already a member of "Coach S. Renee".</p>\n<a ui-sref="auth.login({ pageId: \'CSR-0001\' })" class="btn btn-secondary">Login to your Account</a>\n</div>\n\n<br>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-center"\n\t\t\t\t\t\tdata-item-id="CSR-0001"\n\t\t\t\t\t\tdata-item-name="There Is More Inside Self-Image & Attitude Development Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://coachsrenee.com/data/products.json"\n\t\t\t\t\t\tdata-item-description="7-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n\t\t\t\t</div>\n  ', '\n<div class="sidebar-center">\n<h2 class="sidebar-header">ONLINE PROGRAM</h2>\n    <h4>Self-Image & Attitude Development Program</h4>\n<h2><span>$197.00</span></h2>\n<div ng-hide="{{this.authService.isAuthenticated()}}">\n  <p>Purchase below, or if you\'re already a member of "Coach S. Renee".</p>\n<a ui-sref="auth.login({ pageId: \'CSR-0001\' })" class="btn btn-secondary btn-full-width">Login to your Account</a>\n</div>\n\n<br>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-full-width"\n\t\t\t\t\t\tdata-item-id="CSR-0001"\n\t\t\t\t\t\tdata-item-name="There Is More Inside Self-Image & Attitude Development Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://coachsrenee.com/data/products.json"\n\t\t\t\t\t\tdata-item-description="7-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n</div>\n\n  '],
+	  'CSR-0002': ['\n  <h2 class="details-header">UnBottle Your Business Brand With S. Renee</h2>\n\n<p>Business success starts with a brand\u2014a concise mission and message that an audience feels a great connection with. When you brand your business properly you become more likable, marketable and credible. In this course, S. Renee gives you an insider look at how build a business brand for the speaking business, earn more bucks by living your brand, boost your confidence when communicating with your customers, and master overcoming moments of uncertainty.</p>\n\n<p class="list-header"><strong>S. Renee reveals her daily spiritual and business practices on how to:</strong></p>\n\n<ul class="list-style"> \n<li>craft your marketing mission, message and story</li>\n\n<li>differentiate yourself in the marketplace</li>\n\n<li>connect with customers</li>\n\n<li>be confident in moments of uncertainty</li>\n\n<li>create buzz for business</li>\n</ul>\n\n<p class="list-header"><a href="https://www.youtube.com/watch?v=SQ39edfz8xo">https://www.youtube.com/watch?v=SQ39edfz8xo</a></p><br>\n<!--h3>UnBottle Your Business Brand with S. Renee Online Program</h3>\n\n<h4>$197.00 USD</h4-->\n\n<!--<p>-->\n<!--S. Renee gives you an insider look at how to take the wisdom from your wounds to launch a-->\n<!--speaking business, earn more bucks by living your brand, boost your confidence when-->\n<!--communicating with your customers, and master overcoming your moments of uncertainty.</p>-->\n<p>\nUnBottle Your Business Brand With S. Renee Online Course includes over $2000.00 of valuable\nproducts and services, including 12 months of access to S. Renee via private Facebook community. It\u2019s a huge discount today.\n</p>\n\n<p class="list-header"><strong>13-Module Professional Advancement Online Course ($597 value), includes</strong></p>\n<ul class="list-style">\n  <li>UnBottle Your Business Brand Workbook</li>\n  <li>The Bridge to Your Brand: Likability, Marketability, Credibility E-Book</li>\n</ul>\n\n<p class="list-header"><strong>Bonus #1: Downloads ($199.95 value)</strong>\n\n<ul class="list-style"> \n<li>How to Find Your Passion</li>\n\n<li>Behind the Brand: The Spiritual Practices of S. Renee</li>\n\n<li>Shake Your Fear Become Empowered</li>\n\n<li>The Most Important Building Block to Self-Esteem</li>\n\n<li>When to Hold On Or Let Go of Your Relationship</li>\n\n<p class="list-header"><strong>Bonus #2: Interactive Small Group Coaching Session ($999.97 value)</strong></p>\n\n<p>This powerful small-group LIVE virtual session enables you to ask questions and be coached byS. Renee.</p>\n\n<p class="list-header"><strong>Bonus #3: Private Advancement Community with S. Renee and fellow students for an entire YEAR! ($1200 value).</strong></p>\n\n<p>That\'s over $2000 of value... But you can get in right now for just one payment of <strong>$197</strong>!</p>\n<p>\n100% SATISFACTION GUARANTEE: If you don\'t love it for any reason whatsoever, let us know\nwithin 30 days and you\'ll receive a full refund.</p>\n<hr>\n<div class="sidebar-center"> \n <h4>UnBottle Your Business Brand With S. Renee Online Program</h4>\n<h2><span>{{this.price}}</span></h2>\n<div ng-hide="{{this.authService.isAuthenticated()}}">\n  <p>Purchase below, or if you\'re already a member of "Coach S. Renee".</p>\n<a ui-sref="auth.login({ pageId: \'CSR-0002\' })" class="btn btn-secondary">Login to your Account</a>\n</div>\n\n<br>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green"\n\t\t\t\t\t\tdata-item-id="CSR-0002"\n\t\t\t\t\t\tdata-item-name="UnBottle Your Business Brand with S. Renee Online Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://coachsrenee.com/data/products.json"\n\t\t\t\t\t\tdata-item-description="13-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n\t\t\t\t</div>\n  ', '\n  <div class="sidebar-center">\n<h2 class="sidebar-header">ONLINE PROGRAM</h2>\n    <h4>UnBottle Your Business Brand With S. Renee Online Program</h4>\n<h2><span>$197.00</span></h2>\n<div ng-hide="{{this.authService.isAuthenticated()}}">\n  <p>Purchase below, or if you\'re already a member of "Coach S. Renee".</p>\n<a ui-sref="auth.login({ pageId: \'CSR-0002\' })" class="btn btn-secondary btn-full-width">Login to your Account</a>\n</div>\n\n<br>\n\t\t\t\t<button\n\t\t\t\t\t\tclass="snipcart-add-item btn btn-primary btn-cart btn-green btn-full-width"\n\t\t\t\t\t\tdata-item-id="CSR-0002"\n\t\t\t\t\t\tdata-item-name="UnBottle Your Business Brand with S. Renee Online Program"\n\t\t\t\t\t\tdata-item-price="197.00"\n\t\t\t\t\t\tdata-item-url="https://coachsrenee.com/data/products.json"\n\t\t\t\t\t\tdata-item-description="13-Module Professional Advancement Online Course">\n\t\t\t\t\tAdd To Cart\n\t\t\t\t</button>\n</div>\n  ']
 	};
 
 /***/ }),
 /* 117 */
 /***/ (function(module, exports) {
 
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var bindProduct = exports.bindProduct = ["$parse", "$interpolate", "$sce", "$compile", function bindProduct($parse, $interpolate, $sce, $compile) {
+	  'ngInject';
+	
+	  return {
+	    link: function link(scope, element, attributes) {
+	      var parsed = $parse(attributes.bindProduct)(scope);
+	      var interpolatedHtml = $interpolate(parsed)(scope.$ctrl);
+	      //element.html(interpolatedHtml);
+	
+	      scope.$watch(attributes.bindProduct, function (html) {
+	        element.html(interpolatedHtml);
+	        $compile(element.contents())(scope);
+	      });
+	      //console.log('interpolated', $sce.trustAsHtml(html))
+	    }
+	  };
+	}];
+
+/***/ }),
+/* 118 */
+/***/ (function(module, exports) {
+
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 118 */,
-/* 119 */
+/* 119 */,
+/* 120 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -50138,9 +50231,9 @@
 	});
 	exports.products = undefined;
 	
-	var _products = __webpack_require__(120);
+	var _products = __webpack_require__(121);
 	
-	__webpack_require__(122);
+	__webpack_require__(123);
 	
 	var products = exports.products = angular.module('components.product.products', []).component('products', _products.productsComponent).config(["$stateProvider", function ($stateProvider) {
 	  'ngInject';
@@ -50159,7 +50252,7 @@
 	}]).name;
 
 /***/ }),
-/* 120 */
+/* 121 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -50171,7 +50264,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _products = __webpack_require__(121);
+	var _products = __webpack_require__(122);
 	
 	var _products2 = _interopRequireDefault(_products);
 	
@@ -50206,23 +50299,23 @@
 	};
 
 /***/ }),
-/* 121 */
+/* 122 */
 /***/ (function(module, exports) {
 
 	var path = '/Users/hhibbert/WebstormProjects/coach-srenee/src/app/components/product/products/products.html';
-	var html = "\n<nav-bar></nav-bar>\n<div class=\"main-content\">\n\n\t<h1 class=\"page-header\">Product Listing</h1>\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Self-Image &amp; Attitude Development Program</h2>\n\t\t\t\t<p>In this course, self-esteem and branding expert and coach S. Renee takes a deep dive with you\n\t\t\t\t\tand shows you how to release yourself from the past.</p>\n\t\t\t\t<a class=\"btn btn-primary \" ui-sref=\"product({id:'CSR-0001'})\">Learn More</a>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>UnBottle Your Business Brand with S. Renee Online Program</h2>\n\t\t\t\t<p>S. Renee gives you an insider look at how to take the wisdom from your wounds to launch a\n\t\t\t\t\tspeaking business.</p>\n\t\t\t\t<a class=\"btn btn-primary\" ui-sref=\"product({id:'CSR-0002'})\">Learn More</a>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>UnBottle Your Genie Design Your Brand Action Plan</h2>\n\t\t\t\t<p>If you want to discover how people currently perceive you and redesign and communicate your\n\t\t\t\t\tbrand so that you produce the results you dream of and hunger to accomplish.</p>\n\t\t\t\t<a class=\"btn btn-primary\" ng-disabled=\"true\" http=\"\">Coming Soon</a>\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\n\n\n\t<!--<button-->\n\t\t\t<!--class=\"snipcart-add-item btn btn-primary\"-->\n\t\t\t<!--data-item-id=\"2\"-->\n\t\t\t<!--data-item-name=\"Web Learning Course\"-->\n\t\t\t<!--data-item-price=\"29.99\"-->\n\t\t\t<!--data-item-url=\"https://hassanhibbert.github.io/data/products.json\"-->\n\t\t\t<!--data-item-description=\"A web app to learn new things.\">-->\n\t\t<!--Buy My Special Software-->\n\t<!--</button>-->\n\t<!--<br><br>-->\n\t<!--<a href=\"#\" class=\"snipcart-checkout\">Click here to checkout</a>-->\n\t<!--<br><br>-->\n\n\n\n\n</div>\n\n\n\n";
+	var html = "\n<nav-bar></nav-bar>\n<div class=\"hero-container\">\n\t<div>&nbsp;</div>\n\t<div class=\"hero-text-wrapper\">\n\t\t<div class=\"hero-title\">There Is More Inside...YOU! </div>\n\t\t<!--<div class=\"separator\"></div>-->\n\t\t<div class=\"hero-tagline\">- S. Renee, Self-Esteem & Branding Expert, Coach, Speaker & Author</div>\n\t</div>\n\n</div>\n<div class=\"main-content\">\n\n\t<!--<h1 class=\"page-header\">Product Listing</h1>-->\n\t<div class=\"section group flex flex-space\">\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>Self-Image & Attitude Development Program</h2>\n\t\t\t\t<p>Your self perception is a predictor of the job you’ll land, the quality of the relationships you’ll attract and the opportunities you’ll take advantage of. If you want to break through to the next level, you must discover the truth of who you are and the power that lies within you. </p>\n\t\t\t\t<a class=\"btn btn-primary \" ui-sref=\"product({id:'CSR-0001'})\">Learn More</a>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>UnBottle Your Business Brand with S. Renee Online Program</h2>\n\t\t\t\t<p></p>\n\t\t\t\t<p>Business success starts with a brand. S. Renee gives you an insider look at how to build a business brand for the speaking business. If you want to earn more bucks, boost your confidence and master overcoming moments of uncertainty.</p>\n\t\t\t\t<a class=\"btn btn-primary\" ui-sref=\"product({id:'CSR-0002'})\">Learn More</a>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class=\"col span_1_of_3 panel\">\n\t\t\t<div class=\"panel-body\">\n\t\t\t\t<h2>UnBottle Your Genie Design Your Brand Action Plan</h2>\n\t\t\t\t<p>If you want to discover how people currently perceive you and redesign and communicate your\n\t\t\t\t\tbrand so that you produce the results you dream of and hunger to accomplish.</p>\n\t\t\t\t<a class=\"btn btn-primary\" ng-disabled=\"true\" http=\"\">Coming Soon</a>\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\n\n\n\t<!--<button-->\n\t\t\t<!--class=\"snipcart-add-item btn btn-primary\"-->\n\t\t\t<!--data-item-id=\"2\"-->\n\t\t\t<!--data-item-name=\"Web Learning Course\"-->\n\t\t\t<!--data-item-price=\"29.99\"-->\n\t\t\t<!--data-item-url=\"https://hassanhibbert.github.io/data/products.json\"-->\n\t\t\t<!--data-item-description=\"A web app to learn new things.\">-->\n\t\t<!--Buy My Special Software-->\n\t<!--</button>-->\n\t<!--<br><br>-->\n\t<!--<a href=\"#\" class=\"snipcart-checkout\">Click here to checkout</a>-->\n\t<!--<br><br>-->\n\n\n\n\n</div>\n\n\n\n";
 	window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 	module.exports = path;
 
 /***/ }),
-/* 122 */
+/* 123 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 123 */,
-/* 124 */
+/* 124 */,
+/* 125 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -50269,11 +50362,11 @@
 	    value: function get(id) {
 	      var _this = this;
 	
-	      return this.getProducts().then(function (productList) {
+	      return id ? this.getProducts().then(function (productList) {
 	        return _this.$q.when(productList.filter(function (data) {
 	          return data.id === id;
 	        })[0]);
-	      });
+	      }) : this.$q.when({});
 	    }
 	  }]);
 	
@@ -50281,15 +50374,15 @@
 	}();
 
 /***/ }),
-/* 125 */
+/* 126 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	__webpack_require__(126);
+	__webpack_require__(127);
 	module.exports = 'ngSanitize';
 
 
 /***/ }),
-/* 126 */
+/* 127 */
 /***/ (function(module, exports) {
 
 	/**
@@ -51034,7 +51127,7 @@
 
 
 /***/ }),
-/* 127 */
+/* 128 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
