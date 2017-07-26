@@ -487,7 +487,7 @@ footer {
 .hero-container {
   max-height: 380px;
   overflow: hidden;
-  background: #d4d4d4 url(/373409c0b7768bc9f8f958515e3cc133.jpg) no-repeat center center;
+  background: #d4d4d4 url(/img/e0dd186a18009eafbb7874cb2aba3a13.jpg) no-repeat center center;
   background-size: cover;
   font-family: 'Average', serif;
   margin-bottom: 20px;
@@ -495,7 +495,7 @@ footer {
   color: #ac63c6; }
   .hero-container .separator {
     height: 9px;
-    background: url(/2925baeb6c68f6c8f942c61256a7cb14.png) no-repeat center center;
+    background: url(/img/2925baeb6c68f6c8f942c61256a7cb14.png) no-repeat center center;
     margin: 20px auto; }
   .hero-container .hero-title {
     font-size: 55px;
@@ -504,7 +504,7 @@ footer {
     font-size: 16px;
     text-align: right; }
   .hero-container .hero-text-wrapper {
-    padding: 122px 0;
+    padding: 122px 30px;
     max-width: 1140px;
     margin: 0 auto; }
 
