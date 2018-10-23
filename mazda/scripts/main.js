@@ -1,5 +1,5 @@
 var pswpElement = document.querySelectorAll('.pswp')[0];
-var numberOfImages = 27;
+var numberOfImages = 28;
 var items = [];
 
 // build items array
@@ -17,7 +17,10 @@ for (var i = 0; i < numberOfImages; i++) {
 var options = {
   // optionName: 'option value'
   // for example:
-  index: 0 // start at first slide
+  index: 0, // start at first slide
+  zoomEl: false,
+  tapToClose: false,
+  clickToCloseNonZoomable: false,
 };
 
 // Initializes and opens PhotoSwipe
