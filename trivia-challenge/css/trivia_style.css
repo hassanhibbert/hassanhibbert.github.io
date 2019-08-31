@@ -4,7 +4,7 @@ body {
 
 .container {
     width: 700px;
-    margin: 50px auto;
+    margin: 80px auto;
     border: solid 1px #0f2a5f;
     background-color: #fff;
 }
@@ -89,6 +89,8 @@ body {
     height: 28px;
     display: block;
     background: -webkit-linear-gradient(#2db54d, #11712a);
+    background: -o-linear-gradient(#2db54d, #11712a);
+    background: -moz-linear-gradient(#2db54d, #11712a);
     background: linear-gradient(#2db54d, #11712a);
     border-radius: 3px 3px 3px 3px;
     -moz-border-radius: 3px 3px 3px 3px;
@@ -103,6 +105,9 @@ body {
     padding-top: 6px;
     text-decoration: none;
     -webkit-transition: all 0.3s ease;
+    -moz-transition: all 0.3s ease;
+    -o-transition: all 0.3s ease;
+    -ms-transition: all 0.3s ease;
     transition: all 0.3s ease;
     cursor: pointer;
 }
@@ -111,6 +116,8 @@ body {
     width: 210px;
     height: 28px;
     background: -webkit-linear-gradient(#1b4ba9, #0f2a5f);
+    background: -o-linear-gradient(#1b4ba9, #0f2a5f);
+    background: -moz-linear-gradient(#1b4ba9, #0f2a5f);
     background: linear-gradient(#1b4ba9, #0f2a5f);
     border-radius: 3px 3px 3px 3px;
     -moz-border-radius: 3px 3px 3px 3px;
@@ -124,6 +131,9 @@ body {
     text-align: right;
     padding-top: 6px;
     -webkit-transition: all 0.3s ease;
+    -moz-transition: all 0.3s ease;
+    -o-transition: all 0.3s ease;
+    -ms-transition: all 0.3s ease;
     transition: all 0.3s ease;
     cursor: pointer;
 }
@@ -265,17 +275,23 @@ body {
     width: 700px;
     height: 503px;
     background: -webkit-linear-gradient(#0F2A5F, #14284E);
+    background: -moz-linear-gradient(#0F2A5F, #14284E);
+    background: -o-linear-gradient(#0F2A5F, #14284E);
     background: linear-gradient(#0F2A5F, #14284E);
 }
 
 .circle {
     position: absolute;
     -webkit-transition: all 1s;
+    -moz-transition: all 1s;
+    -ms-transition: all 1s;
+    -o-transition: all 1s;
     transition: all 1s;
-    -webkit-transition-delay: .5s;
     transition-delay: .5s;
     -webkit-transform: scale(0.5, 0.5);
+    -moz-transform: scale(0.5, 0.5);
     -ms-transform: scale(0.5, 0.5);
+    -o-transform: scale(0.5, 0.5);
     transform: scale(0.5, 0.5);
     filter: alpha(opacity=0);
     opacity: 0;
@@ -284,7 +300,9 @@ body {
 .fadeInScale {
     opacity: 1 !important;
     -webkit-transform: scale(1, 1);
+    -moz-transform: scale(1, 1);
     -ms-transform: scale(1, 1);
+    -o-transform: scale(1, 1);
     transform: scale(1, 1);
 }
 
@@ -294,9 +312,10 @@ body {
 
 .title {
     -webkit-transition: all 1s;
+    -moz-transition: all 1s;
+    -o-transition: all 1s;
     transition: all 1s;
     opacity: 0;
-    -webkit-transition-delay: 1s;
     transition-delay: 1s;
     width: 221px;
     display: block;
@@ -393,10 +412,8 @@ body {
 }
 
 .ng-enter {
-    -webkit-transition: 0.5s linear all;
     transition: 0.5s linear all;
     opacity: 0;
-    -webkit-transition-delay: 0.5s;
     transition-delay: 0.5s;
 }
 
@@ -405,7 +422,6 @@ body {
 }
 
 .ng-leave {
-    -webkit-transition: 0.5s linear all;
     transition: 0.5s linear all;
     opacity: 1;
 }
@@ -416,15 +432,6 @@ body {
 
 .ng-hide {
     opacity: 0 !important;
-    -webkit-transition: none !important;
     transition: none !important;
-}
-
-.gitHub-link {
-    font-family: 'Roboto Slab', serif;
-    text-align: center;
-    display: block;
-    margin: 30px;
-    color: #10295A;
 }
 
